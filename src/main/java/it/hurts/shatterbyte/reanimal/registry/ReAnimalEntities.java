@@ -1,8 +1,9 @@
 package it.hurts.shatterbyte.reanimal.registry;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.HedgehogEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.OstrichEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.ostrich.OstrichEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -23,8 +24,15 @@ public class ReAnimalEntities {
                     .sized(1.25F, 2.75F)
                     .build(ReAnimal.MODID + ":ostrich"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<KiwiEntity>> KIWI = ENTITY_TYPES.register("kiwi", () ->
+            EntityType.Builder.of(KiwiEntity::new, MobCategory.CREATURE)
+                    .sized(0.5F, 0.6F)
+                    .build(ReAnimal.MODID + ":kiwi"));
+
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(HEDGEHOG.get(), HedgehogEntity.createAttributes().build());
         event.put(OSTRICH.get(), OstrichEntity.createAttributes().build());
+        event.put(KIWI.get(), KiwiEntity.createAttributes().build());
     }
 }

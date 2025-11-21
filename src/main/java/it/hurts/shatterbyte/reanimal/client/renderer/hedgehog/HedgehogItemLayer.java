@@ -3,7 +3,7 @@ package it.hurts.shatterbyte.reanimal.client.renderer.hedgehog;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-import it.hurts.shatterbyte.reanimal.world.entity.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;

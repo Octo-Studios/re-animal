@@ -3,7 +3,7 @@ package it.hurts.shatterbyte.reanimal.client.renderer.ostrich;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import it.hurts.shatterbyte.reanimal.client.model.ostrich.OstrichSaddleModel;
-import it.hurts.shatterbyte.reanimal.world.entity.OstrichEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.ostrich.OstrichEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import org.jetbrains.annotations.Nullable;

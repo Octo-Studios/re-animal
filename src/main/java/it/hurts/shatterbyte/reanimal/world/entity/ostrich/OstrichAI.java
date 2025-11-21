@@ -1,11 +1,10 @@
-package it.hurts.shatterbyte.reanimal.world.entity.ai;
+package it.hurts.shatterbyte.reanimal.world.entity.ostrich;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalSensorTypes;
-import it.hurts.shatterbyte.reanimal.world.entity.OstrichEntity;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
@@ -55,7 +54,7 @@ public class OstrichAI {
     public static Brain<?> makeBrain(Brain<OstrichEntity> brain) {
         initCoreActivity(brain);
         initIdleActivity(brain);
-        initPanicActivity(brain); // <- добавили
+        initPanicActivity(brain);
 
         brain.setCoreActivities(Set.of(Activity.CORE));
         brain.setDefaultActivity(Activity.IDLE);

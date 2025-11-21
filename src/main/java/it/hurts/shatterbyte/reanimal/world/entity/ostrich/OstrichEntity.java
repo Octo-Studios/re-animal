@@ -1,8 +1,7 @@
-package it.hurts.shatterbyte.reanimal.world.entity;
+package it.hurts.shatterbyte.reanimal.world.entity.ostrich;
 
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
-import it.hurts.shatterbyte.reanimal.world.entity.ai.OstrichAI;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -236,10 +235,6 @@ public class OstrichEntity extends Animal implements GeoEntity {
             controller.setAnimation(IDLE);
 
         return PlayState.CONTINUE;
-    }
-
-    public static boolean checkAnimalSpawnRules(EntityType<? extends Animal> animal, LevelAccessor level, MobSpawnType type, BlockPos pos, RandomSource random) {
-        return level.getBlockState(pos.below()).blocksMotion() && MobSpawnType.ignoresLightRequirements(type) || isBrightEnoughToSpawn(level, pos);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

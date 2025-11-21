@@ -2,5 +2,7 @@
   "entity.reanimal.hedgehog": "Hedgehog",
   "item.reanimal.hedgehog_spawn_egg": "Hedgehog Spawn Egg",
   "entity.reanimal.ostrich": "Ostrich",
-  "item.reanimal.ostrich_spawn_egg": "Ostrich Spawn Egg"
+  "item.reanimal.ostrich_spawn_egg": "Ostrich Spawn Egg",
+  "entity.reanimal.kiwi": "Kiwi",
+  "item.reanimal.kiwi_spawn_egg": "Kiwi Spawn Egg"
 }

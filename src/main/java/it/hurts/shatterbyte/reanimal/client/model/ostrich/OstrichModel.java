@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.model.ostrich;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.OstrichEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.ostrich.OstrichEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.constant.DataTickets;

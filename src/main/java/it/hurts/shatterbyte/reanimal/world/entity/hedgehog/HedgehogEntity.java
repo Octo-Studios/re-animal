@@ -1,10 +1,9 @@
-package it.hurts.shatterbyte.reanimal.world.entity;
+package it.hurts.shatterbyte.reanimal.world.entity.hedgehog;
 
 import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntityDataSerializers;
-import it.hurts.shatterbyte.reanimal.world.entity.ai.HedgehogAI;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;

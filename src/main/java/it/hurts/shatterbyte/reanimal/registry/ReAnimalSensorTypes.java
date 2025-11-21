@@ -1,9 +1,10 @@
 package it.hurts.shatterbyte.reanimal.registry;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.ai.HedgehogAI;
-import it.hurts.shatterbyte.reanimal.world.entity.HedgehogEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.ai.OstrichAI;
+import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogAI;
+import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiAI;
+import it.hurts.shatterbyte.reanimal.world.entity.ostrich.OstrichAI;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.MobSensor;
@@ -20,6 +21,8 @@ public class ReAnimalSensorTypes {
     public static final DeferredHolder<SensorType<?>, SensorType<MobSensor<HedgehogEntity>>> HEDGEHOG_SCARE_DETECTED = SENSOR_TYPES.register("hedgehog_scare_detected", () -> new SensorType<>(() -> new MobSensor<>(5, HedgehogEntity::isScaredBy, HedgehogEntity::canStayRolledUp, MemoryModuleType.DANGER_DETECTED_RECENTLY, 80)));
 
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> OSTRICH_TEMPTATIONS = SENSOR_TYPES.register("ostrich_temptations", () -> new SensorType<>(() -> new TemptingSensor(OstrichAI.getTemptations())));
+
+    public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> KIWI_TEMPTATIONS = SENSOR_TYPES.register("kiwi_temptations", () -> new SensorType<>(() -> new TemptingSensor(KiwiAI.getTemptations())));
 
     public static void register(IEventBus modBus) {
         SENSOR_TYPES.register(modBus);

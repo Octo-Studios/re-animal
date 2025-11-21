@@ -1,11 +1,10 @@
-package it.hurts.shatterbyte.reanimal.world.entity.ai;
+package it.hurts.shatterbyte.reanimal.world.entity.hedgehog;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalSensorTypes;
-import it.hurts.shatterbyte.reanimal.world.entity.HedgehogEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.TimeUtil;

@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.registry;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredRegister;
