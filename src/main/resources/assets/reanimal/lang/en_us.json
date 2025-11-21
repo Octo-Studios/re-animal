@@ -1,5 +1,4 @@
 {
-  "itemGroup.reanimal": "Example Mod Tab",
-  "block.reanimal.example_block": "Example Block",
-  "item.reanimal.example_item": "Example Item"
+  "entity.reanimal.hedgehog": "Hedgehog",
+  "item.reanimal.hedgehog_spawn_egg": "Hedgehog Spawn Egg"
 }
