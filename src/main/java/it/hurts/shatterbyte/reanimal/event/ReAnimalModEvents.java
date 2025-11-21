@@ -1,18 +1,22 @@
 package it.hurts.shatterbyte.reanimal.event;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
+import it.hurts.shatterbyte.reanimal.client.renderer.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalItems;
-import it.hurts.shatterbyte.reanimal.client.renderer.HedgehogRenderer;
+import net.minecraft.world.entity.SpawnPlacementTypes;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 
-@EventBusSubscriber(modid = ReAnimal.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = ReAnimal.MODID)
 public class ReAnimalModEvents {
     @SubscribeEvent
     public static void registerAttributes(EntityAttributeCreationEvent event) {
@@ -26,7 +30,18 @@ public class ReAnimalModEvents {
         }
     }
 
-    @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
+    @SubscribeEvent
+    public static void onRegisterSpawnPlacements(RegisterSpawnPlacementsEvent event) {
+        event.register(
+                ReAnimalEntities.HEDGEHOG.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+    }
+
+    @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT)
     public static class ClientOnlyEvents {
         @SubscribeEvent
         public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {

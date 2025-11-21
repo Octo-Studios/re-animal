@@ -14,7 +14,7 @@ public class ReAnimalEntities {
 
     public static final DeferredHolder<EntityType<?>, EntityType<HedgehogEntity>> HEDGEHOG = ENTITY_TYPES.register("hedgehog", () ->
             EntityType.Builder.of(HedgehogEntity::new, MobCategory.CREATURE)
-                    .sized(0.6F, 0.45F)
+                    .sized(0.6F, 0.5F)
                     .build(ReAnimal.MODID + ":hedgehog"));
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
