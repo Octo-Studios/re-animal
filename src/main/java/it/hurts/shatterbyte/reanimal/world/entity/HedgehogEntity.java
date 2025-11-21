@@ -138,11 +138,11 @@ public class HedgehogEntity extends Animal implements GeoEntity {
         var level = this.level();
         var profiler = level.getProfiler();
 
-        profiler.push("armadilloBrain");
+        profiler.push("hedgehogBrain");
         ((Brain<HedgehogEntity>) this.getBrain()).tick((ServerLevel) this.level(), this);
         profiler.pop();
 
-        profiler.push("armadilloActivityUpdate");
+        profiler.push("hedgehogActivityUpdate");
         HedgehogAI.updateActivity(this);
         profiler.pop();
 

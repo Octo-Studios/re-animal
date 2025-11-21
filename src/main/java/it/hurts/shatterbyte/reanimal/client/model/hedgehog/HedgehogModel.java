@@ -1,4 +1,4 @@
-package it.hurts.shatterbyte.reanimal.client.model;
+package it.hurts.shatterbyte.reanimal.client.model.hedgehog;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.world.entity.HedgehogEntity;

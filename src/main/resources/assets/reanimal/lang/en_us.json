@@ -1,4 +1,6 @@
 {
   "entity.reanimal.hedgehog": "Hedgehog",
-  "item.reanimal.hedgehog_spawn_egg": "Hedgehog Spawn Egg"
+  "item.reanimal.hedgehog_spawn_egg": "Hedgehog Spawn Egg",
+  "entity.reanimal.ostrich": "Ostrich",
+  "item.reanimal.ostrich_spawn_egg": "Ostrich Spawn Egg"
 }

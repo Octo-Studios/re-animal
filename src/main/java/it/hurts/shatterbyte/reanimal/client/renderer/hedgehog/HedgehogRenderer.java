@@ -1,8 +1,7 @@
-package it.hurts.shatterbyte.reanimal.client.renderer;
+package it.hurts.shatterbyte.reanimal.client.renderer.hedgehog;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import it.hurts.shatterbyte.reanimal.client.model.HedgehogModel;
-import it.hurts.shatterbyte.reanimal.client.renderer.layer.HedgehogItemLayer;
+import it.hurts.shatterbyte.reanimal.client.model.hedgehog.HedgehogModel;
 import it.hurts.shatterbyte.reanimal.world.entity.HedgehogEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.cache.object.BakedGeoModel;

@@ -1,4 +1,4 @@
-package it.hurts.shatterbyte.reanimal.client.renderer.layer;
+package it.hurts.shatterbyte.reanimal.client.renderer.hedgehog;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
