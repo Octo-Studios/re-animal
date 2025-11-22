@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.event;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
+import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hedgehog.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
@@ -34,6 +35,7 @@ public class ReAnimalModEvents {
             event.accept(ReAnimalItems.OSTRICH_SPAWN_EGG.get());
             event.accept(ReAnimalItems.KIWI_SPAWN_EGG.get());
             event.accept(ReAnimalItems.PIGEON_SPAWN_EGG.get());
+            event.accept(ReAnimalItems.BUTTERFLY_SPAWN_EGG.get());
         }
     }
 
@@ -70,6 +72,14 @@ public class ReAnimalModEvents {
                 Animal::checkAnimalSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+
+        event.register(
+                ReAnimalEntities.BUTTERFLY.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
     }
 
     @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT)
@@ -80,6 +90,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH.get(), OstrichRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.KIWI.get(), KiwiRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PIGEON.get(), PigeonRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.BUTTERFLY.get(), ButterflyRenderer::new);
         }
     }
 }

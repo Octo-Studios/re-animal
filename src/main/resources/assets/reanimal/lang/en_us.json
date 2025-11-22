@@ -6,5 +6,7 @@
   "entity.reanimal.kiwi": "Kiwi",
   "item.reanimal.kiwi_spawn_egg": "Kiwi Spawn Egg",
   "entity.reanimal.pigeon": "Pigeon",
-  "item.reanimal.pigeon_spawn_egg": "Pigeon Spawn Egg"
+  "item.reanimal.pigeon_spawn_egg": "Pigeon Spawn Egg",
+  "entity.reanimal.butterfly": "Butterfly",
+  "item.reanimal.butterfly_spawn_egg": "Butterfly Spawn Egg"
 }
