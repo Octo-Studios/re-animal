@@ -4,6 +4,7 @@ import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.client.renderer.hedgehog.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.world.entity.ostrich.OstrichEntity;
@@ -32,6 +33,7 @@ public class ReAnimalModEvents {
             event.accept(ReAnimalItems.HEDGEHOG_SPAWN_EGG.get());
             event.accept(ReAnimalItems.OSTRICH_SPAWN_EGG.get());
             event.accept(ReAnimalItems.KIWI_SPAWN_EGG.get());
+            event.accept(ReAnimalItems.PIGEON_SPAWN_EGG.get());
         }
     }
 
@@ -60,6 +62,14 @@ public class ReAnimalModEvents {
                 Animal::checkAnimalSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+
+        event.register(
+                ReAnimalEntities.PIGEON.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
     }
 
     @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT)
@@ -69,6 +79,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.HEDGEHOG.get(), HedgehogRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH.get(), OstrichRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.KIWI.get(), KiwiRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.PIGEON.get(), PigeonRenderer::new);
         }
     }
 }

@@ -4,5 +4,7 @@
   "entity.reanimal.ostrich": "Ostrich",
   "item.reanimal.ostrich_spawn_egg": "Ostrich Spawn Egg",
   "entity.reanimal.kiwi": "Kiwi",
-  "item.reanimal.kiwi_spawn_egg": "Kiwi Spawn Egg"
+  "item.reanimal.kiwi_spawn_egg": "Kiwi Spawn Egg",
+  "entity.reanimal.pigeon": "Pigeon",
+  "item.reanimal.pigeon_spawn_egg": "Pigeon Spawn Egg"
 }
