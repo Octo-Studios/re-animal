@@ -1,4 +1,4 @@
-package it.hurts.shatterbyte.reanimal.world.entity.pigeon;
+package it.hurts.shatterbyte.reanimal.world.entity.capybara;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,11 +21,11 @@ import net.minecraft.world.item.Items;
 import java.util.Set;
 import java.util.function.Predicate;
 
-public class PigeonAI {
-    private static final ImmutableList<SensorType<? extends Sensor<? super PigeonEntity>>> SENSOR_TYPES = ImmutableList.of(
+public class CapybaraAI {
+    private static final ImmutableList<SensorType<? extends Sensor<? super CapybaraEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
-            ReAnimalSensorTypes.PIGEON_TEMPTATIONS.get(),
+            ReAnimalSensorTypes.CAPYBARA_TEMPTATIONS.get(),
             SensorType.NEAREST_ADULT
     );
 
@@ -47,11 +47,11 @@ public class PigeonAI {
             MemoryModuleType.DANGER_DETECTED_RECENTLY
     );
 
-    public static Brain.Provider<PigeonEntity> brainProvider() {
+    public static Brain.Provider<CapybaraEntity> brainProvider() {
         return Brain.provider(MEMORY_TYPES, SENSOR_TYPES);
     }
 
-    public static Brain<?> makeBrain(Brain<PigeonEntity> brain) {
+    public static Brain<?> makeBrain(Brain<CapybaraEntity> brain) {
         initCoreActivity(brain);
         initIdleActivity(brain);
         initPanicActivity(brain);
@@ -63,7 +63,7 @@ public class PigeonAI {
         return brain;
     }
 
-    private static void initCoreActivity(Brain<PigeonEntity> brain) {
+    private static void initCoreActivity(Brain<CapybaraEntity> brain) {
         brain.addActivity(
                 Activity.CORE,
                 0,
@@ -77,12 +77,12 @@ public class PigeonAI {
         );
     }
 
-    private static void initIdleActivity(Brain<PigeonEntity> brain) {
+    private static void initIdleActivity(Brain<CapybaraEntity> brain) {
         brain.addActivity(
                 Activity.IDLE,
                 ImmutableList.of(
                         Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
-                        Pair.of(1, new AnimalMakeLove(ReAnimalEntities.PIGEON.get(), 1F, 1)),
+                        Pair.of(1, new AnimalMakeLove(ReAnimalEntities.CAPYBARA.get(), 1F, 1)),
                         Pair.of(
                                 2,
                                 new RunOne<>(
@@ -99,7 +99,8 @@ public class PigeonAI {
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
                                                 Pair.of(RandomStroll.stroll(1F), 1),
-                                                Pair.of(new DoNothing(200, 400), 1)
+                                                Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
+                                                Pair.of(new DoNothing(30, 60), 1)
                                         )
                                 )
                         )
@@ -107,7 +108,7 @@ public class PigeonAI {
         );
     }
 
-    private static void initPanicActivity(Brain<PigeonEntity> brain) {
+    private static void initPanicActivity(Brain<CapybaraEntity> brain) {
         brain.addActivityAndRemoveMemoryWhenStopped(
                 Activity.PANIC,
                 10,
@@ -121,11 +122,11 @@ public class PigeonAI {
         );
     }
 
-    public static void updateActivity(PigeonEntity entity) {
+    public static void updateActivity(CapybaraEntity entity) {
         entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
     }
 
     public static Predicate<ItemStack> getTemptations() {
-        return stack -> stack.is(Items.WHEAT_SEEDS);
+        return stack -> stack.is(Items.SPIDER_EYE);
     }
 }

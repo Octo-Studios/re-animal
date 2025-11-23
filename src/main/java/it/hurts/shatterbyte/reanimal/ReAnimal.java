@@ -1,10 +1,7 @@
 package it.hurts.shatterbyte.reanimal;
 
 import com.mojang.logging.LogUtils;
-import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
-import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntityDataSerializers;
-import it.hurts.shatterbyte.reanimal.registry.ReAnimalItems;
-import it.hurts.shatterbyte.reanimal.registry.ReAnimalSensorTypes;
+import it.hurts.shatterbyte.reanimal.registry.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;
@@ -19,6 +16,7 @@ public class ReAnimal {
         ReAnimalItems.ITEMS.register(bus);
         ReAnimalEntityDataSerializers.register(bus);
         ReAnimalSensorTypes.register(bus);
+        ReAnimalCreativeTabs.register(bus);
 
         LOGGER.info("ReAnimal initialized");
     }

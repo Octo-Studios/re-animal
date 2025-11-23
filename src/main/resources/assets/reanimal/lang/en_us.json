@@ -1,4 +1,5 @@
 {
+  "itemGroup.reanimal": "Re:Animal",
   "entity.reanimal.hedgehog": "Hedgehog",
   "item.reanimal.hedgehog_spawn_egg": "Hedgehog Spawn Egg",
   "entity.reanimal.ostrich": "Ostrich",
@@ -8,5 +9,7 @@
   "entity.reanimal.pigeon": "Pigeon",
   "item.reanimal.pigeon_spawn_egg": "Pigeon Spawn Egg",
   "entity.reanimal.butterfly": "Butterfly",
-  "item.reanimal.butterfly_spawn_egg": "Butterfly Spawn Egg"
+  "item.reanimal.butterfly_spawn_egg": "Butterfly Spawn Egg",
+  "entity.reanimal.capybara": "Capybara",
+  "item.reanimal.capybara_spawn_egg": "Capybara Spawn Egg"
 }

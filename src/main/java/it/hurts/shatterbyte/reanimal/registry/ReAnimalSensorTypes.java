@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.registry;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
+import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraAI;
 import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogAI;
 import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiAI;
@@ -26,8 +27,9 @@ public class ReAnimalSensorTypes {
 
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> KIWI_TEMPTATIONS = SENSOR_TYPES.register("kiwi_temptations", () -> new SensorType<>(() -> new TemptingSensor(KiwiAI.getTemptations())));
 
-    public static final DeferredHolder<SensorType<?>, SensorType<MobSensor<PigeonEntity>>> PIGEON_SCARE_DETECTED = SENSOR_TYPES.register("pigeon_scare_detected", () -> new SensorType<>(() -> new MobSensor<>(5, PigeonEntity::isScaredBy, entity -> !entity.isPanicking(), MemoryModuleType.DANGER_DETECTED_RECENTLY, 80)));
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> PIGEON_TEMPTATIONS = SENSOR_TYPES.register("pigeon_temptations", () -> new SensorType<>(() -> new TemptingSensor(PigeonAI.getTemptations())));
+
+    public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> CAPYBARA_TEMPTATIONS = SENSOR_TYPES.register("capybara_temptations", () -> new SensorType<>(() -> new TemptingSensor(CapybaraAI.getTemptations())));
 
     public static void register(IEventBus modBus) {
         SENSOR_TYPES.register(modBus);
