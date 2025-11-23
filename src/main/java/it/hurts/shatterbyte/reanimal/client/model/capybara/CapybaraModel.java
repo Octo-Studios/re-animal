@@ -1,4 +1,4 @@
-package it.hurts.shatterbyte.reanimal.client.model.carybara;
+package it.hurts.shatterbyte.reanimal.client.model.capybara;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraEntity;

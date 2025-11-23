@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.capybara;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import it.hurts.shatterbyte.reanimal.client.model.carybara.CapybaraModel;
+import it.hurts.shatterbyte.reanimal.client.model.capybara.CapybaraModel;
 import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
@@ -17,11 +17,11 @@ public class CapybaraRenderer extends GeoEntityRenderer<CapybaraEntity> {
         if (animatable.isBaby()) {
             poseStack.scale(0.5F, 0.5F, 0.5F);
 
-            this.shadowRadius = 0.35F * 0.5F;
+            this.shadowRadius = 0.5F * 0.5F;
         } else {
             poseStack.scale(1F, 1F, 1F);
 
-            this.shadowRadius = 0.35F;
+            this.shadowRadius = 0.5F;
         }
 
         super.scaleModelForRender(widthScale, heightScale, poseStack, animatable, model, isReRender, partialTick, packedLight, packedOverlay);
