@@ -4,6 +4,7 @@ import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.world.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.hippopotamus.HippopotamusEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.ostrich.OstrichEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.pigeon.PigeonEntity;
@@ -47,6 +48,11 @@ public class ReAnimalEntities {
                     .sized(1.1F, 1F)
                     .build(ReAnimal.MODID + ":capybara"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<HippopotamusEntity>> HIPPOPOTAMUS = ENTITY_TYPES.register("hippopotamus", () ->
+            EntityType.Builder.of(HippopotamusEntity::new, MobCategory.CREATURE)
+                    .sized(1.5F, 1.75F)
+                    .build(ReAnimal.MODID + ":hippopotamus"));
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(HEDGEHOG.get(), HedgehogEntity.createAttributes().build());
         event.put(OSTRICH.get(), OstrichEntity.createAttributes().build());
@@ -54,5 +60,6 @@ public class ReAnimalEntities {
         event.put(PIGEON.get(), PigeonEntity.createAttributes().build());
         event.put(BUTTERFLY.get(), ButterflyEntity.createAttributes().build());
         event.put(CAPYBARA.get(), CapybaraEntity.createAttributes().build());
+        event.put(HIPPOPOTAMUS.get(), HippopotamusEntity.createAttributes().build());
     }
 }
