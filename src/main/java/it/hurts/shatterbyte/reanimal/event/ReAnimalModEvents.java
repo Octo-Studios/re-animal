@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.event;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.capybara.CapybaraRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.giraffe.GiraffeRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hedgehog.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
@@ -83,6 +84,14 @@ public class ReAnimalModEvents {
                 Animal::checkAnimalSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+
+        event.register(
+                ReAnimalEntities.GIRAFFE.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
     }
 
     @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT)
@@ -96,6 +105,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.BUTTERFLY.get(), ButterflyRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.CAPYBARA.get(), CapybaraRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.HIPPOPOTAMUS.get(), HippopotamusRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.GIRAFFE.get(), GiraffeRenderer::new);
         }
     }
 }

@@ -13,5 +13,7 @@
   "entity.reanimal.capybara": "Capybara",
   "item.reanimal.capybara_spawn_egg": "Capybara Spawn Egg",
   "entity.reanimal.hippopotamus": "Hippopotamus",
-  "item.reanimal.hippopotamus_spawn_egg": "Hippopotamus Spawn Egg"
+  "item.reanimal.hippopotamus_spawn_egg": "Hippopotamus Spawn Egg",
+  "entity.reanimal.giraffe": "Giraffe",
+  "item.reanimal.giraffe_spawn_egg": "Giraffe Spawn Egg"
 }

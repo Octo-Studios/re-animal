@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.registry;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraAI;
+import it.hurts.shatterbyte.reanimal.world.entity.giraffe.GiraffeAI;
 import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogAI;
 import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.hippopotamus.HippopotamusAI;
@@ -33,6 +34,8 @@ public class ReAnimalSensorTypes {
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> CAPYBARA_TEMPTATIONS = SENSOR_TYPES.register("capybara_temptations", () -> new SensorType<>(() -> new TemptingSensor(CapybaraAI.getTemptations())));
 
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> HIPPOPOTAMUS_TEMPTATIONS = SENSOR_TYPES.register("hippopotamus_temptations", () -> new SensorType<>(() -> new TemptingSensor(HippopotamusAI.getTemptations())));
+
+    public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> GIRAFFE_TEMPTATIONS = SENSOR_TYPES.register("giraffe_temptations", () -> new SensorType<>(() -> new TemptingSensor(GiraffeAI.getTemptations())));
 
     public static void register(IEventBus modBus) {
         SENSOR_TYPES.register(modBus);
