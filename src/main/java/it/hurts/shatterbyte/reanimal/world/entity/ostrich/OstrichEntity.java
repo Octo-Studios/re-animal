@@ -2,14 +2,12 @@ package it.hurts.shatterbyte.reanimal.world.entity.ostrich;
 
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.registry.ReAnimalEntities;
-import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -23,7 +21,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -32,7 +29,7 @@ import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class OstrichEntity extends Animal implements GeoEntity {
+public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJumping {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.ostrich.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.ostrich.walk");
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.ostrich.run");
@@ -40,6 +37,9 @@ public class OstrichEntity extends Animal implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
+
+    private float jumpPower;
+    private boolean jumpingFromPlayer;
 
     public boolean isSaddled() {
         return this.entityData.get(SADDLED);
@@ -107,9 +107,12 @@ public class OstrichEntity extends Animal implements GeoEntity {
             if (forward <= 0.0F)
                 forward *= 0.25F;
 
-            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 2.5F);
+            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 2F);
 
             super.travel(new Vec3(strafe, travelVector.y, forward));
+
+            if (!this.onGround())
+                this.jumpingFromPlayer = false;
         } else
             super.travel(travelVector);
     }
@@ -146,11 +149,56 @@ public class OstrichEntity extends Animal implements GeoEntity {
     }
 
     @Override
+    public void onPlayerJump(int power) {
+        this.jumpPower = Math.min(1F, power / 100F);
+
+        if (!this.isSaddled() || !this.isVehicle() || !this.onGround())
+            return;
+
+        if (this.jumpPower <= 0F)
+            return;
+
+        var jumpY = 0.75D * this.jumpPower;
+
+        var motion = this.getDeltaMovement();
+        var look = this.getLookAngle();
+
+        var forwardBoost = 2.5D * this.jumpPower;
+
+        this.setDeltaMovement(motion.x + look.x * forwardBoost, jumpY, motion.z + look.z * forwardBoost);
+
+        this.hasImpulse = true;
+        this.jumpingFromPlayer = true;
+    }
+
+    @Override
+    public boolean canJump() {
+        return this.isSaddled() && this.isVehicle();
+    }
+
+    @Override
+    public void handleStartJump(int power) {
+        this.jumpPower = 0.0F;
+    }
+
+    @Override
+    public void handleStopJump() {
+        this.jumpingFromPlayer = false;
+    }
+
+    @Override
     public LivingEntity getControllingPassenger() {
         if (this.getFirstPassenger() instanceof LivingEntity living)
             return living;
 
         return null;
+    }
+
+    @Override
+    public void die(DamageSource source) {
+        super.die(source);
+
+        this.ejectPassengers();
     }
 
     @Override
@@ -241,6 +289,8 @@ public class OstrichEntity extends Animal implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.MAX_HEALTH, 20D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
-                .add(Attributes.FOLLOW_RANGE, 16D);
+                .add(Attributes.FOLLOW_RANGE, 16D)
+                .add(Attributes.STEP_HEIGHT, 1.1D)
+                .add(Attributes.SAFE_FALL_DISTANCE, 8D);
     }
 }
