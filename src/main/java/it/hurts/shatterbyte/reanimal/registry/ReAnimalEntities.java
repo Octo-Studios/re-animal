@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.registry;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.world.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraEntity;
+import it.hurts.shatterbyte.reanimal.world.entity.dragonfly.DragonflyEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.giraffe.GiraffeEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.world.entity.hippopotamus.HippopotamusEntity;
@@ -59,6 +60,11 @@ public class ReAnimalEntities {
                     .sized(1.75F, 6F)
                     .build(ReAnimal.MODID + ":giraffe"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<DragonflyEntity>> DRAGONFLY = ENTITY_TYPES.register("dragonfly", () ->
+            EntityType.Builder.of(DragonflyEntity::new, MobCategory.CREATURE)
+                    .sized(0.5F, 0.45F)
+                    .build(ReAnimal.MODID + ":dragonfly"));
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(HEDGEHOG.get(), HedgehogEntity.createAttributes().build());
         event.put(OSTRICH.get(), OstrichEntity.createAttributes().build());
@@ -68,5 +74,6 @@ public class ReAnimalEntities {
         event.put(CAPYBARA.get(), CapybaraEntity.createAttributes().build());
         event.put(HIPPOPOTAMUS.get(), HippopotamusEntity.createAttributes().build());
         event.put(GIRAFFE.get(), GiraffeEntity.createAttributes().build());
+        event.put(DRAGONFLY.get(), DragonflyEntity.createAttributes().build());
     }
 }

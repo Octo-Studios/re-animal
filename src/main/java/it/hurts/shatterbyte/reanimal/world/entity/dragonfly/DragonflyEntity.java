@@ -1,4 +1,4 @@
-package it.hurts.shatterbyte.reanimal.world.entity.butterfly;
+package it.hurts.shatterbyte.reanimal.world.entity.dragonfly;
 
 import com.mojang.serialization.Dynamic;
 import net.minecraft.core.BlockPos;
@@ -29,11 +29,11 @@ import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class ButterflyEntity extends Animal implements GeoEntity {
-    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.butterfly.idle");
-    private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.butterfly.fly");
+public class DragonflyEntity extends Animal implements GeoEntity {
+    private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.dragonfly.idle");
+    private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.dragonfly.fly");
 
-    private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ButterflyEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(DragonflyEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -45,11 +45,13 @@ public class ButterflyEntity extends Animal implements GeoEntity {
         this.getEntityData().set(VARIANT, variant);
     }
 
-    public ButterflyEntity(EntityType<? extends Animal> entityType, Level level) {
+    public DragonflyEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
         this.moveControl = new FlyingMoveControl(this, 10, false);
         this.navigation = new FlyingPathNavigation(this, this.level());
+
+        this.setNoGravity(true);
     }
 
     @Override
@@ -66,12 +68,12 @@ public class ButterflyEntity extends Animal implements GeoEntity {
 
         var profiler = level.getProfiler();
 
-        profiler.push("kiwiBrain");
-        ((Brain<ButterflyEntity>) this.getBrain()).tick((ServerLevel) this.level(), this);
+        profiler.push("dragonflyBrain");
+        ((Brain<DragonflyEntity>) this.getBrain()).tick((ServerLevel) this.level(), this);
         profiler.pop();
 
-        profiler.push("kiwiActivityUpdate");
-        ButterflyAI.updateActivity(this);
+        profiler.push("dragonflyActivityUpdate");
+        DragonflyAI.updateActivity(this);
         profiler.pop();
 
         super.customServerAiStep();
@@ -109,13 +111,13 @@ public class ButterflyEntity extends Animal implements GeoEntity {
     }
 
     @Override
-    protected Brain.Provider<ButterflyEntity> brainProvider() {
-        return ButterflyAI.brainProvider();
+    protected Brain.Provider<DragonflyEntity> brainProvider() {
+        return DragonflyAI.brainProvider();
     }
 
     @Override
     protected Brain<?> makeBrain(Dynamic<?> dynamic) {
-        return ButterflyAI.makeBrain(this.brainProvider().makeBrain(dynamic));
+        return DragonflyAI.makeBrain(this.brainProvider().makeBrain(dynamic));
     }
 
     @Override
@@ -184,7 +186,7 @@ public class ButterflyEntity extends Animal implements GeoEntity {
             return false;
     }
 
-    private PlayState mainPredicate(AnimationState<ButterflyEntity> state) {
+    private PlayState mainPredicate(AnimationState<DragonflyEntity> state) {
         var controller = state.getController();
         var entity = state.getAnimatable();
 
@@ -200,7 +202,7 @@ public class ButterflyEntity extends Animal implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.MAX_HEALTH, 2D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
-                .add(Attributes.FLYING_SPEED, 0.2D)
+                .add(Attributes.FLYING_SPEED, 0.5D)
                 .add(Attributes.FOLLOW_RANGE, 8D);
     }
 }
