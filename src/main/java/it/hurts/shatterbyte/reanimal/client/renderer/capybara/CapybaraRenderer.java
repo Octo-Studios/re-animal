@@ -2,7 +2,7 @@ package it.hurts.shatterbyte.reanimal.client.renderer.capybara;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.hurts.shatterbyte.reanimal.client.model.capybara.CapybaraModel;
-import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;

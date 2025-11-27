@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.butterfly;
 
 import it.hurts.shatterbyte.reanimal.client.model.butterfly.ButterflyModel;
-import it.hurts.shatterbyte.reanimal.world.entity.butterfly.ButterflyEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.model.hedgehog;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.constant.DataTickets;

@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.dragonfly;
 
 import it.hurts.shatterbyte.reanimal.client.model.dragonfly.DragonflyModel;
-import it.hurts.shatterbyte.reanimal.world.entity.dragonfly.DragonflyEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

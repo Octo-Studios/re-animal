@@ -1,10 +1,8 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.pigeon;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import it.hurts.shatterbyte.reanimal.client.model.kivi.KiwiModel;
 import it.hurts.shatterbyte.reanimal.client.model.pigeon.PigeonModel;
-import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.pigeon.PigeonEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;

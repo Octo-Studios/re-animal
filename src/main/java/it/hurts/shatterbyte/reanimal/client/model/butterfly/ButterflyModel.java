@@ -1,8 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.model.butterfly;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.butterfly.ButterflyEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.model.GeoModel;
 

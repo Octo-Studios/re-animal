@@ -1,8 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.model.giraffe;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.giraffe.GiraffeEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.constant.DataTickets;

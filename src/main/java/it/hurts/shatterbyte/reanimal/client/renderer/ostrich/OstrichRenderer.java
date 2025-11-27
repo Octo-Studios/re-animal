@@ -2,7 +2,7 @@ package it.hurts.shatterbyte.reanimal.client.renderer.ostrich;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.hurts.shatterbyte.reanimal.client.model.ostrich.OstrichModel;
-import it.hurts.shatterbyte.reanimal.world.entity.ostrich.OstrichEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;

@@ -1,8 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.model.kivi;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.hedgehog.HedgehogEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.constant.DataTickets;

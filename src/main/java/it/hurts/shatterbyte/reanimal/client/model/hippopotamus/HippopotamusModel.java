@@ -1,8 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.model.hippopotamus;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.world.entity.hippopotamus.HippopotamusEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.kiwi.KiwiEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEntity;
 import net.minecraft.resources.ResourceLocation;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.constant.DataTickets;

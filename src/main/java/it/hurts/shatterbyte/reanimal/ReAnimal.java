@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal;
 
 import com.mojang.logging.LogUtils;
-import it.hurts.shatterbyte.reanimal.registry.*;
+import it.hurts.shatterbyte.reanimal.init.*;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import org.slf4j.Logger;

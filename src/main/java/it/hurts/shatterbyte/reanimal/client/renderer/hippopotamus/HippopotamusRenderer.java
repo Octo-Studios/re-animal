@@ -1,10 +1,8 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import it.hurts.shatterbyte.reanimal.client.model.capybara.CapybaraModel;
 import it.hurts.shatterbyte.reanimal.client.model.hippopotamus.HippopotamusModel;
-import it.hurts.shatterbyte.reanimal.world.entity.capybara.CapybaraEntity;
-import it.hurts.shatterbyte.reanimal.world.entity.hippopotamus.HippopotamusEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
