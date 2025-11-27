@@ -36,7 +36,7 @@ public class ReAnimalEntities {
 
     public static final DeferredHolder<EntityType<?>, EntityType<PigeonEntity>> PIGEON = ENTITY_TYPES.register("pigeon", () ->
             EntityType.Builder.of(PigeonEntity::new, MobCategory.CREATURE)
-                    .sized(0.5F, 0.5F)
+                    .sized(0.5F, 0.65F)
                     .build(ReAnimal.MODID + ":pigeon"));
 
     public static final DeferredHolder<EntityType<?>, EntityType<ButterflyEntity>> BUTTERFLY = ENTITY_TYPES.register("butterfly", () ->

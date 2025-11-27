@@ -26,7 +26,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
@@ -80,8 +79,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
             return;
         }
 
-        if (!this.isBaby())
-            this.tickScared(serverLevel);
+        this.tickScared(serverLevel);
 
         if (!isScared()) {
             var profiler = serverLevel.getProfiler();
@@ -178,7 +176,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
     private void tickScared(ServerLevel level) {
         LivingEntity scary = null;
 
-        for (var entity : level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5.0D, 2.0D, 5.0D), entity -> entity != this)) {
+        for (var entity : level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(7D, 3D, 7D), entity -> entity != this)) {
             if (!this.isScaredBy(entity))
                 continue;
 
@@ -187,51 +185,27 @@ public class PigeonEntity extends Animal implements GeoEntity {
             break;
         }
 
-        if (scary != null)
-            this.scaredTicks = 100;
-
-        if (!this.isScared())
+        if (scary == null)
             return;
 
+        this.scaredTicks = 100;
+
         if (this.getNavigation().isDone()) {
-            var target = pickScaredTarget(level, scary);
-
-            this.getNavigation().moveTo(
-                    target.x,
-                    target.y,
-                    target.z,
-                    1D
-            );
-        }
-    }
-
-    private Vec3 pickScaredTarget(ServerLevel level, LivingEntity scary) {
-        var motion = this.getDeltaMovement();
-        var dir = new Vec3(motion.x, 0.0D, motion.z).normalize();
-
-        if (scary != null) {
+            var dir = this.getDeltaMovement().multiply(1, 0, 1).normalize();
             var away = this.position().subtract(scary.position()).multiply(1.0D, 0.0D, 1.0D).normalize();
 
-            if (dir.dot(away) < 0.0D)
-                dir = dir.scale(-1.0D);
+            if (dir.dot(away) < 0D)
+                dir = dir.scale(-1D);
 
             dir = away.scale(0.5D).add(dir.scale(0.5D)).normalize();
+
+            var center = this.position().add(dir.scale(16));
+            var ground = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(center));
+
+            var target = ground.getCenter();
+
+            this.getNavigation().moveTo(target.x, target.y, target.z, 1D);
         }
-
-        var center = this.position().add(dir.scale(16));
-
-        var ground = level.getHeightmapPos(
-                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                BlockPos.containing(center)
-        );
-
-        var height = 5D + this.getRandom().nextInt(10);
-
-        return new Vec3(
-                ground.getX() + 0.5D,
-                ground.getY() + height,
-                ground.getZ() + 0.5D
-        );
     }
 
     public void updateMoveControl() {
@@ -290,7 +264,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
     }
 
     public boolean isScaredBy(LivingEntity entity) {
-        if (!this.getBoundingBox().inflate(5F, 2F, 5F).intersects(entity.getBoundingBox()))
+        if (!this.getBoundingBox().inflate(7F, 3F, 7F).intersects(entity.getBoundingBox()))
             return false;
         else if (entity.getType().is(EntityTypeTags.UNDEAD))
             return true;
@@ -324,8 +298,9 @@ public class PigeonEntity extends Animal implements GeoEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return Animal.createLivingAttributes()
                 .add(Attributes.MAX_HEALTH, 4D)
-                .add(Attributes.MOVEMENT_SPEED, 0.15D)
+                .add(Attributes.MOVEMENT_SPEED, 0.25D)
                 .add(Attributes.FLYING_SPEED, 0.5D)
-                .add(Attributes.FOLLOW_RANGE, 16D);
+                .add(Attributes.FOLLOW_RANGE, 16D)
+                .add(Attributes.STEP_HEIGHT, 1.1D);
     }
 }

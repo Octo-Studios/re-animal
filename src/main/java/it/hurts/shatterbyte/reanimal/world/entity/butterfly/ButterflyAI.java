@@ -25,7 +25,6 @@ public class ButterflyAI {
     private static final ImmutableList<SensorType<? extends Sensor<? super ButterflyEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
-            ReAnimalSensorTypes.KIWI_TEMPTATIONS.get(),
             SensorType.NEAREST_ADULT
     );
 
@@ -124,9 +123,5 @@ public class ButterflyAI {
 
     public static void updateActivity(ButterflyEntity entity) {
         entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
-    }
-
-    public static Predicate<ItemStack> getTemptations() {
-        return stack -> stack.is(Items.SPIDER_EYE);
     }
 }

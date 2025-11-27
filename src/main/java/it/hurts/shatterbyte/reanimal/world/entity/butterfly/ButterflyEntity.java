@@ -7,18 +7,22 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
@@ -50,6 +54,15 @@ public class ButterflyEntity extends Animal implements GeoEntity {
     @Override
     protected void customServerAiStep() {
         var level = this.level();
+
+        if (!(level instanceof ServerLevel serverLevel)) {
+            super.customServerAiStep();
+
+            return;
+        }
+
+        this.tickScared(serverLevel);
+
         var profiler = level.getProfiler();
 
         profiler.push("kiwiBrain");
@@ -122,6 +135,52 @@ public class ButterflyEntity extends Animal implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 5, this::mainPredicate));
+    }
+
+    private void tickScared(ServerLevel level) {
+        LivingEntity scary = null;
+
+        for (var entity : level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(5D, 2D, 5D), entity -> entity != this)) {
+            if (!this.isScaredBy(entity))
+                continue;
+
+            scary = entity;
+
+            break;
+        }
+
+        if (scary == null)
+            return;
+
+        if (this.getNavigation().isDone()) {
+            var dir = this.getDeltaMovement().multiply(1, 0, 1).normalize();
+            var away = this.position().subtract(scary.position()).multiply(1.0D, 0.0D, 1.0D).normalize();
+
+            if (dir.dot(away) < 0D)
+                dir = dir.scale(-1D);
+
+            dir = away.scale(0.5D).add(dir.scale(0.5D)).normalize();
+
+            var center = this.position().add(dir.scale(16));
+            var ground = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(center));
+
+            var target = ground.getCenter();
+
+            this.getNavigation().moveTo(target.x, target.y, target.z, 1D);
+        }
+    }
+
+    public boolean isScaredBy(LivingEntity entity) {
+        if (!this.getBoundingBox().inflate(5F, 2F, 5F).intersects(entity.getBoundingBox()))
+            return false;
+        else if (entity.getType().is(EntityTypeTags.UNDEAD))
+            return true;
+        else if (this.getLastHurtByMob() == entity)
+            return true;
+        else if (entity instanceof Player player)
+            return !player.isSpectator() && (player.isSprinting() || player.isPassenger());
+        else
+            return false;
     }
 
     private PlayState mainPredicate(AnimationState<ButterflyEntity> state) {
