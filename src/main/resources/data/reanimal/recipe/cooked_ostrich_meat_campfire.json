@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:campfire_cooking",
+  "category": "food",
+  "cookingtime": 600,
+  "experience": 0.35,
+  "ingredient": {
+    "item": "reanimal:raw_ostrich_meat"
+  },
+  "result": {
+    "id": "reanimal:cooked_ostrich_meat"
+  }
+}
