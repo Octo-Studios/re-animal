@@ -12,8 +12,11 @@ public class ReAnimal {
     private static final Logger LOGGER = LogUtils.getLogger();
 
     public ReAnimal(IEventBus bus) {
+        ReAnimalBlocks.BLOCKS.register(bus);
         ReAnimalEntities.ENTITY_TYPES.register(bus);
         ReAnimalItems.ITEMS.register(bus);
+        ReAnimalMobEffects.MOB_EFFECTS.register(bus);
+        ReAnimalPotions.POTIONS.register(bus);
         ReAnimalEntityDataSerializers.register(bus);
         ReAnimalSensorTypes.register(bus);
         ReAnimalCreativeTabs.register(bus);

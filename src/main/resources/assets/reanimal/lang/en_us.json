@@ -20,5 +20,16 @@
   "entity.reanimal.giraffe": "Giraffe",
   "item.reanimal.giraffe_spawn_egg": "Giraffe Spawn Egg",
   "entity.reanimal.dragonfly": "Dragonfly",
-  "item.reanimal.dragonfly_spawn_egg": "Dragonfly Spawn Egg"
+  "item.reanimal.dragonfly_spawn_egg": "Dragonfly Spawn Egg",
+  "item.reanimal.hedgehog_quill": "Hedgehog Quill",
+  "item.reanimal.hedgehog_quill_arrow": "Hedgehog Quill Arrow",
+  "entity.reanimal.hedgehog_quill_arrow": "Hedgehog Quill Arrow",
+  "block.reanimal.quill_platform": "Quill Platform",
+  "effect.reanimal.quill": "Quill",
+  "item.minecraft.potion.effect.quill": "Potion of Quills",
+  "item.minecraft.splash_potion.effect.quill": "Splash Potion of Quills",
+  "item.minecraft.lingering_potion.effect.quill": "Lingering Potion of Quills",
+  "item.minecraft.tipped_arrow.effect.quill": "Arrow of Quills",
+  "item.reanimal.raw_hedgehog_meat": "Raw Hedgehog Meat",
+  "item.reanimal.cooked_hedgehog_meat": "Cooked Hedgehog Meat"
 }

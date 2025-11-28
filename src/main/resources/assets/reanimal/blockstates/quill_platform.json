@@ -1,0 +1,18 @@
+{
+  "variants": {
+    "face=floor,facing=north": { "model": "reanimal:block/quill_platform" },
+    "face=floor,facing=east":  { "model": "reanimal:block/quill_platform", "y": 90 },
+    "face=floor,facing=south": { "model": "reanimal:block/quill_platform", "y": 180 },
+    "face=floor,facing=west":  { "model": "reanimal:block/quill_platform", "y": 270 },
+
+    "face=wall,facing=north": { "model": "reanimal:block/quill_platform", "x": 90, "y": 0 },
+    "face=wall,facing=east":  { "model": "reanimal:block/quill_platform", "x": 90, "y": 90 },
+    "face=wall,facing=south": { "model": "reanimal:block/quill_platform", "x": 90, "y": 180 },
+    "face=wall,facing=west":  { "model": "reanimal:block/quill_platform", "x": 90, "y": 270 },
+
+    "face=ceiling,facing=north": { "model": "reanimal:block/quill_platform", "x": 180, "y": 0 },
+    "face=ceiling,facing=east":  { "model": "reanimal:block/quill_platform", "x": 180, "y": 90 },
+    "face=ceiling,facing=south": { "model": "reanimal:block/quill_platform", "x": 180, "y": 180 },
+    "face=ceiling,facing=west":  { "model": "reanimal:block/quill_platform", "x": 180, "y": 270 }
+  }
+}

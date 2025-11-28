@@ -6,6 +6,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogQuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEntity;
@@ -88,6 +89,13 @@ public class ReAnimalEntities {
                     .clientTrackingRange(4)
                     .updateInterval(10)
                     .build(ReAnimal.MODID + ":pigeon_egg"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<HedgehogQuillArrowEntity>> HEDGEHOG_QUILL_ARROW = ENTITY_TYPES.register("hedgehog_quill_arrow", () ->
+            EntityType.Builder.<HedgehogQuillArrowEntity>of(HedgehogQuillArrowEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F)
+                    .clientTrackingRange(4)
+                    .updateInterval(20)
+                    .build(ReAnimal.MODID + ":hedgehog_quill_arrow"));
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(HEDGEHOG.get(), HedgehogEntity.createAttributes().build());
