@@ -45,4 +45,6 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, Item> COOKED_KIWI_MEAT = ITEMS.register("cooked_kiwi_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.COOKED_KIWI_MEAT)));
     public static final DeferredHolder<Item, Item> KIWI_FLUFF = ITEMS.register("kiwi_fluff", () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, Item> BUTTERFLY_POLLEN = ITEMS.register("butterfly_pollen", () -> new BoneMealItem(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> RAW_PIGEON_MEAT = ITEMS.register("raw_pigeon_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.RAW_PIGEON_MEAT)));
+    public static final DeferredHolder<Item, Item> COOKED_PIGEON_MEAT = ITEMS.register("cooked_pigeon_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.COOKED_PIGEON_MEAT)));
 }

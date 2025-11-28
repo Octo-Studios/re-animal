@@ -12,4 +12,6 @@ public class QuillFoodProperties {
     public static final FoodProperties COOKED_OSTRICH_MEAT = new FoodProperties(7, 0.8F, false, 1.6F, Optional.empty(), List.of());
     public static final FoodProperties RAW_KIWI_MEAT = new FoodProperties(3, 0.3F, false, 1.6F, Optional.empty(), List.of());
     public static final FoodProperties COOKED_KIWI_MEAT = new FoodProperties(7, 0.8F, false, 1.6F, Optional.empty(), List.of());
+    public static final FoodProperties RAW_PIGEON_MEAT = new FoodProperties(3, 0.3F, false, 1.6F, Optional.empty(), List.of());
+    public static final FoodProperties COOKED_PIGEON_MEAT = new FoodProperties(7, 0.8F, false, 1.6F, Optional.empty(), List.of());
 }
