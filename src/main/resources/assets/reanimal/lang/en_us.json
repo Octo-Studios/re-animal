@@ -33,5 +33,8 @@
   "item.reanimal.raw_hedgehog_meat": "Raw Hedgehog Meat",
   "item.reanimal.cooked_hedgehog_meat": "Cooked Hedgehog Meat",
   "item.reanimal.raw_ostrich_meat": "Raw Ostrich Meat",
-  "item.reanimal.cooked_ostrich_meat": "Cooked Ostrich Meat"
+  "item.reanimal.cooked_ostrich_meat": "Cooked Ostrich Meat",
+  "item.reanimal.raw_kiwi_meat": "Raw Kiwi Meat",
+  "item.reanimal.cooked_kiwi_meat": "Cooked Kiwi Meat",
+  "item.reanimal.kiwi_fluff": "Kiwi Fluff"
 }

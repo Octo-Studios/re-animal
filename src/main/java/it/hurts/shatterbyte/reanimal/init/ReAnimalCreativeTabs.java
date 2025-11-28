@@ -26,6 +26,7 @@ public class ReAnimalCreativeTabs {
 
     @SubscribeEvent
     public static void fillCreativeTabs(BuildCreativeModeTabContentsEvent event) {
-        event.acceptAll(ReAnimalItems.ITEMS.getEntries().stream().map(entry -> entry.get().getDefaultInstance()).toList(), CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
+        if (event.getTab() == REANIMAL_TAB.get())
+            event.acceptAll(ReAnimalItems.ITEMS.getEntries().stream().map(entry -> entry.get().getDefaultInstance()).toList(), CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
     }
 }

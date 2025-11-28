@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smoking",
+  "category": "food",
+  "cookingtime": 100,
+  "experience": 0.35,
+  "ingredient": {
+    "item": "reanimal:raw_kiwi_meat"
+  },
+  "result": {
+    "id": "reanimal:cooked_kiwi_meat"
+  }
+}
