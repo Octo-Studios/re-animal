@@ -6,7 +6,7 @@
     "QQQ"
   ],
   "key": {
-    "Q": { "item": "reanimal:hedgehog_quill" }
+    "Q": { "item": "reanimal:quill" }
   },
   "result": {
     "id": "reanimal:quill_platform",

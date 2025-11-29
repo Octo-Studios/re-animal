@@ -10,8 +10,8 @@ import net.minecraft.world.item.ArrowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
-public class HedgehogQuillArrowItem extends ArrowItem {
-    public HedgehogQuillArrowItem(Properties properties) {
+public class QuillArrowItem extends ArrowItem {
+    public QuillArrowItem(Properties properties) {
         super(properties);
     }
 

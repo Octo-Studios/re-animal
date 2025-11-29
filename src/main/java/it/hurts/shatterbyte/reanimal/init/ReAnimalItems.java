@@ -1,13 +1,11 @@
 package it.hurts.shatterbyte.reanimal.init;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
-import it.hurts.shatterbyte.reanimal.common.item.HedgehogQuillArrowItem;
-import it.hurts.shatterbyte.reanimal.common.item.HedgehogQuillItem;
+import it.hurts.shatterbyte.reanimal.common.item.QuillArrowItem;
 import it.hurts.shatterbyte.reanimal.common.item.KiwiEgg;
 import it.hurts.shatterbyte.reanimal.common.item.OstrichEgg;
 import it.hurts.shatterbyte.reanimal.common.item.PigeonEgg;
 import it.hurts.shatterbyte.reanimal.common.item.QuillFoodProperties;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.BlockItem;
@@ -33,8 +31,8 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, OstrichEgg> OSTRICH_EGG = ITEMS.register("ostrich_egg", () -> new OstrichEgg(new Item.Properties()));
     public static final DeferredHolder<Item, PigeonEgg> PIGEON_EGG = ITEMS.register("pigeon_egg", () -> new PigeonEgg(new Item.Properties()));
 
-    public static final DeferredHolder<Item, HedgehogQuillItem> HEDGEHOG_QUILL = ITEMS.register("hedgehog_quill", () -> new HedgehogQuillItem(new Item.Properties()));
-    public static final DeferredHolder<Item, HedgehogQuillArrowItem> HEDGEHOG_QUILL_ARROW = ITEMS.register("hedgehog_quill_arrow", () -> new HedgehogQuillArrowItem(new Item.Properties()));
+    public static final DeferredHolder<Item, Item> QUILL = ITEMS.register("quill", () -> new Item(new Item.Properties()));
+    public static final DeferredHolder<Item, QuillArrowItem> QUILL_ARROW = ITEMS.register("quill_arrow", () -> new QuillArrowItem(new Item.Properties()));
     public static final DeferredHolder<Item, BlockItem> QUILL_PLATFORM = ITEMS.register("quill_platform", () -> new BlockItem(ReAnimalBlocks.QUILL_PLATFORM.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> RAW_HEDGEHOG_MEAT = ITEMS.register("raw_hedgehog_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.RAW_HEDGEHOG_MEAT)));

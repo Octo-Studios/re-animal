@@ -150,7 +150,7 @@ public class ReAnimalModEvents {
         var registry = event.getRegistryAccess().registryOrThrow(Registries.POTION);
         var potion = registry.getHolder(ReAnimalPotions.QUILL.getKey()).orElseThrow();
 
-        event.getBuilder().addMix(Potions.AWKWARD, ReAnimalItems.HEDGEHOG_QUILL.get(), potion);
+        event.getBuilder().addMix(Potions.AWKWARD, ReAnimalItems.QUILL.get(), potion);
     }
 
     @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT)
@@ -174,10 +174,10 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);
-            event.registerEntityRenderer(ReAnimalEntities.HEDGEHOG_QUILL_ARROW.get(), context -> new ArrowRenderer<HedgehogQuillArrowEntity>(context) {
+            event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW.get(), context -> new ArrowRenderer<HedgehogQuillArrowEntity>(context) {
                 @Override
                 public ResourceLocation getTextureLocation(HedgehogQuillArrowEntity entity) {
-                    return ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/hedgehog_quill_arrow.png");
+                    return ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/quill_arrow.png");
                 }
             });
         }

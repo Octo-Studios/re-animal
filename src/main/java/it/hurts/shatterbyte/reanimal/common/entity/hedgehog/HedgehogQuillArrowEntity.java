@@ -17,16 +17,16 @@ public class HedgehogQuillArrowEntity extends AbstractArrow {
     }
 
     public HedgehogQuillArrowEntity(Level level, double x, double y, double z, ItemStack pickup, ItemStack weapon) {
-        super(ReAnimalEntities.HEDGEHOG_QUILL_ARROW.get(), x, y, z, level, pickup, weapon);
+        super(ReAnimalEntities.QUILL_ARROW.get(), x, y, z, level, pickup, weapon);
     }
 
     public HedgehogQuillArrowEntity(Level level, LivingEntity owner, ItemStack pickup, ItemStack weapon) {
-        super(ReAnimalEntities.HEDGEHOG_QUILL_ARROW.get(), owner, level, pickup, weapon);
+        super(ReAnimalEntities.QUILL_ARROW.get(), owner, level, pickup, weapon);
     }
 
     @Override
     protected ItemStack getDefaultPickupItem() {
-        return new ItemStack(ReAnimalItems.HEDGEHOG_QUILL_ARROW.get());
+        return new ItemStack(ReAnimalItems.QUILL_ARROW.get());
     }
 
     @Override
