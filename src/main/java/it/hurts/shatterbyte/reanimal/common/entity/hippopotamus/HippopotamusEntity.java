@@ -4,11 +4,13 @@ import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.Util;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -16,11 +18,13 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.BodyRotationControl;
+import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
@@ -29,16 +33,26 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class HippopotamusEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.hippopotamus.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.hippopotamus.walk");
+    private static final RawAnimation LAYING = RawAnimation.begin().then("animation.hippopotamus.laying", Animation.LoopType.PLAY_ONCE);
+    private static final RawAnimation IDLE_LAY = RawAnimation.begin().thenLoop("animation.hippopotamus.idle_lay");
+    private static final RawAnimation GETTING_UP = RawAnimation.begin().then("animation.hippopotamus.getting_up", Animation.LoopType.PLAY_ONCE);
     private static final RawAnimation ATTACK_1 = RawAnimation.begin().then("animation.hippopotamus.attack_1", Animation.LoopType.PLAY_ONCE);
     private static final RawAnimation ATTACK_2 = RawAnimation.begin().then("animation.hippopotamus.attack_2", Animation.LoopType.PLAY_ONCE);
 
     private static final RawAnimation[] ATTACKS = new RawAnimation[]{ATTACK_1, ATTACK_2};
 
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(HippopotamusEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> LAY_STATE = SynchedEntityData.defineId(HippopotamusEntity.class, EntityDataSerializers.INT);
+
+    private static final int LAY_TRANSITION_TICKS = 15;
+    private static final UniformInt LAY_DURATION = UniformInt.of(200, 400);
+    private static final UniformInt LAY_COOLDOWN = UniformInt.of(200, 400);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int attackAnimationTicks;
+    private int layTime;
+    private int layCooldown;
 
     public HippopotamusEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
@@ -50,6 +64,20 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     public void setAttacking(boolean attacking) {
         this.entityData.set(ATTACKING, attacking);
+    }
+
+    public boolean isLaying() {
+        var state = this.getLayState();
+
+        return state == LayState.LAYING_DOWN || state == LayState.LAYING || state == LayState.GETTING_UP;
+    }
+
+    private LayState getLayState() {
+        return LayState.byId(this.entityData.get(LAY_STATE));
+    }
+
+    private void setLayState(LayState state) {
+        this.entityData.set(LAY_STATE, state.ordinal());
     }
 
     public void startAttackAnimation() {
@@ -85,6 +113,10 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
         HippopotamusAI.updateActivity(this);
         profiler.pop();
 
+        profiler.push("hippopotamusLayBehavior");
+        this.tickLayBehavior();
+        profiler.pop();
+
         super.customServerAiStep();
     }
 
@@ -98,6 +130,9 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
             if (this.attackAnimationTicks == 0 && this.isAttacking())
                 this.setAttacking(false);
         }
+
+        if (!this.level().isClientSide && this.isLaying())
+            this.getNavigation().stop();
     }
 
     @Override
@@ -130,6 +165,7 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
         super.defineSynchedData(buidler);
 
         buidler.define(ATTACKING, false);
+        buidler.define(LAY_STATE, LayState.STANDING.ordinal());
     }
 
     @Override
@@ -161,10 +197,17 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
     private PlayState mainPredicate(AnimationState<HippopotamusEntity> state) {
         var controller = state.getController();
 
-        if (this.getDeltaMovement().multiply(1, 0, 1).length() > 0)
-            controller.setAnimation(WALK);
-        else
-            controller.setAnimation(IDLE);
+        switch (this.getLayState()) {
+            case LAYING_DOWN -> controller.setAnimation(LAYING);
+            case LAYING -> controller.setAnimation(IDLE_LAY);
+            case GETTING_UP -> controller.setAnimation(GETTING_UP);
+            case STANDING -> {
+                if (state.isMoving())
+                    controller.setAnimation(WALK);
+                else
+                    controller.setAnimation(IDLE);
+            }
+        }
 
         return PlayState.CONTINUE;
     }
@@ -189,5 +232,131 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
                 .add(Attributes.FOLLOW_RANGE, 8D)
                 .add(Attributes.ATTACK_DAMAGE, 10D)
                 .add(Attributes.STEP_HEIGHT, 1.1D);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+
+        tag.putInt("LayState", this.entityData.get(LAY_STATE));
+        tag.putInt("LayTime", this.layTime);
+        tag.putInt("LayCooldown", this.layCooldown);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+
+        if (tag.contains("LayState"))
+            this.setLayState(LayState.byId(tag.getInt("LayState")));
+
+        if (tag.contains("LayTime"))
+            this.layTime = tag.getInt("LayTime");
+
+        if (tag.contains("LayCooldown"))
+            this.layCooldown = tag.getInt("LayCooldown");
+    }
+
+    @Override
+    protected BodyRotationControl createBodyControl() {
+        return new BodyRotationControl(this) {
+            @Override
+            public void clientTick() {
+                if (HippopotamusEntity.this.isLaying())
+                    return;
+
+                super.clientTick();
+            }
+        };
+    }
+
+    private void tickLayBehavior() {
+        if (this.level().isClientSide)
+            return;
+
+        if (this.layCooldown > 0)
+            this.layCooldown--;
+
+        var brain = this.getBrain();
+        var layState = this.getLayState();
+
+        var shouldAbort = brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                || brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
+                || brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                || this.isInWaterOrBubble();
+
+        if ((layState == LayState.LAYING_DOWN || layState == LayState.LAYING) && shouldAbort) {
+            this.startGettingUp();
+            return;
+        }
+
+        switch (layState) {
+            case STANDING -> {
+                if (this.layCooldown == 0 && this.canStartLaying())
+                    this.startLayingDown();
+            }
+            case LAYING_DOWN -> {
+                if (--this.layTime <= 0) {
+                    this.layTime = LAY_DURATION.sample(this.random);
+                    this.setLayState(LayState.LAYING);
+                }
+            }
+            case LAYING -> {
+                this.getNavigation().stop();
+
+                if (--this.layTime <= 0)
+                    this.startGettingUp();
+            }
+            case GETTING_UP -> {
+                if (--this.layTime <= 0)
+                    this.finishGettingUp();
+            }
+        }
+    }
+
+    private boolean canStartLaying() {
+        return !this.isVehicle()
+                && !this.isInWaterOrBubble()
+                && !this.getNavigation().isInProgress()
+                && this.getDeltaMovement().horizontalDistanceSqr() < 0.0001D
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                && this.random.nextInt(600) == 0;
+    }
+
+    private void startLayingDown() {
+        this.getNavigation().stop();
+
+        this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+
+        this.setLayState(LayState.LAYING_DOWN);
+
+        this.layTime = LAY_TRANSITION_TICKS;
+    }
+
+    private void startGettingUp() {
+        this.setLayState(LayState.GETTING_UP);
+
+        this.layTime = LAY_TRANSITION_TICKS;
+    }
+
+    private void finishGettingUp() {
+        this.setLayState(LayState.STANDING);
+
+        this.layCooldown = LAY_COOLDOWN.sample(this.random);
+    }
+
+    private enum LayState {
+        STANDING,
+        LAYING_DOWN,
+        LAYING,
+        GETTING_UP;
+
+        public static LayState byId(int id) {
+            var values = LayState.values();
+
+            return id >= 0 && id < values.length ? values[id] : STANDING;
+        }
     }
 }

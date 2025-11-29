@@ -6,8 +6,8 @@ import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,11 +18,12 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 
-import java.util.Set;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 
 public class HippopotamusAI {
@@ -170,12 +171,12 @@ public class HippopotamusAI {
 
         return brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
                 .orElse(NearestVisibleLivingEntities.empty())
-                .findClosest(target -> isValidTarget(entity, target));
+                .findClosest(target -> isValidTarget(entity, target) && target.distanceToSqr(entity) <= 64D);
     }
 
     public static boolean isValidTarget(HippopotamusEntity self, LivingEntity target) {
-        return target.getType() != ReAnimalEntities.HIPPOPOTAMUS.get() && Sensor.isEntityAttackable(self, target)
-                && !HippopotamusAI.isHoldingFavoriteFood(target);
+        return target.getType() != ReAnimalEntities.HIPPOPOTAMUS.get() && !(target instanceof Monster)
+                && Sensor.isEntityAttackable(self, target) && !HippopotamusAI.isHoldingFavoriteFood(target);
     }
 
     public static boolean isHoldingFavoriteFood(LivingEntity target) {
@@ -235,6 +236,7 @@ public class HippopotamusAI {
         @Override
         protected void stop(ServerLevel level, HippopotamusEntity entity, long gameTime) {
             entity.setAttacking(false);
+
             entity.getBrain().setMemoryWithExpiry(MemoryModuleType.ATTACK_COOLING_DOWN, Boolean.TRUE, this.cooldownTicks);
         }
     }
