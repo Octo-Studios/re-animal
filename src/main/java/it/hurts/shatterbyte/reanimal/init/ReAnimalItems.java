@@ -37,6 +37,8 @@ public class ReAnimalItems {
 
     public static final DeferredHolder<Item, Item> RAW_HEDGEHOG_MEAT = ITEMS.register("raw_hedgehog_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.RAW_HEDGEHOG_MEAT)));
     public static final DeferredHolder<Item, Item> COOKED_HEDGEHOG_MEAT = ITEMS.register("cooked_hedgehog_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.COOKED_HEDGEHOG_MEAT)));
+    public static final DeferredHolder<Item, Item> RAW_CAPYBARA_MEAT = ITEMS.register("raw_capybara_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.RAW_CAPYBARA_MEAT)));
+    public static final DeferredHolder<Item, Item> COOKED_CAPYBARA_MEAT = ITEMS.register("cooked_capybara_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.COOKED_CAPYBARA_MEAT)));
     public static final DeferredHolder<Item, Item> RAW_OSTRICH_MEAT = ITEMS.register("raw_ostrich_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.RAW_OSTRICH_MEAT)));
     public static final DeferredHolder<Item, Item> COOKED_OSTRICH_MEAT = ITEMS.register("cooked_ostrich_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.COOKED_OSTRICH_MEAT)));
     public static final DeferredHolder<Item, Item> RAW_KIWI_MEAT = ITEMS.register("raw_kiwi_meat", () -> new Item(new Item.Properties().food(QuillFoodProperties.RAW_KIWI_MEAT)));

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "reanimal:item/cooked_capybara_meat"
+  }
+}
