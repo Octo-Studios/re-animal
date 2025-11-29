@@ -4,6 +4,7 @@ import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntityDataSerializers;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.minecraft.nbt.CompoundTag;
@@ -30,7 +31,6 @@ import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -221,7 +221,7 @@ public class HedgehogEntity extends Animal implements GeoEntity {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(Items.SPIDER_EYE);
+        return stack.is(ReAnimalTags.Items.HEDGEHOG_FOOD);
     }
 
     @Override

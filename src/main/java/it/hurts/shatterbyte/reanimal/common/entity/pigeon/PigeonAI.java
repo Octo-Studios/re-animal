@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
@@ -16,7 +17,6 @@ import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 import java.util.Set;
 import java.util.function.Predicate;
@@ -126,6 +126,6 @@ public class PigeonAI {
     }
 
     public static Predicate<ItemStack> getTemptations() {
-        return stack -> stack.is(Items.WHEAT_SEEDS);
+        return stack -> stack.is(ReAnimalTags.Items.PIGEON_FOOD);
     }
 }

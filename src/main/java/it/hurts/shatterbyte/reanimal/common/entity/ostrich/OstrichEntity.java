@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.ostrich;
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -259,7 +260,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(Items.SPIDER_EYE);
+        return stack.is(ReAnimalTags.Items.OSTRICH_FOOD);
     }
 
     @Override

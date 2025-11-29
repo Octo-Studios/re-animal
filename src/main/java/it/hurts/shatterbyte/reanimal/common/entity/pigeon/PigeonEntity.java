@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.pigeon;
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -24,7 +25,6 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -255,7 +255,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(Items.WHEAT_SEEDS);
+        return stack.is(ReAnimalTags.Items.PIGEON_FOOD);
     }
 
     @Override

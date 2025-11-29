@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.hippopotamus;
 
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -10,7 +11,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -55,7 +55,7 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(Items.SPIDER_EYE);
+        return stack.is(ReAnimalTags.Items.HIPPOPOTAMUS_FOOD);
     }
 
     @Override

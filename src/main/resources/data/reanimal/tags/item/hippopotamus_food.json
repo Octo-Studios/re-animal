@@ -1,0 +1,9 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:sugar_cane",
+    "minecraft:kelp",
+    "minecraft:seagrass",
+    "minecraft:dried_kelp"
+  ]
+}

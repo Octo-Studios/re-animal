@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.TimeUtil;
@@ -22,7 +23,6 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 
 import java.util.Map;
 import java.util.Set;
@@ -151,7 +151,7 @@ public class HedgehogAI {
     }
 
     public static Predicate<ItemStack> getTemptations() {
-        return stack -> stack.is(Items.SPIDER_EYE);
+        return stack -> stack.is(ReAnimalTags.Items.HEDGEHOG_FOOD);
     }
 
     public static class HedgehogBallUp extends Behavior<HedgehogEntity> {
