@@ -52,4 +52,6 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, Item> COOKED_PIGEON_MEAT = ITEMS.register("cooked_pigeon_meat", () -> new Item(new Item.Properties().food(new FoodProperties(7, 0.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> RAW_HIPPOPOTAMUS_MEAT = ITEMS.register("raw_hippopotamus_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 0.3F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_HIPPOPOTAMUS_MEAT = ITEMS.register("cooked_hippopotamus_meat", () -> new Item(new Item.Properties().food(new FoodProperties(7, 0.8F, false, 1.6F, Optional.empty(), List.of()))));
+    public static final DeferredHolder<Item, Item> RAW_GIRAFFE_MEAT = ITEMS.register("raw_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 0.3F, false, 1.6F, Optional.empty(), List.of()))));
+    public static final DeferredHolder<Item, Item> COOKED_GIRAFFE_MEAT = ITEMS.register("cooked_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(7, 0.8F, false, 1.6F, Optional.empty(), List.of()))));
 }
