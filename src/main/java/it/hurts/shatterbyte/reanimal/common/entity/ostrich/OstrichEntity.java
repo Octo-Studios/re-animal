@@ -117,7 +117,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
             if (forward <= 0.0F)
                 forward *= 0.25F;
 
-            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 2F);
+            this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.5F);
 
             super.travel(new Vec3(strafe, travelVector.y, forward));
 
@@ -168,12 +168,12 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         if (this.jumpPower <= 0F)
             return;
 
-        var jumpY = 0.75D * this.jumpPower;
+        var jumpY = 0.5D * this.jumpPower;
 
         var motion = this.getDeltaMovement();
         var look = this.getLookAngle();
 
-        var forwardBoost = 2.5D * this.jumpPower;
+        var forwardBoost = 2D * this.jumpPower;
 
         this.setDeltaMovement(motion.x + look.x * forwardBoost, jumpY, motion.z + look.z * forwardBoost);
 
