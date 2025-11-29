@@ -49,7 +49,7 @@ public abstract class ThrowableEggEntity extends ThrowableItemProjectile {
             if (hatchling == null)
                 continue;
 
-            hatchling.setAge(-24000);
+            hatchling.setBaby(true);
             hatchling.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0F);
 
             level.addFreshEntity(hatchling);
