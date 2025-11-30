@@ -3,11 +3,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.seal;
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
-import lombok.Getter;
-import lombok.Setter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -102,10 +98,6 @@ public class SealEntity extends Animal implements GeoEntity {
     protected void customServerAiStep() {
         var level = this.level();
         var profiler = level.getProfiler();
-
-        if (environmentTarget != null && level instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.FLASH, environmentTarget.getX(), environmentTarget.getY(), environmentTarget.getZ(), 1,0,0,0,0);
-        }
 
         profiler.push("sealBrain");
         ((Brain<SealEntity>) this.getBrain()).tick((ServerLevel) this.level(), this);

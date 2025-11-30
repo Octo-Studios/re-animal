@@ -426,9 +426,6 @@ public class SealAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, SealEntity seal) {
-            if (seal.hasEnvironmentTarget())
-                return false;
-
             if (seal.isLaying())
                 return false;
 
@@ -459,7 +456,6 @@ public class SealAI {
             var random = seal.getRandom();
 
             var toLand = seal.isInWaterOrBubble();
-            BlockPos best = null;
 
             for (var i = 0; i < 40; i++) {
                 var dx = random.nextInt(this.radius * 2 + 1) - this.radius;
@@ -473,58 +469,34 @@ public class SealAI {
                 if (topY <= level.getMinBuildHeight())
                     continue;
 
-                var cursor = new BlockPos.MutableBlockPos(x, topY, z);
+                var surface = new BlockPos(x, topY - 1, z);
+
+                var surfaceState = level.getBlockState(surface);
+                var surfaceFluid = level.getFluidState(surface);
+
+                var head = surface.above();
+
+                var headState = level.getBlockState(head);
+                var headFluid = level.getFluidState(head);
 
                 if (toLand) {
-                    for (var y = topY; y >= topY - 16; y--) {
-                        cursor.setY(y);
+                    if (surfaceState.isAir() || surfaceFluid.is(FluidTags.WATER))
+                        continue;
 
-                        var block = level.getBlockState(cursor);
-                        var fluid = level.getFluidState(cursor);
-
-                        if (block.isAir() || fluid.is(FluidTags.WATER))
-                            continue;
-
-                        var head = cursor.above();
-
-                        var headState = level.getBlockState(head);
-                        var headFluid = level.getFluidState(head);
-
-                        if (!headState.isAir() || !headFluid.isEmpty())
-                            continue;
-
-                        best = cursor.immutable();
-
-                        break;
-                    }
+                    if (!headState.isAir() || !headFluid.isEmpty())
+                        continue;
                 } else {
-                    for (var y = topY; y >= topY - 16; y--) {
-                        cursor.setY(y);
+                    if (!surfaceFluid.is(FluidTags.WATER))
+                        continue;
 
-                        var fluid = level.getFluidState(cursor);
-
-                        if (!fluid.is(FluidTags.WATER))
-                            continue;
-
-                        var head = cursor.above();
-
-                        var headState = level.getBlockState(head);
-                        var headFluid = level.getFluidState(head);
-
-                        if (!headState.isAir() && !headFluid.is(FluidTags.WATER))
-                            continue;
-
-                        best = head.immutable();
-
-                        break;
-                    }
+                    if (!headState.isAir() && !headFluid.is(FluidTags.WATER))
+                        continue;
                 }
 
-                if (best != null)
-                    break;
+                return head.immutable();
             }
 
-            return best;
+            return null;
         }
 
         @Override
