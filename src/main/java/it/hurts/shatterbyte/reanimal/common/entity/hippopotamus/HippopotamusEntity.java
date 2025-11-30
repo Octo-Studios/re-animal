@@ -230,6 +230,7 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.FOLLOW_RANGE, 8D)
                 .add(Attributes.ATTACK_DAMAGE, 10D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.85D)
                 .add(Attributes.STEP_HEIGHT, 1.1D);
     }
 

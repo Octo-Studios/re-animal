@@ -192,6 +192,7 @@ public class GiraffeEntity extends Animal implements GeoEntity {
                 .add(Attributes.MAX_HEALTH, 100D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.FOLLOW_RANGE, 8D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.6D)
                 .add(Attributes.STEP_HEIGHT, 1.1D);
     }
 

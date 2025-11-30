@@ -319,6 +319,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
                 .add(Attributes.MAX_HEALTH, 20D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
                 .add(Attributes.FOLLOW_RANGE, 16D)
+                .add(Attributes.KNOCKBACK_RESISTANCE, 0.35D)
                 .add(Attributes.STEP_HEIGHT, 1.1D)
                 .add(Attributes.SAFE_FALL_DISTANCE, 8D);
     }
