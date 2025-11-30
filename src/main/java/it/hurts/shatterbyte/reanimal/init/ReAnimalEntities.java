@@ -6,7 +6,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
-import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogQuillArrowEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEntity;
@@ -90,8 +90,8 @@ public class ReAnimalEntities {
                     .updateInterval(10)
                     .build(ReAnimal.MODID + ":pigeon_egg"));
 
-    public static final DeferredHolder<EntityType<?>, EntityType<HedgehogQuillArrowEntity>> QUILL_ARROW = ENTITY_TYPES.register("quill_arrow", () ->
-            EntityType.Builder.<HedgehogQuillArrowEntity>of(HedgehogQuillArrowEntity::new, MobCategory.MISC)
+    public static final DeferredHolder<EntityType<?>, EntityType<QuillArrowEntity>> QUILL_ARROW = ENTITY_TYPES.register("quill_arrow", () ->
+            EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F)
                     .clientTrackingRange(4)
                     .updateInterval(20)

@@ -10,5 +10,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class ReAnimalPotions {
     public static final DeferredRegister<Potion> POTIONS = DeferredRegister.create(Registries.POTION, ReAnimal.MODID);
 
-    public static final DeferredHolder<Potion, Potion> QUILL = POTIONS.register("quill", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.QUILL, 20 * 90)));
+    public static final DeferredHolder<Potion, Potion> QUILL = POTIONS.register("quill", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.QUILL, 20 * 270)));
+    public static final DeferredHolder<Potion, Potion> LONG_QUILL = POTIONS.register("long_quill", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.QUILL, 20 * 540)));
+    public static final DeferredHolder<Potion, Potion> STRONG_QUILL = POTIONS.register("strong_quill", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.QUILL, 20 * 120, 1)));
 }

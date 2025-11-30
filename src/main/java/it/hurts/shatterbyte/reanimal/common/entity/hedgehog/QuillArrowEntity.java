@@ -11,16 +11,16 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
-public class HedgehogQuillArrowEntity extends AbstractArrow {
-    public HedgehogQuillArrowEntity(EntityType<HedgehogQuillArrowEntity> entityType, Level level) {
+public class QuillArrowEntity extends AbstractArrow {
+    public QuillArrowEntity(EntityType<QuillArrowEntity> entityType, Level level) {
         super(entityType, level);
     }
 
-    public HedgehogQuillArrowEntity(Level level, double x, double y, double z, ItemStack pickup, ItemStack weapon) {
+    public QuillArrowEntity(Level level, double x, double y, double z, ItemStack pickup, ItemStack weapon) {
         super(ReAnimalEntities.QUILL_ARROW.get(), x, y, z, level, pickup, weapon);
     }
 
-    public HedgehogQuillArrowEntity(Level level, LivingEntity owner, ItemStack pickup, ItemStack weapon) {
+    public QuillArrowEntity(Level level, LivingEntity owner, ItemStack pickup, ItemStack weapon) {
         super(ReAnimalEntities.QUILL_ARROW.get(), owner, level, pickup, weapon);
     }
 

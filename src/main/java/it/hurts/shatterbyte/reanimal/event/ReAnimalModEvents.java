@@ -10,7 +10,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRe
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
-import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogQuillArrowEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
@@ -25,6 +25,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.neoforged.api.distmarker.Dist;
@@ -139,7 +140,8 @@ public class ReAnimalModEvents {
         if (target.level().isClientSide())
             return;
 
-        var reflected = event.getAmount() * 0.25F * (effect.getAmplifier() + 1);
+        var baseMultiplier = (effect.getAmplifier() + 1) * 0.2F;
+        var reflected = event.getAmount() * baseMultiplier;
 
         if (reflected > 0F)
             attacker.hurt(target.damageSources().thorns(target), reflected);
@@ -148,9 +150,13 @@ public class ReAnimalModEvents {
     @SubscribeEvent
     public static void registerBrewing(RegisterBrewingRecipesEvent event) {
         var registry = event.getRegistryAccess().registryOrThrow(Registries.POTION);
-        var potion = registry.getHolder(ReAnimalPotions.QUILL.getKey()).orElseThrow();
+        var quill = registry.getHolder(ReAnimalPotions.QUILL.getKey()).orElseThrow();
+        var longQuill = registry.getHolder(ReAnimalPotions.LONG_QUILL.getKey()).orElseThrow();
+        var strongQuill = registry.getHolder(ReAnimalPotions.STRONG_QUILL.getKey()).orElseThrow();
 
-        event.getBuilder().addMix(Potions.AWKWARD, ReAnimalItems.QUILL.get(), potion);
+        event.getBuilder().addMix(Potions.AWKWARD, ReAnimalItems.QUILL.get(), quill);
+        event.getBuilder().addMix(quill, Items.REDSTONE, longQuill);
+        event.getBuilder().addMix(quill, Items.GLOWSTONE_DUST, strongQuill);
     }
 
     @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT)
@@ -174,9 +180,9 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);
-            event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW.get(), context -> new ArrowRenderer<HedgehogQuillArrowEntity>(context) {
+            event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW.get(), context -> new ArrowRenderer<QuillArrowEntity>(context) {
                 @Override
-                public ResourceLocation getTextureLocation(HedgehogQuillArrowEntity entity) {
+                public ResourceLocation getTextureLocation(QuillArrowEntity entity) {
                     return ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/quill_arrow.png");
                 }
             });
