@@ -45,14 +45,15 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
     private static final EntityDataAccessor<Integer> LAY_STATE = SynchedEntityData.defineId(HippopotamusEntity.class, EntityDataSerializers.INT);
 
     private static final int LAY_TRANSITION_TICKS = 15;
-    private static final UniformInt LAY_DURATION = UniformInt.of(200, 400);
+
+    public static final UniformInt LAY_DURATION = UniformInt.of(200, 400);
     private static final UniformInt LAY_COOLDOWN = UniformInt.of(200, 400);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int attackAnimationTicks;
-    private int layTime;
-    private int layCooldown;
+    public int layTime;
+    public int layCooldown;
 
     public HippopotamusEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
@@ -72,11 +73,11 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
         return state == LayState.LAYING_DOWN || state == LayState.LAYING || state == LayState.GETTING_UP;
     }
 
-    private LayState getLayState() {
+    public LayState getLayState() {
         return LayState.byId(this.entityData.get(LAY_STATE));
     }
 
-    private void setLayState(LayState state) {
+    public void setLayState(LayState state) {
         this.entityData.set(LAY_STATE, state.ordinal());
     }
 
@@ -111,10 +112,6 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
         profiler.push("hippopotamusActivityUpdate");
         HippopotamusAI.updateActivity(this);
-        profiler.pop();
-
-        profiler.push("hippopotamusLayBehavior");
-        this.tickLayBehavior();
         profiler.pop();
 
         super.customServerAiStep();
@@ -270,51 +267,7 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
         };
     }
 
-    private void tickLayBehavior() {
-        if (this.level().isClientSide)
-            return;
-
-        if (this.layCooldown > 0)
-            this.layCooldown--;
-
-        var brain = this.getBrain();
-        var layState = this.getLayState();
-
-        var shouldAbort = brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
-                || brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
-                || brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
-                || this.isInWaterOrBubble();
-
-        if ((layState == LayState.LAYING_DOWN || layState == LayState.LAYING) && shouldAbort) {
-            this.startGettingUp();
-            return;
-        }
-
-        switch (layState) {
-            case STANDING -> {
-                if (this.layCooldown == 0 && this.canStartLaying())
-                    this.startLayingDown();
-            }
-            case LAYING_DOWN -> {
-                if (--this.layTime <= 0) {
-                    this.layTime = LAY_DURATION.sample(this.random);
-                    this.setLayState(LayState.LAYING);
-                }
-            }
-            case LAYING -> {
-                this.getNavigation().stop();
-
-                if (--this.layTime <= 0)
-                    this.startGettingUp();
-            }
-            case GETTING_UP -> {
-                if (--this.layTime <= 0)
-                    this.finishGettingUp();
-            }
-        }
-    }
-
-    private boolean canStartLaying() {
+    public boolean canStartLaying() {
         return !this.isVehicle()
                 && !this.isInWaterOrBubble()
                 && !this.getNavigation().isInProgress()
@@ -325,7 +278,7 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
                 && this.random.nextInt(600) == 0;
     }
 
-    private void startLayingDown() {
+    public void startLayingDown() {
         this.getNavigation().stop();
 
         this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
@@ -335,19 +288,19 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
         this.layTime = LAY_TRANSITION_TICKS;
     }
 
-    private void startGettingUp() {
+    public void startGettingUp() {
         this.setLayState(LayState.GETTING_UP);
 
         this.layTime = LAY_TRANSITION_TICKS;
     }
 
-    private void finishGettingUp() {
+    public void finishGettingUp() {
         this.setLayState(LayState.STANDING);
 
         this.layCooldown = LAY_COOLDOWN.sample(this.random);
     }
 
-    private enum LayState {
+    public enum LayState {
         STANDING,
         LAYING_DOWN,
         LAYING,

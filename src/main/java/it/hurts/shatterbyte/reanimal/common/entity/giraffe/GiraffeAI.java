@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
@@ -68,6 +69,7 @@ public class GiraffeAI {
                 Activity.CORE,
                 0,
                 ImmutableList.of(
+                        new GrazeCooldownBehavior(),
                         new Swim(0.8F),
                         new LookAtTargetSink(45, 90),
                         new MoveToTargetSink(),
@@ -81,10 +83,11 @@ public class GiraffeAI {
         brain.addActivity(
                 Activity.IDLE,
                 ImmutableList.of(
-                        Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
-                        Pair.of(1, new AnimalMakeLove(ReAnimalEntities.GIRAFFE.get(), 1F, 1)),
+                        Pair.of(0, new GrazeBehavior()),
+                        Pair.of(1, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
+                        Pair.of(2, new AnimalMakeLove(ReAnimalEntities.GIRAFFE.get(), 1F, 1)),
                         Pair.of(
-                                2,
+                                3,
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
@@ -92,9 +95,9 @@ public class GiraffeAI {
                                         )
                                 )
                         ),
-                        Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(4, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                4,
+                                5,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
@@ -128,5 +131,86 @@ public class GiraffeAI {
 
     public static Predicate<ItemStack> getTemptations() {
         return stack -> stack.is(ReAnimalTags.Items.GIRAFFE_FOOD);
+    }
+
+    public static class GrazeBehavior extends Behavior<GiraffeEntity> {
+        public GrazeBehavior() {
+            super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), 1200);
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, GiraffeEntity entity) {
+            return entity.grazeCooldown == 0 && entity.canStartGrazing();
+        }
+
+        @Override
+        protected void start(ServerLevel level, GiraffeEntity entity, long gameTime) {
+            entity.startGrazingDown();
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, GiraffeEntity entity, long gameTime) {
+            return entity.getGrazeState() != GiraffeEntity.GrazeState.STANDING;
+        }
+
+        @Override
+        protected void tick(ServerLevel level, GiraffeEntity entity, long gameTime) {
+            var brain = entity.getBrain();
+            var grazeState = entity.getGrazeState();
+
+            var shouldAbort = brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                    || brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                    || brain.hasMemoryValue(MemoryModuleType.IS_TEMPTED)
+                    || entity.isInWaterOrBubble();
+
+            if ((grazeState == GiraffeEntity.GrazeState.GRAZING_DOWN || grazeState == GiraffeEntity.GrazeState.GRAZING) && shouldAbort) {
+                entity.startGettingUp();
+                grazeState = entity.getGrazeState();
+            }
+
+            switch (grazeState) {
+                case GRAZING_DOWN -> {
+                    if (--entity.grazeTime <= 0) {
+                        entity.grazeTime = GiraffeEntity.GRAZE_DURATION.sample(entity.getRandom());
+                        entity.setGrazeState(GiraffeEntity.GrazeState.GRAZING);
+                    }
+                }
+                case GRAZING -> {
+                    entity.getNavigation().stop();
+
+                    if (--entity.grazeTime <= 0)
+                        entity.startGettingUp();
+                }
+                case GETTING_UP -> {
+                    if (--entity.grazeTime <= 0)
+                        entity.finishGettingUp();
+                }
+                default -> {
+                }
+            }
+        }
+
+        @Override
+        protected void stop(ServerLevel level, GiraffeEntity entity, long gameTime) {
+            if (entity.getGrazeState() != GiraffeEntity.GrazeState.STANDING)
+                entity.finishGettingUp();
+        }
+    }
+
+    public static class GrazeCooldownBehavior extends Behavior<GiraffeEntity> {
+        public GrazeCooldownBehavior() {
+            super(ImmutableMap.of(), 1200);
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, GiraffeEntity entity, long gameTime) {
+            return true;
+        }
+
+        @Override
+        protected void tick(ServerLevel level, GiraffeEntity entity, long gameTime) {
+            if (entity.grazeCooldown > 0)
+                entity.grazeCooldown--;
+        }
     }
 }

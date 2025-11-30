@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.common.entity.giraffe;
 
 import com.mojang.serialization.Dynamic;
-import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEntity;
+import com.google.common.collect.ImmutableMap;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
@@ -13,11 +13,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -37,13 +39,13 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     private static final int GRAZE_TRANSITION_TICKS = 15;
 
-    private static final UniformInt GRAZE_DURATION = UniformInt.of(100, 200);
-    private static final UniformInt GRAZE_COOLDOWN = UniformInt.of(200, 400);
+    public static final UniformInt GRAZE_DURATION = UniformInt.of(200, 400);
+    public static final UniformInt GRAZE_COOLDOWN = UniformInt.of(200, 400);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
-    private int grazeTime;
-    private int grazeCooldown;
+    public int grazeTime;
+    public int grazeCooldown;
 
     public GiraffeEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
@@ -55,11 +57,11 @@ public class GiraffeEntity extends Animal implements GeoEntity {
         return state == GrazeState.GRAZING_DOWN || state == GrazeState.GRAZING || state == GrazeState.GETTING_UP;
     }
 
-    private GrazeState getGrazeState() {
+    public GrazeState getGrazeState() {
         return GrazeState.byId(this.entityData.get(GRAZE_STATE));
     }
 
-    private void setGrazeState(GrazeState state) {
+    public void setGrazeState(GrazeState state) {
         this.entityData.set(GRAZE_STATE, state.ordinal());
     }
 
@@ -74,10 +76,6 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
         profiler.push("giraffeActivityUpdate");
         GiraffeAI.updateActivity(this);
-        profiler.pop();
-
-        profiler.push("giraffeGrazeBehavior");
-        this.tickGrazeBehavior();
         profiler.pop();
 
         super.customServerAiStep();
@@ -195,51 +193,7 @@ public class GiraffeEntity extends Animal implements GeoEntity {
                 .add(Attributes.STEP_HEIGHT, 1.1D);
     }
 
-    private void tickGrazeBehavior() {
-        if (this.level().isClientSide)
-            return;
-
-        if (this.grazeCooldown > 0)
-            this.grazeCooldown--;
-
-        var brain = this.getBrain();
-        var grazeState = this.getGrazeState();
-
-        var shouldAbort = brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
-                || brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
-                || brain.hasMemoryValue(MemoryModuleType.IS_TEMPTED)
-                || this.isInWaterOrBubble();
-
-        if ((grazeState == GrazeState.GRAZING_DOWN || grazeState == GrazeState.GRAZING) && shouldAbort) {
-            this.startGettingUp();
-            return;
-        }
-
-        switch (grazeState) {
-            case STANDING -> {
-                if (this.grazeCooldown == 0 && this.canStartGrazing())
-                    this.startGrazingDown();
-            }
-            case GRAZING_DOWN -> {
-                if (--this.grazeTime <= 0) {
-                    this.grazeTime = GRAZE_DURATION.sample(this.random);
-                    this.setGrazeState(GrazeState.GRAZING);
-                }
-            }
-            case GRAZING -> {
-                this.getNavigation().stop();
-
-                if (--this.grazeTime <= 0)
-                    this.startGettingUp();
-            }
-            case GETTING_UP -> {
-                if (--this.grazeTime <= 0)
-                    this.finishGettingUp();
-            }
-        }
-    }
-
-    private boolean canStartGrazing() {
+    public boolean canStartGrazing() {
         return !this.isVehicle()
                 && !this.isInWaterOrBubble()
                 && !this.getNavigation().isInProgress()
@@ -247,10 +201,10 @@ public class GiraffeEntity extends Animal implements GeoEntity {
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_TEMPTED)
-                && this.random.nextInt(1) == 0;
+                && this.random.nextInt(400) == 0;
     }
 
-    private void startGrazingDown() {
+    public void startGrazingDown() {
         this.getNavigation().stop();
 
         this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
@@ -260,19 +214,19 @@ public class GiraffeEntity extends Animal implements GeoEntity {
         this.grazeTime = GRAZE_TRANSITION_TICKS;
     }
 
-    private void startGettingUp() {
+    public void startGettingUp() {
         this.setGrazeState(GrazeState.GETTING_UP);
 
         this.grazeTime = GRAZE_TRANSITION_TICKS;
     }
 
-    private void finishGettingUp() {
+    public void finishGettingUp() {
         this.setGrazeState(GrazeState.STANDING);
 
         this.grazeCooldown = GRAZE_COOLDOWN.sample(this.random);
     }
 
-    private enum GrazeState {
+    public enum GrazeState {
         STANDING,
         GRAZING_DOWN,
         GRAZING,

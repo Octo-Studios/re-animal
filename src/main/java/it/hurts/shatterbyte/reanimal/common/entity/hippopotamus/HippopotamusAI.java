@@ -82,6 +82,7 @@ public class HippopotamusAI {
                 Activity.CORE,
                 0,
                 ImmutableList.of(
+                        new LayCooldownBehavior(),
                         new Swim(0.8F),
                         new LookAtTargetSink(45, 90),
                         new MoveToTargetSink(),
@@ -96,10 +97,11 @@ public class HippopotamusAI {
                 Activity.IDLE,
                 ImmutableList.of(
                         Pair.of(0, StartAttacking.create(HippopotamusAI::findNearestAttackableEntity)),
-                        Pair.of(1, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
-                        Pair.of(2, new AnimalMakeLove(ReAnimalEntities.HIPPOPOTAMUS.get(), 1F, 1)),
+                        Pair.of(1, new LayBehavior()),
+                        Pair.of(2, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
+                        Pair.of(3, new AnimalMakeLove(ReAnimalEntities.HIPPOPOTAMUS.get(), 1F, 1)),
                         Pair.of(
-                                3,
+                                4,
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
@@ -107,9 +109,9 @@ public class HippopotamusAI {
                                         )
                                 )
                         ),
-                        Pair.of(4, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(5, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                5,
+                                6,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
@@ -181,6 +183,87 @@ public class HippopotamusAI {
 
     public static boolean isHoldingFavoriteFood(LivingEntity target) {
         return target.getMainHandItem().is(ReAnimalTags.Items.HIPPOPOTAMUS_FOOD) || target.getOffhandItem().is(ReAnimalTags.Items.HIPPOPOTAMUS_FOOD);
+    }
+
+    public static class LayCooldownBehavior extends Behavior<HippopotamusEntity> {
+        public LayCooldownBehavior() {
+            super(ImmutableMap.of(), 1200);
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            return true;
+        }
+
+        @Override
+        protected void tick(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            if (entity.layCooldown > 0)
+                entity.layCooldown--;
+        }
+    }
+
+    public static class LayBehavior extends Behavior<HippopotamusEntity> {
+        public LayBehavior() {
+            super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT), 1200);
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, HippopotamusEntity entity) {
+            return entity.layCooldown == 0 && entity.canStartLaying();
+        }
+
+        @Override
+        protected void start(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            entity.startLayingDown();
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            return entity.getLayState() != HippopotamusEntity.LayState.STANDING;
+        }
+
+        @Override
+        protected void tick(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            var brain = entity.getBrain();
+            var layState = entity.getLayState();
+
+            var shouldAbort = brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                    || brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
+                    || brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                    || entity.isInWaterOrBubble();
+
+            if ((layState == HippopotamusEntity.LayState.LAYING_DOWN || layState == HippopotamusEntity.LayState.LAYING) && shouldAbort) {
+                entity.startGettingUp();
+                layState = entity.getLayState();
+            }
+
+            switch (layState) {
+                case LAYING_DOWN -> {
+                    if (--entity.layTime <= 0) {
+                        entity.layTime = HippopotamusEntity.LAY_DURATION.sample(entity.getRandom());
+                        entity.setLayState(HippopotamusEntity.LayState.LAYING);
+                    }
+                }
+                case LAYING -> {
+                    entity.getNavigation().stop();
+
+                    if (--entity.layTime <= 0)
+                        entity.startGettingUp();
+                }
+                case GETTING_UP -> {
+                    if (--entity.layTime <= 0)
+                        entity.finishGettingUp();
+                }
+                default -> {
+                }
+            }
+        }
+
+        @Override
+        protected void stop(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            if (entity.getLayState() != HippopotamusEntity.LayState.STANDING)
+                entity.finishGettingUp();
+        }
     }
 
     private static class HippopotamusAttack extends Behavior<HippopotamusEntity> {
