@@ -28,6 +28,7 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -101,11 +102,18 @@ public class HedgehogEntity extends Animal implements GeoEntity {
         }
 
         if (!held.isEmpty()) {
+            if (this.isFood(held)) {
+                var result = super.mobInteract(player, hand);
+
+                if (result.consumesAction())
+                    return result;
+            }
+
             if (!level.isClientSide()) {
                 this.setStack(held.copy());
 
                 if (!player.getAbilities().instabuild)
-                    held.shrink(1);
+                    held.shrink(held.getCount());
             }
 
             return InteractionResult.sidedSuccess(level.isClientSide());
@@ -128,9 +136,16 @@ public class HedgehogEntity extends Animal implements GeoEntity {
         if (!this.isBaby()) {
             var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof HedgehogEntity));
 
+            var damagedSomeone = false;
+
             for (var target : targets) {
-                target.hurt(level.damageSources().thorns(this), this.getState() == HedgehogState.SCARED ? 5 : 1);
+                var damaged = target.hurt(level.damageSources().thorns(this), this.getState() == HedgehogState.SCARED ? 5 : 1);
+
+                damagedSomeone = damagedSomeone || damaged;
             }
+
+            if (damagedSomeone)
+                this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80);
         }
     }
 
@@ -148,6 +163,20 @@ public class HedgehogEntity extends Animal implements GeoEntity {
         profiler.pop();
 
         super.customServerAiStep();
+    }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        var result = super.hurt(source, amount);
+
+        if (result && !this.level().isClientSide()) {
+            var attacker = source.getEntity();
+
+            if (attacker instanceof LivingEntity entity && entity.getMainHandItem().isEmpty())
+                entity.hurt(this.damageSources().thorns(this), 1F);
+        }
+
+        return result;
     }
 
     @Override

@@ -332,7 +332,6 @@ public class HedgehogAI {
                     entity.getBoundingBox().inflate(SEARCH_RADIUS),
                     item -> item.isAlive()
                             && !item.getItem().isEmpty()
-                            && !item.hasPickUpDelay()
             );
 
             if (list.isEmpty())

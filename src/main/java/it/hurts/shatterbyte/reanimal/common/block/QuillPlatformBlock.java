@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -97,10 +98,28 @@ public class QuillPlatformBlock extends FaceAttachedHorizontalDirectionalBlock {
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         super.entityInside(state, level, pos, entity);
 
-        if (!(level instanceof ServerLevel serverLevel))
+        var shape = this.getPlatformShape(state).move(pos.getX(), pos.getY(), pos.getZ());
+        var entityBox = entity.getBoundingBox();
+
+        boolean intersects = false;
+
+        for (var box : shape.toAabbs()) {
+            if (box.intersects(entityBox)) {
+                intersects = true;
+
+                break;
+            }
+        }
+
+        if (!intersects)
             return;
 
         if (entity instanceof LivingEntity living) {
+            living.makeStuckInBlock(state, new Vec3(0.75D, 1D, 0.75D));
+
+            if (!(level instanceof ServerLevel serverLevel))
+                return;
+
             var fakePlayer = FakePlayerFactory.get(serverLevel, QUILL_FAKE_PROFILE);
 
             fakePlayer.setPos(Vec3.atCenterOf(pos));
