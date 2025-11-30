@@ -2,11 +2,11 @@
   "type": "minecraft:crafting_shaped",
   "pattern": [
     "QQQ",
-    "QQQ",
-    "QQQ"
+    "PPP"
   ],
   "key": {
-    "Q": { "item": "reanimal:quill" }
+    "Q": { "item": "reanimal:quill" },
+    "P": { "tag": "minecraft:planks" }
   },
   "result": {
     "id": "reanimal:quill_platform",
