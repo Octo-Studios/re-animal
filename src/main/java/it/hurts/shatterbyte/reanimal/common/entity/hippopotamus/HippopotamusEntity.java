@@ -19,9 +19,8 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
-import net.minecraft.world.entity.ai.control.LookControl;
-import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -122,6 +121,13 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
     @Override
     public void aiStep() {
         super.aiStep();
+
+        if (!this.isBaby()) {
+            if (brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER) || brain.hasMemoryValue(MemoryModuleType.IS_TEMPTED)) {
+                brain.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);
+                brain.eraseMemory(MemoryModuleType.IS_TEMPTED);
+            }
+        }
 
         if (!this.level().isClientSide && this.attackAnimationTicks > 0) {
             this.attackAnimationTicks--;
@@ -228,7 +234,7 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.MAX_HEALTH, 60D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
-                .add(Attributes.FOLLOW_RANGE, 8D)
+                .add(Attributes.FOLLOW_RANGE, 16D)
                 .add(Attributes.ATTACK_DAMAGE, 10D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.85D)
                 .add(Attributes.STEP_HEIGHT, 1.1D);

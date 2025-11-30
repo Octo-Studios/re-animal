@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
@@ -171,9 +172,18 @@ public class HippopotamusAI {
                 || !brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
             return Optional.empty();
 
+        var followRange = entity.getAttributeValue(Attributes.FOLLOW_RANGE);
+        var maxDistanceSq = followRange * followRange;
+
+        var playerTarget = brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_PLAYER)
+                .filter(target -> isValidTarget(entity, target) && target.distanceToSqr(entity) <= maxDistanceSq);
+
+        if (playerTarget.isPresent())
+            return playerTarget;
+
         return brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
                 .orElse(NearestVisibleLivingEntities.empty())
-                .findClosest(target -> isValidTarget(entity, target) && target.distanceToSqr(entity) <= 64D);
+                .findClosest(target -> isValidTarget(entity, target) && target.distanceToSqr(entity) <= maxDistanceSq);
     }
 
     public static boolean isValidTarget(HippopotamusEntity self, LivingEntity target) {
