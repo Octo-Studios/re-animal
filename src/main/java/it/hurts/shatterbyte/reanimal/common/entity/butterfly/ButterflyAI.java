@@ -3,8 +3,9 @@ package it.hurts.shatterbyte.reanimal.common.entity.butterfly;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
@@ -14,13 +15,16 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class ButterflyAI {
     private static final ImmutableList<SensorType<? extends Sensor<? super ButterflyEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
+            ReAnimalSensorTypes.BUTTERFLY_TEMPTATIONS.get(),
             SensorType.NEAREST_ADULT
     );
 
@@ -77,9 +81,8 @@ public class ButterflyAI {
                 Activity.IDLE,
                 ImmutableList.of(
                         Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
-                        Pair.of(1, new AnimalMakeLove(ReAnimalEntities.KIWI.get(), 1F, 1)),
                         Pair.of(
-                                2,
+                                1,
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
@@ -87,9 +90,9 @@ public class ButterflyAI {
                                         )
                                 )
                         ),
-                        Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(2, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                4,
+                                3,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
@@ -119,5 +122,9 @@ public class ButterflyAI {
 
     public static void updateActivity(ButterflyEntity entity) {
         entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
+    }
+
+    public static Predicate<ItemStack> getTemptations() {
+        return stack -> stack.is(ItemTags.FLOWERS) || stack.is(ItemTags.SMALL_FLOWERS) || stack.is(ItemTags.TALL_FLOWERS);
     }
 }
