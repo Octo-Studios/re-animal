@@ -10,12 +10,11 @@ import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRe
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
-import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalPotions;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
@@ -23,7 +22,6 @@ import net.minecraft.client.renderer.entity.ArrowRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Items;
@@ -37,7 +35,6 @@ import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
-import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 
 @EventBusSubscriber(modid = ReAnimal.MODID)
 public class ReAnimalModEvents {
@@ -122,35 +119,9 @@ public class ReAnimalModEvents {
     }
 
     @SubscribeEvent
-    public static void onLivingHurt(LivingIncomingDamageEvent event) {
-        var target = event.getEntity();
-
-        var effect = target.getEffect(ReAnimalMobEffects.QUILL);
-
-        if (effect == null)
-            return;
-
-        var attackerEntity = event.getSource().getEntity();
-
-        if (!(attackerEntity instanceof LivingEntity attacker))
-            return;
-
-        if (attacker == target)
-            return;
-
-        if (target.level().isClientSide())
-            return;
-
-        var baseMultiplier = (effect.getAmplifier() + 1) * 0.2F;
-        var reflected = event.getAmount() * baseMultiplier;
-
-        if (reflected > 0F)
-            attacker.hurt(target.damageSources().thorns(target), reflected);
-    }
-
-    @SubscribeEvent
     public static void registerBrewing(RegisterBrewingRecipesEvent event) {
         var registry = event.getRegistryAccess().registryOrThrow(Registries.POTION);
+
         var quill = registry.getHolder(ReAnimalPotions.QUILL.getKey()).orElseThrow();
         var longQuill = registry.getHolder(ReAnimalPotions.LONG_QUILL.getKey()).orElseThrow();
         var strongQuill = registry.getHolder(ReAnimalPotions.STRONG_QUILL.getKey()).orElseThrow();
