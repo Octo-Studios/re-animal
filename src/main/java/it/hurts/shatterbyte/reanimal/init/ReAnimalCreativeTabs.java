@@ -32,7 +32,7 @@ public class ReAnimalCreativeTabs {
     @SubscribeEvent
     public static void fillCreativeTabs(BuildCreativeModeTabContentsEvent event) {
         if (event.getTab() == REANIMAL_TAB.get()) {
-            event.acceptAll(ReAnimalItems.ITEMS.getEntries().stream().map(entry -> entry.get().getDefaultInstance()).toList(), CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
+            event.acceptAll(ReAnimalItems.ITEMS.getEntries().stream().map(entry -> entry.get().getDefaultInstance()).toList(), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
 
             var quillHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.QUILL.getKey());
             var longQuillHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.LONG_QUILL.getKey());
