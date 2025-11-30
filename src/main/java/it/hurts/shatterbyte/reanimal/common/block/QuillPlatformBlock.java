@@ -1,9 +1,12 @@
 package it.hurts.shatterbyte.reanimal.common.block;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -14,9 +17,13 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.neoforged.neoforge.common.util.FakePlayerFactory;
+
+import java.util.UUID;
 
 public class QuillPlatformBlock extends FaceAttachedHorizontalDirectionalBlock {
     public static final MapCodec<QuillPlatformBlock> CODEC = BlockBehaviour.simpleCodec(QuillPlatformBlock::new);
@@ -27,6 +34,8 @@ public class QuillPlatformBlock extends FaceAttachedHorizontalDirectionalBlock {
     private static final VoxelShape SOUTH_SHAPE = FaceAttachedHorizontalDirectionalBlock.box(0.0D, 0.0D, 0.0D, 16.0D, 16.0D, 7.0D);
     private static final VoxelShape WEST_SHAPE = FaceAttachedHorizontalDirectionalBlock.box(9.0D, 0.0D, 0.0D, 16.0D, 16.0D, 16.0D);
     private static final VoxelShape EAST_SHAPE = FaceAttachedHorizontalDirectionalBlock.box(0.0D, 0.0D, 0.0D, 7.0D, 16.0D, 16.0D);
+
+    private static final GameProfile QUILL_FAKE_PROFILE = new GameProfile(UUID.fromString("3f6b43f9-bf91-4d81-a152-9b2d7a23f4b7"), "ReAnimal_QuillPlatform");
 
     public QuillPlatformBlock(Properties properties) {
         super(properties);
@@ -88,8 +97,20 @@ public class QuillPlatformBlock extends FaceAttachedHorizontalDirectionalBlock {
     public void entityInside(BlockState state, Level level, BlockPos pos, Entity entity) {
         super.entityInside(state, level, pos, entity);
 
-        if (!level.isClientSide()) {
-            entity.hurt(entity.damageSources().generic(), 1.0F);
+        if (!(level instanceof ServerLevel serverLevel))
+            return;
+
+        if (entity instanceof LivingEntity living) {
+            var fakePlayer = FakePlayerFactory.get(serverLevel, QUILL_FAKE_PROFILE);
+
+            fakePlayer.setPos(Vec3.atCenterOf(pos));
+
+            var motion = living.getDeltaMovement();
+
+            if (living.hurt(serverLevel.damageSources().playerAttack(fakePlayer), 1F)) {
+                living.setDeltaMovement(motion);
+                living.setLastHurtByMob(null);
+            }
         }
     }
 }
