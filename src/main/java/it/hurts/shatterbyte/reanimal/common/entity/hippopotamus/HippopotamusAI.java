@@ -105,7 +105,7 @@ public class HippopotamusAI {
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
-                                                Pair.of(BabyFollowAdult.create(UniformInt.of(2, 5), 1.25F), 1)
+                                                Pair.of(BabyFollowAdult.create(UniformInt.of(4, 8), 1.25F), 1)
                                         )
                                 )
                         ),

@@ -88,7 +88,7 @@ public class OstrichAI {
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
-                                                Pair.of(BabyFollowAdult.create(UniformInt.of(3, 7), 1.25F), 1)
+                                                Pair.of(BabyFollowAdult.create(UniformInt.of(4, 9), 1.25F), 1)
                                         )
                                 )
                         ),
