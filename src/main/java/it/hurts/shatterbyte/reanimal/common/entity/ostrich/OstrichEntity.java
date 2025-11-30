@@ -41,7 +41,6 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
 
     private float jumpPower;
-    private boolean jumpingFromPlayer;
 
     private int eggTime = this.random.nextInt(6000) + 6000;
 
@@ -64,6 +63,9 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         super.aiStep();
 
         this.tickEggLaying();
+
+        if (!this.level().isClientSide() && this.isVehicle() && this.isInWater())
+            this.ejectPassengers();
     }
 
     @Override
@@ -123,9 +125,6 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
             this.setSpeed((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 1.5F);
 
             super.travel(new Vec3(strafe, travelVector.y, forward));
-
-            if (!this.onGround())
-                this.jumpingFromPlayer = false;
         } else
             super.travel(travelVector);
     }
@@ -181,7 +180,6 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         this.setDeltaMovement(motion.x + look.x * forwardBoost, jumpY, motion.z + look.z * forwardBoost);
 
         this.hasImpulse = true;
-        this.jumpingFromPlayer = true;
     }
 
     @Override
@@ -196,7 +194,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public void handleStopJump() {
-        this.jumpingFromPlayer = false;
+
     }
 
     @Override
