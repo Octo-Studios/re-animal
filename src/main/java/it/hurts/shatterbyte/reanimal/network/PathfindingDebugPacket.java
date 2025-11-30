@@ -80,11 +80,11 @@ public class PathfindingDebugPacket implements CustomPacketPayload {
     }
 
     public void handle(IPayloadContext context) {
-//        if (path != null) {
-//            Minecraft.getInstance()
-//                    .debugRenderer
-//                    .pathfindingRenderer
-//                    .addPath(entityId, path, maxNodeDistance);
-//        }
+        if (path != null) {
+            Minecraft.getInstance()
+                    .debugRenderer
+                    .pathfindingRenderer
+                    .addPath(entityId, path, maxNodeDistance);
+        }
     }
 }

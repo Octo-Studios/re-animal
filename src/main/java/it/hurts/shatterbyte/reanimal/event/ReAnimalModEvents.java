@@ -10,6 +10,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRe
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
@@ -94,6 +95,14 @@ public class ReAnimalModEvents {
         );
 
         event.register(
+                ReAnimalEntities.SEAL.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+
+        event.register(
                 ReAnimalEntities.HIPPOPOTAMUS.get(),
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
@@ -146,6 +155,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.PIGEON.get(), PigeonRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.BUTTERFLY.get(), ButterflyRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.CAPYBARA.get(), CapybaraRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.SEAL.get(), SealRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.HIPPOPOTAMUS.get(), HippopotamusRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.GIRAFFE.get(), GiraffeRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.DRAGONFLY.get(), DragonflyRenderer::new);
