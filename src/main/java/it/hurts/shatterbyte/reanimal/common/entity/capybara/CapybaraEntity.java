@@ -25,6 +25,8 @@ public class CapybaraEntity extends Animal implements GeoEntity {
 
     public CapybaraEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+
+        this.getNavigation().setCanFloat(true);
     }
 
     @Override

@@ -54,6 +54,8 @@ public class ButterflyEntity extends Animal implements GeoEntity {
 
         this.moveControl = new FlyingMoveControl(this, 10, false);
         this.navigation = new FlyingPathNavigation(this, this.level());
+
+        this.getNavigation().setCanFloat(true);
     }
 
     @Override

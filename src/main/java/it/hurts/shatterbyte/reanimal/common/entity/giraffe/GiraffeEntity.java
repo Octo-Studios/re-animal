@@ -49,6 +49,8 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     public GiraffeEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+
+        this.getNavigation().setCanFloat(true);
     }
 
     public boolean isGrazing() {

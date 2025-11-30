@@ -52,6 +52,8 @@ public class PigeonEntity extends Animal implements GeoEntity {
         super(entityType, level);
 
         this.updateMoveControl();
+
+        this.getNavigation().setCanFloat(true);
     }
 
     public boolean isPecking() {

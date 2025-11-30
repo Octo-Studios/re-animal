@@ -57,6 +57,8 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     public HippopotamusEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+
+        this.getNavigation().setCanFloat(true);
     }
 
     public boolean isAttacking() {

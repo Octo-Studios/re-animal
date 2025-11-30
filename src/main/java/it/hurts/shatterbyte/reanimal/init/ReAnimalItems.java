@@ -34,6 +34,7 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, OstrichEgg> OSTRICH_EGG = ITEMS.register("ostrich_egg", () -> new OstrichEgg(new Item.Properties()));
     public static final DeferredHolder<Item, PigeonEgg> PIGEON_EGG = ITEMS.register("pigeon_egg", () -> new PigeonEgg(new Item.Properties()));
 
+    public static final DeferredHolder<Item, Item> BUTTERFLY_POLLEN = ITEMS.register("butterfly_pollen", () -> new BoneMealItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> QUILL = ITEMS.register("quill", () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, QuillArrowItem> QUILL_ARROW = ITEMS.register("quill_arrow", () -> new QuillArrowItem(new Item.Properties()));
     public static final DeferredHolder<Item, BlockItem> QUILL_PLATFORM = ITEMS.register("quill_platform", () -> new BlockItem(ReAnimalBlocks.QUILL_PLATFORM.get(), new Item.Properties()));
@@ -46,7 +47,6 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, Item> COOKED_OSTRICH_MEAT = ITEMS.register("cooked_ostrich_meat", () -> new Item(new Item.Properties().food(new FoodProperties(9, 0.9F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> RAW_KIWI_MEAT = ITEMS.register("raw_kiwi_meat", () -> new Item(new Item.Properties().food(new FoodProperties(2, 0.3F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_KIWI_MEAT = ITEMS.register("cooked_kiwi_meat", () -> new Item(new Item.Properties().food(new FoodProperties(6, 0.8F, false, 1.6F, Optional.empty(), List.of()))));
-    public static final DeferredHolder<Item, Item> BUTTERFLY_POLLEN = ITEMS.register("butterfly_pollen", () -> new BoneMealItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> RAW_PIGEON_MEAT = ITEMS.register("raw_pigeon_meat", () -> new Item(new Item.Properties().food(new FoodProperties(2, 0.3F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_PIGEON_MEAT = ITEMS.register("cooked_pigeon_meat", () -> new Item(new Item.Properties().food(new FoodProperties(6, 0.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> RAW_HIPPOPOTAMUS_MEAT = ITEMS.register("raw_hippopotamus_meat", () -> new Item(new Item.Properties().food(new FoodProperties(5, 0.4F, false, 1.6F, Optional.empty(), List.of()))));

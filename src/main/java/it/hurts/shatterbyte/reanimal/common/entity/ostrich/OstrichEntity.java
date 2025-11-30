@@ -55,6 +55,8 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     public OstrichEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+
+        this.getNavigation().setCanFloat(true);
     }
 
     @Override

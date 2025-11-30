@@ -31,6 +31,8 @@ public class KiwiEntity extends Animal implements GeoEntity {
 
     public KiwiEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+
+        this.getNavigation().setCanFloat(true);
     }
 
     @Override
