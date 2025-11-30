@@ -117,7 +117,7 @@ public class GiraffeAI {
                 10,
                 ImmutableList.of(
                         new AnimalPanic<>(
-                                2.5F,
+                                1.5F,
                                 mob -> DamageTypeTags.PANIC_CAUSES
                         )
                 ),

@@ -1,17 +1,20 @@
 package it.hurts.shatterbyte.reanimal.common.entity.kiwi;
 
 import com.mojang.serialization.Dynamic;
+import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeAI;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -95,6 +98,19 @@ public class KiwiEntity extends Animal implements GeoEntity {
         super.readAdditionalSaveData(tag);
 
         this.eggTime = tag.contains("eggTime") ? tag.getInt("eggTime") : this.random.nextInt(6000) + 6000;
+    }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        var result = super.hurt(source, amount);
+
+        if (result) {
+            this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+
+            KiwiAI.updateActivity(this);
+        }
+
+        return result;
     }
 
     @Override

@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.giraffe;
 
 import com.mojang.serialization.Dynamic;
 import com.google.common.collect.ImmutableMap;
+import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichAI;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
@@ -10,6 +11,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
@@ -144,6 +146,19 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
         if (tag.contains("GrazeCooldown"))
             this.grazeCooldown = tag.getInt("GrazeCooldown");
+    }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        var result = super.hurt(source, amount);
+
+        if (result) {
+            this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+
+            GiraffeAI.updateActivity(this);
+        }
+
+        return result;
     }
 
     @Override
