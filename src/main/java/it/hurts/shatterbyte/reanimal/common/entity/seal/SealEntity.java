@@ -114,6 +114,14 @@ public class SealEntity extends Animal implements GeoEntity {
     public void aiStep() {
         super.aiStep();
 
+        if (this.isLaying()) {
+            this.setXRot(0);
+            this.xRotO = 0;
+
+            this.yHeadRot = this.yBodyRot;
+            this.yHeadRotO = this.yBodyRotO;
+        }
+
         if (!this.level().isClientSide && this.isLaying())
             this.getNavigation().stop();
     }

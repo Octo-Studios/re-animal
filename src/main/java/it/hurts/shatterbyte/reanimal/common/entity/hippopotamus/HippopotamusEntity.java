@@ -122,6 +122,14 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
     public void aiStep() {
         super.aiStep();
 
+        if (this.isLaying()) {
+            this.setXRot(0);
+            this.xRotO = 0;
+
+            this.yHeadRot = this.yBodyRot;
+            this.yHeadRotO = this.yBodyRotO;
+        }
+
         if (!this.isBaby()) {
             if (brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER) || brain.hasMemoryValue(MemoryModuleType.IS_TEMPTED)) {
                 brain.eraseMemory(MemoryModuleType.TEMPTING_PLAYER);

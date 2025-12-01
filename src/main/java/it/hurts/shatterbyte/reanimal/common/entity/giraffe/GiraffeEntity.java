@@ -19,6 +19,7 @@ import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
+import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -120,6 +121,14 @@ public class GiraffeEntity extends Animal implements GeoEntity {
     @Override
     public void aiStep() {
         super.aiStep();
+
+        if (this.isGrazing()) {
+            this.setXRot(0);
+            this.xRotO = 0;
+
+            this.yHeadRot = this.yBodyRot;
+            this.yHeadRotO = this.yBodyRotO;
+        }
 
         if (!this.level().isClientSide && this.isGrazing())
             this.getNavigation().stop();
