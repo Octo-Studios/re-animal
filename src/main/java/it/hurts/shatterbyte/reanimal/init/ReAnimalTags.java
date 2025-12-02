@@ -16,6 +16,7 @@ public class ReAnimalTags {
         public static final TagKey<Item> HEDGEHOG_FOOD = Items.create("hedgehog_food");
         public static final TagKey<Item> HIPPOPOTAMUS_FOOD = Items.create("hippopotamus_food");
         public static final TagKey<Item> GIRAFFE_FOOD = Items.create("giraffe_food");
+        public static final TagKey<Item> VULTURE_FOOD = Items.create("vulture_food");
 
         private static TagKey<Item> create(String name) {
             return TagKey.create(Registries.ITEM, ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, name));

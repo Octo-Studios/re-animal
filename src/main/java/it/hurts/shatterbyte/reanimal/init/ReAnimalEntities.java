@@ -15,6 +15,8 @@ import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEggEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -75,6 +77,11 @@ public class ReAnimalEntities {
                     .sized(0.5F, 0.45F)
                     .build(ReAnimal.MODID + ":dragonfly"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<VultureEntity>> VULTURE = ENTITY_TYPES.register("vulture", () ->
+            EntityType.Builder.of(VultureEntity::new, MobCategory.CREATURE)
+                    .sized(0.9F, 1.75F)
+                    .build(ReAnimal.MODID + ":vulture"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<KiwiEggEntity>> KIWI_EGG = ENTITY_TYPES.register("kiwi_egg", () ->
             EntityType.Builder.of(KiwiEggEntity::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F)
@@ -96,6 +103,13 @@ public class ReAnimalEntities {
                     .updateInterval(10)
                     .build(ReAnimal.MODID + ":pigeon_egg"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<VultureEggEntity>> VULTURE_EGG = ENTITY_TYPES.register("vulture_egg", () ->
+            EntityType.Builder.of(VultureEggEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .clientTrackingRange(4)
+                    .updateInterval(10)
+                    .build(ReAnimal.MODID + ":vulture_egg"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<QuillArrowEntity>> QUILL_ARROW = ENTITY_TYPES.register("quill_arrow", () ->
             EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F)
@@ -114,5 +128,6 @@ public class ReAnimalEntities {
         event.put(HIPPOPOTAMUS.get(), HippopotamusEntity.createAttributes().build());
         event.put(GIRAFFE.get(), GiraffeEntity.createAttributes().build());
         event.put(DRAGONFLY.get(), DragonflyEntity.createAttributes().build());
+        event.put(VULTURE.get(), VultureEntity.createAttributes().build());
     }
 }

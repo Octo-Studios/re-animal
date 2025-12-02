@@ -11,6 +11,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichAI;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonAI;
 import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraAI;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealAI;
+import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureAI;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.MobSensor;
@@ -33,6 +34,7 @@ public class ReAnimalSensorTypes {
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> HIPPOPOTAMUS_TEMPTATIONS = SENSOR_TYPES.register("hippopotamus_temptations", () -> new SensorType<>(() -> new TemptingSensor(HippopotamusAI.getTemptations())));
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> GIRAFFE_TEMPTATIONS = SENSOR_TYPES.register("giraffe_temptations", () -> new SensorType<>(() -> new TemptingSensor(GiraffeAI.getTemptations())));
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> BUTTERFLY_TEMPTATIONS = SENSOR_TYPES.register("butterfly_temptations", () -> new SensorType<>(() -> new TemptingSensor(ButterflyAI.getTemptations())));
+    public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> VULTURE_TEMPTATIONS = SENSOR_TYPES.register("vulture_temptations", () -> new SensorType<>(() -> new TemptingSensor(VultureAI.getTemptations())));
 
     public static void register(IEventBus modBus) {
         SENSOR_TYPES.register(modBus);
