@@ -173,6 +173,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.VULTURE_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW.get(), context -> new ArrowRenderer<QuillArrowEntity>(context) {
                 @Override
                 public ResourceLocation getTextureLocation(QuillArrowEntity entity) {

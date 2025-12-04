@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.vulture;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
@@ -16,6 +17,7 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
@@ -86,8 +88,9 @@ public class VultureAI {
                 Activity.IDLE,
                 ImmutableList.of(
                         Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 8F, UniformInt.of(30, 60))),
+                        Pair.of(1, new AnimalMakeLove(ReAnimalEntities.VULTURE.get(), 1F, 1)),
                         Pair.of(
-                                1,
+                                2,
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(e -> 1.2F, e -> 1.2D), 1),
@@ -95,14 +98,15 @@ public class VultureAI {
                                         )
                                 )
                         ),
-                        Pair.of(2, new VultureRetaliateTask()),
-                        Pair.of(3, new VultureStartCirclingTask()),
-                        Pair.of(4, new VultureAttackFromCircleTask()),
-                        Pair.of(5, new VultureChaseAndAttackTask()),
-                        Pair.of(6, new VultureStopCirclingTask()),
-                        Pair.of(7, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(3, new VultureRetaliateTask()),
+                        Pair.of(4, new VultureStartCirclingTask()),
+                        Pair.of(5, new VultureAttackFromCircleTask()),
+                        Pair.of(6, new VultureChaseAndAttackTask()),
+                        Pair.of(7, new VultureStopCirclingTask()),
+                        Pair.of(8, new VultureEatGroundMeatTask()),
+                        Pair.of(9, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                8,
+                                10,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
@@ -174,6 +178,7 @@ public class VultureAI {
                 return;
 
             entity.setCirclingTarget(null);
+            entity.setNextCirclingStartTick(level.getGameTime(), 500);
             entity.setTarget(attacker);
             entity.getBrain().eraseMemory(MemoryModuleType.HURT_BY_ENTITY);
             entity.getBrain().eraseMemory(MemoryModuleType.HURT_BY);
@@ -208,6 +213,9 @@ public class VultureAI {
 
             var gameTime = level.getGameTime();
 
+            if (!entity.canStartCircling(gameTime))
+                return false;
+
             if (gameTime % 20L != 0L)
                 return false;
 
@@ -220,6 +228,7 @@ public class VultureAI {
                 if (candidate instanceof LivingEntity living
                         && living.isAlive()
                         && !living.isInvulnerable()
+                        && !living.isInWaterOrBubble()
                         && !(living instanceof VultureEntity)
                         && !(living instanceof Player player && (player.isCreative() || player.isSpectator()))
                         && living.getHealth() < living.getMaxHealth()
@@ -245,6 +254,9 @@ public class VultureAI {
             for (var candidate : list) {
                 if (candidate instanceof LivingEntity living
                         && living.isAlive()
+                        && !living.isInvulnerable()
+                        && !(living instanceof VultureEntity)
+                        && !(living instanceof Player player && (player.isCreative() || player.isSpectator()))
                         && living.getHealth() < living.getMaxHealth()
                         && entity.distanceToSqr(living) <= radiusSq)
                     candidates.add(living);
@@ -321,6 +333,7 @@ public class VultureAI {
         @Override
         protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
             entity.setCirclingTarget(null);
+            entity.setNextCirclingStartTick(level.getGameTime(), 500);
 
             var pos = entity.blockPosition();
             var groundPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
@@ -351,16 +364,19 @@ public class VultureAI {
             if (circlingTarget == null)
                 return false;
 
-            if (!(circlingTarget instanceof LivingEntity living))
+            if (!circlingTarget.isAlive())
                 return false;
 
-            if (!living.isAlive())
+            if (circlingTarget.isInvulnerable())
                 return false;
 
-            if (living.isInvulnerable())
+            if (circlingTarget.isInWaterOrBubble())
                 return false;
 
-            if (living instanceof Player player && (player.isCreative() || player.isSpectator()))
+            if (circlingTarget instanceof VultureEntity)
+                return false;
+
+            if (circlingTarget instanceof Player player && (player.isCreative() || player.isSpectator()))
                 return false;
 
             var currentTime = level.getGameTime();
@@ -382,12 +398,12 @@ public class VultureAI {
             if (!(circlingTarget instanceof Player) && elapsed >= MAX_NON_PLAYER_CIRCLING_TICKS)
                 return false;
 
-            var maxHealth = living.getMaxHealth();
+            var maxHealth = circlingTarget.getMaxHealth();
 
             if (maxHealth <= 0F)
                 return false;
 
-            var healthRatio = living.getHealth() / maxHealth;
+            var healthRatio = circlingTarget.getHealth() / maxHealth;
 
             if (healthRatio >= 1.0F)
                 return false;
@@ -408,6 +424,7 @@ public class VultureAI {
                 return;
 
             entity.setCirclingTarget(null);
+            entity.setNextCirclingStartTick(level.getGameTime(), 500);
             entity.setTarget(circlingTarget);
         }
     }
@@ -430,6 +447,12 @@ public class VultureAI {
             if (living.isInvulnerable())
                 return false;
 
+            if (living.isInWaterOrBubble())
+                return false;
+
+            if (living instanceof VultureEntity)
+                return false;
+
             if (living instanceof Player player && (player.isCreative() || player.isSpectator()))
                 return false;
 
@@ -447,6 +470,12 @@ public class VultureAI {
                 return false;
 
             if (living.isInvulnerable())
+                return false;
+
+            if (living.isInWaterOrBubble())
+                return false;
+
+            if (living instanceof VultureEntity)
                 return false;
 
             if (living instanceof Player player && (player.isCreative() || player.isSpectator()))
@@ -467,6 +496,8 @@ public class VultureAI {
 
             if (!living.isAlive()
                     || living.isInvulnerable()
+                    || living.isInWaterOrBubble()
+                    || living instanceof VultureEntity
                     || (living instanceof Player player && (player.isCreative() || player.isSpectator()))
                     || entity.distanceToSqr(living) > 64D * 64D) {
                 entity.setTarget(null);
@@ -489,6 +520,8 @@ public class VultureAI {
             if (target instanceof LivingEntity living) {
                 if (!living.isAlive()
                         || living.isInvulnerable()
+                        || living.isInWaterOrBubble()
+                        || living instanceof VultureEntity
                         || (living instanceof Player player && (player.isCreative() || player.isSpectator()))
                         || entity.distanceToSqr(living) > 64D * 64D)
                     entity.setTarget(null);
@@ -497,6 +530,106 @@ public class VultureAI {
             }
 
             entity.getNavigation().stop();
+        }
+    }
+
+    static class VultureEatGroundMeatTask extends Behavior<VultureEntity> {
+        private static final double SEARCH_RADIUS = 16.0D;
+        private ItemEntity targetItem;
+
+        VultureEatGroundMeatTask() {
+            super(ImmutableMap.of());
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
+            if (entity.getTarget() != null)
+                return false;
+
+            if (entity.getCirclingTarget() != null)
+                return false;
+
+            if (!entity.getNavigation().isDone())
+                return false;
+
+            var box = entity.getBoundingBox().inflate(SEARCH_RADIUS);
+            var list = level.getEntitiesOfClass(ItemEntity.class, box, item -> {
+                var stack = item.getItem();
+                return !item.isRemoved()
+                        && stack.is(ReAnimalTags.Items.VULTURE_FOOD);
+            });
+
+            if (list.isEmpty())
+                return false;
+
+            list.sort((a, b) -> {
+                var da = entity.distanceToSqr(a);
+                var db = entity.distanceToSqr(b);
+                return Double.compare(da, db);
+            });
+
+            targetItem = list.getFirst();
+            return true;
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, VultureEntity entity, long gameTime) {
+            if (targetItem == null || targetItem.isRemoved())
+                return false;
+
+            if (entity.getTarget() != null)
+                return false;
+
+            if (entity.getCirclingTarget() != null)
+                return false;
+
+            var maxDistSqr = SEARCH_RADIUS * SEARCH_RADIUS;
+
+            if (entity.distanceToSqr(targetItem) > maxDistSqr)
+                return false;
+
+            return true;
+        }
+
+        @Override
+        protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
+            if (targetItem == null || targetItem.isRemoved())
+                return;
+
+            entity.getNavigation().moveTo(targetItem, 1.2D);
+        }
+
+        @Override
+        protected void tick(ServerLevel level, VultureEntity entity, long gameTime) {
+            if (targetItem == null || targetItem.isRemoved()) {
+                entity.getNavigation().stop();
+                return;
+            }
+
+            entity.getNavigation().moveTo(targetItem, 1.2D);
+
+            var distanceSqr = entity.distanceToSqr(targetItem);
+
+            if (distanceSqr <= 2.0D) {
+                var stack = targetItem.getItem();
+
+                if (!stack.isEmpty() && stack.is(ReAnimalTags.Items.VULTURE_FOOD)) {
+                    stack.shrink(1);
+
+                    if (stack.isEmpty())
+                        targetItem.discard();
+                }
+
+                entity.getNavigation().stop();
+                targetItem = null;
+            }
+        }
+
+        @Override
+        protected void stop(ServerLevel level, VultureEntity entity, long gameTime) {
+            entity.getNavigation().stop();
+
+            targetItem = null;
         }
     }
 }

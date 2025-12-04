@@ -25,8 +25,10 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.control.LookControl;
+import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -60,6 +62,16 @@ public class VultureEntity extends Animal implements GeoEntity {
 
     private int eggTime = this.random.nextInt(6000) + 6000;
 
+    private long nextCirclingStartTick;
+
+    public void setNextCirclingStartTick(long gameTime, long cooldownTicks) {
+        nextCirclingStartTick = gameTime + cooldownTicks;
+    }
+
+    public boolean canStartCircling(long gameTime) {
+        return gameTime >= nextCirclingStartTick;
+    }
+
     public boolean isGliding() {
         return this.entityData.get(DATA_GLIDING);
     }
@@ -71,9 +83,9 @@ public class VultureEntity extends Animal implements GeoEntity {
     public VultureEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
-        this.moveControl = new VultureMoveControl(this);
         this.lookControl = new VultureLookControl(this);
-        this.navigation = new FlyingPathNavigation(this, this.level());
+
+        this.updateMoveControl();
 
         this.getNavigation().setCanFloat(true);
     }
@@ -125,6 +137,15 @@ public class VultureEntity extends Animal implements GeoEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+
+        this.updateMoveControl();
+    }
+
+    @Override
+    public void setBaby(boolean baby) {
+        super.setBaby(baby);
+
+        this.updateMoveControl();
     }
 
     @Override
@@ -170,6 +191,16 @@ public class VultureEntity extends Animal implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, "main", 5, this::mainPredicate));
+    }
+
+    public void updateMoveControl() {
+        if (this.isBaby()) {
+            this.moveControl = new MoveControl(this);
+            this.navigation = new GroundPathNavigation(this, this.level());
+        } else {
+            this.moveControl = new FlyingMoveControl(this, 10, false);
+            this.navigation = new FlyingPathNavigation(this, this.level());
+        }
     }
 
     private void tickEggLaying() {

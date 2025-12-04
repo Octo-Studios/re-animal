@@ -10,7 +10,8 @@ import software.bernie.geckolib.model.GeoModel;
 
 public class VultureModel extends GeoModel<VultureEntity> {
     private static final ResourceLocation MODEL = ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "geo/vulture.geo.json");
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/vulture.png");
+    private static final ResourceLocation TEXTURE_ADULT = ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/vulture_adult.png");
+    private static final ResourceLocation TEXTURE_BABY = ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/vulture_baby.png");
     private static final ResourceLocation ANIMATION = ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, "animations/vulture.animation.json");
 
     @Override
@@ -20,7 +21,7 @@ public class VultureModel extends GeoModel<VultureEntity> {
 
     @Override
     public ResourceLocation getTextureResource(VultureEntity entity) {
-        return TEXTURE;
+        return entity.isBaby() ? TEXTURE_BABY : TEXTURE_ADULT;
     }
 
     @Override

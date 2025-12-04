@@ -1,6 +1,6 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#minecraft:is_desert",
+  "biomes": "#c:is_desert",
   "spawners": [
     {
       "type": "reanimal:vulture",
