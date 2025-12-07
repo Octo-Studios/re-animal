@@ -1,63 +1,85 @@
 {
   "itemGroup.reanimal": "Re:Animal",
+
   "entity.reanimal.hedgehog": "Hedgehog",
   "item.reanimal.hedgehog_spawn_egg": "Hedgehog Spawn Egg",
+  "item.reanimal.raw_hedgehog_meat": "Raw Hedgehog Meat",
+  "item.reanimal.cooked_hedgehog_meat": "Cooked Hedgehog Meat",
+
   "entity.reanimal.ostrich": "Ostrich",
   "item.reanimal.ostrich_spawn_egg": "Ostrich Spawn Egg",
   "item.reanimal.ostrich_egg": "Ostrich Egg",
+  "item.reanimal.raw_ostrich_meat": "Raw Ostrich Meat",
+  "item.reanimal.cooked_ostrich_meat": "Cooked Ostrich Meat",
+
   "entity.reanimal.kiwi": "Kiwi",
   "item.reanimal.kiwi_spawn_egg": "Kiwi Spawn Egg",
   "item.reanimal.kiwi_egg": "Kiwi Egg",
+  "item.reanimal.raw_kiwi_meat": "Raw Kiwi Meat",
+  "item.reanimal.cooked_kiwi_meat": "Cooked Kiwi Meat",
+
   "entity.reanimal.pigeon": "Pigeon",
   "item.reanimal.pigeon_spawn_egg": "Pigeon Spawn Egg",
   "item.reanimal.pigeon_egg": "Pigeon Egg",
+  "item.reanimal.raw_pigeon_meat": "Raw Pigeon Meat",
+  "item.reanimal.cooked_pigeon_meat": "Cooked Pigeon Meat",
+
   "entity.reanimal.butterfly": "Butterfly",
   "item.reanimal.butterfly_spawn_egg": "Butterfly Spawn Egg",
+  "item.reanimal.butterfly_pollen": "Butterfly Pollen",
+
   "entity.reanimal.capybara": "Capybara",
   "item.reanimal.capybara_spawn_egg": "Capybara Spawn Egg",
+  "item.reanimal.raw_capybara_meat": "Raw Capybara Meat",
+  "item.reanimal.cooked_capybara_meat": "Cooked Capybara Meat",
+
   "entity.reanimal.seal": "Seal",
   "item.reanimal.seal_spawn_egg": "Seal Spawn Egg",
+  "item.reanimal.raw_seal_meat": "Raw Seal Meat",
+  "item.reanimal.cooked_seal_meat": "Cooked Seal Meat",
+
   "entity.reanimal.hippopotamus": "Hippopotamus",
   "item.reanimal.hippopotamus_spawn_egg": "Hippopotamus Spawn Egg",
+  "item.reanimal.raw_hippopotamus_meat": "Raw Hippopotamus Meat",
+  "item.reanimal.cooked_hippopotamus_meat": "Cooked Hippopotamus Meat",
+
   "entity.reanimal.giraffe": "Giraffe",
   "item.reanimal.giraffe_spawn_egg": "Giraffe Spawn Egg",
+  "item.reanimal.raw_giraffe_meat": "Raw Giraffe Meat",
+  "item.reanimal.cooked_giraffe_meat": "Cooked Giraffe Meat",
+
   "entity.reanimal.dragonfly": "Dragonfly",
   "item.reanimal.dragonfly_spawn_egg": "Dragonfly Spawn Egg",
+
   "entity.reanimal.vulture": "Vulture",
   "item.reanimal.vulture_spawn_egg": "Vulture Spawn Egg",
   "item.reanimal.vulture_egg": "Vulture Egg",
+
+  "entity.reanimal.penguin": "Penguin",
+  "item.reanimal.penguin_spawn_egg": "Penguin Spawn Egg",
+  "item.reanimal.penguin_egg": "Penguin Egg",
+
   "item.reanimal.quill": "Quill",
   "item.reanimal.quill_arrow": "Quill Arrow",
   "entity.reanimal.quill_arrow": "Quill Arrow",
-  "block.reanimal.quill_platform": "Quill Platform",
-  "effect.reanimal.quill": "Quill",
+
   "item.minecraft.potion.effect.quill": "Potion of Quills",
   "item.minecraft.potion.effect.long_quill": "Potion of Quills",
   "item.minecraft.potion.effect.strong_quill": "Potion of Quills",
+
   "item.minecraft.splash_potion.effect.quill": "Splash Potion of Quills",
   "item.minecraft.splash_potion.effect.long_quill": "Splash Potion of Quills",
   "item.minecraft.splash_potion.effect.strong_quill": "Splash Potion of Quills",
+
   "item.minecraft.lingering_potion.effect.quill": "Lingering Potion of Quills",
   "item.minecraft.lingering_potion.effect.long_quill": "Lingering Potion of Quills",
   "item.minecraft.lingering_potion.effect.strong_quill": "Lingering Potion of Quills",
+
   "item.minecraft.tipped_arrow.effect.quill": "Arrow of Quills",
   "item.minecraft.tipped_arrow.effect.long_quill": "Arrow of Quills",
   "item.minecraft.tipped_arrow.effect.strong_quill": "Arrow of Quills",
-  "item.reanimal.raw_hedgehog_meat": "Raw Hedgehog Meat",
-  "item.reanimal.cooked_hedgehog_meat": "Cooked Hedgehog Meat",
-  "item.reanimal.raw_capybara_meat": "Raw Capybara Meat",
-  "item.reanimal.cooked_capybara_meat": "Cooked Capybara Meat",
-  "item.reanimal.raw_seal_meat": "Raw Seal Meat",
-  "item.reanimal.cooked_seal_meat": "Cooked Seal Meat",
-  "item.reanimal.raw_ostrich_meat": "Raw Ostrich Meat",
-  "item.reanimal.cooked_ostrich_meat": "Cooked Ostrich Meat",
-  "item.reanimal.raw_kiwi_meat": "Raw Kiwi Meat",
-  "item.reanimal.cooked_kiwi_meat": "Cooked Kiwi Meat",
-  "item.reanimal.butterfly_pollen": "Butterfly Pollen",
-  "item.reanimal.raw_pigeon_meat": "Raw Pigeon Meat",
-  "item.reanimal.cooked_pigeon_meat": "Cooked Pigeon Meat",
-  "item.reanimal.raw_hippopotamus_meat": "Raw Hippopotamus Meat",
-  "item.reanimal.cooked_hippopotamus_meat": "Cooked Hippopotamus Meat",
-  "item.reanimal.raw_giraffe_meat": "Raw Giraffe Meat",
-  "item.reanimal.cooked_giraffe_meat": "Cooked Giraffe Meat"
+
+  "block.reanimal.quill_platform": "Quill Platform",
+
+  "effect.reanimal.quill": "Quill"
 }

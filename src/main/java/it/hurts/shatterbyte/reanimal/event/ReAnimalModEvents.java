@@ -9,6 +9,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.hedgehog.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.vulture.VultureRenderer;
@@ -135,6 +136,14 @@ public class ReAnimalModEvents {
                 Animal::checkAnimalSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+
+        event.register(
+                ReAnimalEntities.PENGUIN.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
     }
 
     @SubscribeEvent
@@ -170,10 +179,12 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.GIRAFFE.get(), GiraffeRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.DRAGONFLY.get(), DragonflyRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.VULTURE.get(), VultureRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.PENGUIN.get(), PenguinRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.VULTURE_EGG.get(), ThrownItemRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.PENGUIN_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW.get(), context -> new ArrowRenderer<QuillArrowEntity>(context) {
                 @Override
                 public ResourceLocation getTextureLocation(QuillArrowEntity entity) {
