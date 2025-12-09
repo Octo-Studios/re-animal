@@ -1,0 +1,85 @@
+{
+  "itemGroup.reanimal": "Re:Animal",
+
+  "entity.reanimal.hedgehog": "Ouriço",
+  "item.reanimal.hedgehog_spawn_egg": "Ovo Gerador de Ouriço",
+  "item.reanimal.raw_hedgehog_meat": "Ouriço Cru",
+  "item.reanimal.cooked_hedgehog_meat": "Ouriço Assado",
+
+  "entity.reanimal.ostrich": "Avestruz",
+  "item.reanimal.ostrich_spawn_egg": "Ovo Gerador de Avestruz",
+  "item.reanimal.ostrich_egg": "Ovo de Avestruz",
+  "item.reanimal.raw_ostrich_meat": "Avestruz Cru",
+  "item.reanimal.cooked_ostrich_meat": "Avestruz Assado",
+
+  "entity.reanimal.kiwi": "Kiwi",
+  "item.reanimal.kiwi_spawn_egg": "Ovo Gerador de Kiwi",
+  "item.reanimal.kiwi_egg": "Ovo de Kiwi",
+  "item.reanimal.raw_kiwi_meat": "Kiwi Cru",
+  "item.reanimal.cooked_kiwi_meat": "Kiwi Assado",
+
+  "entity.reanimal.pigeon": "Pombo",
+  "item.reanimal.pigeon_spawn_egg": "Ovo Gerador de Pombo",
+  "item.reanimal.pigeon_egg": "Ovo de Pombo",
+  "item.reanimal.raw_pigeon_meat": "Pombo Cru",
+  "item.reanimal.cooked_pigeon_meat": "Pombo Assado",
+
+  "entity.reanimal.butterfly": "Borboleta",
+  "item.reanimal.butterfly_spawn_egg": "Ovo Gerador de Borboleta",
+  "item.reanimal.butterfly_pollen": "Polén de Borboleta",
+
+  "entity.reanimal.capybara": "Capivara",
+  "item.reanimal.capybara_spawn_egg": "Ovo Gerador de Capivara",
+  "item.reanimal.raw_capybara_meat": "Capivara Crua",
+  "item.reanimal.cooked_capybara_meat": "Capivara Assada",
+
+  "entity.reanimal.seal": "Foca",
+  "item.reanimal.seal_spawn_egg": "Ovo Gerador de Foca",
+  "item.reanimal.raw_seal_meat": "Foca Crua",
+  "item.reanimal.cooked_seal_meat": "Foca Assada",
+
+  "entity.reanimal.hippopotamus": "Hipopótamo",
+  "item.reanimal.hippopotamus_spawn_egg": "Ovo Gerador de Hipopótamo",
+  "item.reanimal.raw_hippopotamus_meat": "Hipopótamo Cru",
+  "item.reanimal.cooked_hippopotamus_meat": "Hipopótamo Assado",
+
+  "entity.reanimal.giraffe": "Girafa",
+  "item.reanimal.giraffe_spawn_egg": "Ovo Gerador de Girafa",
+  "item.reanimal.raw_giraffe_meat": "Girafa Crua",
+  "item.reanimal.cooked_giraffe_meat": "Girafa Assada",
+
+  "entity.reanimal.dragonfly": "Libélula",
+  "item.reanimal.dragonfly_spawn_egg": "Ovo Gerador de Libélula",
+
+  "entity.reanimal.vulture": "Abutre",
+  "item.reanimal.vulture_spawn_egg": "Ovo Gerador de Abutre",
+  "item.reanimal.vulture_egg": "Ovo de Abutre",
+
+  "entity.reanimal.penguin": "Pinguim",
+  "item.reanimal.penguin_spawn_egg": "Ovo Gerador de Pinguim",
+  "item.reanimal.penguin_egg": "Ovo de Pinguim",
+
+  "item.reanimal.quill": "Espinho",
+  "item.reanimal.quill_arrow": "Flecha de Espinho",
+  "entity.reanimal.quill_arrow": "Flecha de Espinho",
+
+  "item.minecraft.potion.effect.quill": "Poção de Corpo Espinhoso",
+  "item.minecraft.potion.effect.long_quill": "Poção de Corpo Espinhoso",
+  "item.minecraft.potion.effect.strong_quill": "Poção de Corpo Espinhoso",
+
+  "item.minecraft.splash_potion.effect.quill": "Poção Arremessável de Corpo Espinhoso",
+  "item.minecraft.splash_potion.effect.long_quill": "Poção Arremessável de Corpo Espinhoso",
+  "item.minecraft.splash_potion.effect.strong_quill": "Poção Arremessável de Corpo Espinhoso",
+
+  "item.minecraft.lingering_potion.effect.quill": "Poção Prolongada de Corpo Espinhoso",
+  "item.minecraft.lingering_potion.effect.long_quill": "Poção Prolongada de Corpo Espinhoso",
+  "item.minecraft.lingering_potion.effect.strong_quill": "Poção Prolongada de Corpo Espinhoso",
+
+  "item.minecraft.tipped_arrow.effect.quill": "Flecha de Corpo Espinhoso",
+  "item.minecraft.tipped_arrow.effect.long_quill": "Corpo Espinhoso",
+  "item.minecraft.tipped_arrow.effect.strong_quill": "Corpo Espinhoso",
+
+  "block.reanimal.quill_platform": "Plataforma de Espinhos",
+
+  "effect.reanimal.quill": "Corpo Espinhoso"
+}
