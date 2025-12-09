@@ -13,4 +13,7 @@ public class ReAnimalPotions {
     public static final DeferredHolder<Potion, Potion> QUILL = POTIONS.register("quill", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.QUILL, 20 * 270)));
     public static final DeferredHolder<Potion, Potion> LONG_QUILL = POTIONS.register("long_quill", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.QUILL, 20 * 540)));
     public static final DeferredHolder<Potion, Potion> STRONG_QUILL = POTIONS.register("strong_quill", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.QUILL, 20 * 120, 1)));
+    public static final DeferredHolder<Potion, Potion> CRAMPS = POTIONS.register("cramps", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 20 * 180)));
+    public static final DeferredHolder<Potion, Potion> LONG_CRAMPS = POTIONS.register("long_cramps", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 20 * 480)));
+    public static final DeferredHolder<Potion, Potion> STRONG_CRAMPS = POTIONS.register("strong_cramps", () -> new Potion(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 20 * 90, 1)));
 }

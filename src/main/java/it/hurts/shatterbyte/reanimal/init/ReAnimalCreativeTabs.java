@@ -37,28 +37,47 @@ public class ReAnimalCreativeTabs {
             var quillHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.QUILL.getKey());
             var longQuillHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.LONG_QUILL.getKey());
             var strongQuillHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.STRONG_QUILL.getKey());
+            var crampsHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.CRAMPS.getKey());
+            var longCrampsHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.LONG_CRAMPS.getKey());
+            var strongCrampsHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.STRONG_CRAMPS.getKey());
 
             var quillPotion = PotionContents.createItemStack(Items.POTION, quillHolder);
             var longQuillPotion = PotionContents.createItemStack(Items.POTION, longQuillHolder);
             var strongQuillPotion = PotionContents.createItemStack(Items.POTION, strongQuillHolder);
+            var crampsPotion = PotionContents.createItemStack(Items.POTION, crampsHolder);
+            var longCrampsPotion = PotionContents.createItemStack(Items.POTION, longCrampsHolder);
+            var strongCrampsPotion = PotionContents.createItemStack(Items.POTION, strongCrampsHolder);
 
             var quillSplash = PotionContents.createItemStack(Items.SPLASH_POTION, quillHolder);
             var longQuillSplash = PotionContents.createItemStack(Items.SPLASH_POTION, longQuillHolder);
             var strongQuillSplash = PotionContents.createItemStack(Items.SPLASH_POTION, strongQuillHolder);
+            var crampsSplash = PotionContents.createItemStack(Items.SPLASH_POTION, crampsHolder);
+            var longCrampsSplash = PotionContents.createItemStack(Items.SPLASH_POTION, longCrampsHolder);
+            var strongCrampsSplash = PotionContents.createItemStack(Items.SPLASH_POTION, strongCrampsHolder);
 
             var quillLingering = PotionContents.createItemStack(Items.LINGERING_POTION, quillHolder);
             var longQuillLingering = PotionContents.createItemStack(Items.LINGERING_POTION, longQuillHolder);
             var strongQuillLingering = PotionContents.createItemStack(Items.LINGERING_POTION, strongQuillHolder);
+            var crampsLingering = PotionContents.createItemStack(Items.LINGERING_POTION, crampsHolder);
+            var longCrampsLingering = PotionContents.createItemStack(Items.LINGERING_POTION, longCrampsHolder);
+            var strongCrampsLingering = PotionContents.createItemStack(Items.LINGERING_POTION, strongCrampsHolder);
 
             var quillArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, quillHolder);
             var longQuillArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, longQuillHolder);
             var strongQuillArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, strongQuillHolder);
+            var crampsArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, crampsHolder);
+            var longCrampsArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, longCrampsHolder);
+            var strongCrampsArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, strongCrampsHolder);
 
             event.acceptAll(
                     List.of(
+                            crampsPotion, longCrampsPotion, strongCrampsPotion,
                             quillPotion, longQuillPotion, strongQuillPotion,
+                            crampsSplash, longCrampsSplash, strongCrampsSplash,
                             quillSplash, longQuillSplash, strongQuillSplash,
+                            crampsLingering, longCrampsLingering, strongCrampsLingering,
                             quillLingering, longQuillLingering, strongQuillLingering,
+                            crampsArrow, longCrampsArrow, strongCrampsArrow,
                             quillArrow, longQuillArrow, strongQuillArrow
                     )
             );

@@ -70,20 +70,33 @@
   "item.minecraft.potion.effect.quill": "Potion of Quills",
   "item.minecraft.potion.effect.long_quill": "Potion of Quills",
   "item.minecraft.potion.effect.strong_quill": "Potion of Quills",
+  "item.minecraft.potion.effect.cramps": "Potion of Cramps",
+  "item.minecraft.potion.effect.long_cramps": "Potion of Cramps",
+  "item.minecraft.potion.effect.strong_cramps": "Potion of Cramps",
 
   "item.minecraft.splash_potion.effect.quill": "Splash Potion of Quills",
   "item.minecraft.splash_potion.effect.long_quill": "Splash Potion of Quills",
   "item.minecraft.splash_potion.effect.strong_quill": "Splash Potion of Quills",
+  "item.minecraft.splash_potion.effect.cramps": "Splash Potion of Cramps",
+  "item.minecraft.splash_potion.effect.long_cramps": "Splash Potion of Cramps",
+  "item.minecraft.splash_potion.effect.strong_cramps": "Splash Potion of Cramps",
 
   "item.minecraft.lingering_potion.effect.quill": "Lingering Potion of Quills",
   "item.minecraft.lingering_potion.effect.long_quill": "Lingering Potion of Quills",
   "item.minecraft.lingering_potion.effect.strong_quill": "Lingering Potion of Quills",
+  "item.minecraft.lingering_potion.effect.cramps": "Lingering Potion of Cramps",
+  "item.minecraft.lingering_potion.effect.long_cramps": "Lingering Potion of Cramps",
+  "item.minecraft.lingering_potion.effect.strong_cramps": "Lingering Potion of Cramps",
 
   "item.minecraft.tipped_arrow.effect.quill": "Arrow of Quills",
   "item.minecraft.tipped_arrow.effect.long_quill": "Arrow of Quills",
   "item.minecraft.tipped_arrow.effect.strong_quill": "Arrow of Quills",
+  "item.minecraft.tipped_arrow.effect.cramps": "Arrow of Cramps",
+  "item.minecraft.tipped_arrow.effect.long_cramps": "Arrow of Cramps",
+  "item.minecraft.tipped_arrow.effect.strong_cramps": "Arrow of Cramps",
 
   "block.reanimal.quill_platform": "Quill Platform",
 
-  "effect.reanimal.quill": "Quill"
+  "effect.reanimal.quill": "Quill",
+  "effect.reanimal.cramps": "Cramps"
 }

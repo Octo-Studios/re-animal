@@ -27,7 +27,6 @@ import net.minecraft.client.renderer.entity.ArrowRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Items;
@@ -163,10 +162,17 @@ public class ReAnimalModEvents {
         var quill = registry.getHolder(ReAnimalPotions.QUILL.getKey()).orElseThrow();
         var longQuill = registry.getHolder(ReAnimalPotions.LONG_QUILL.getKey()).orElseThrow();
         var strongQuill = registry.getHolder(ReAnimalPotions.STRONG_QUILL.getKey()).orElseThrow();
+        var cramps = registry.getHolder(ReAnimalPotions.CRAMPS.getKey()).orElseThrow();
+        var longCramps = registry.getHolder(ReAnimalPotions.LONG_CRAMPS.getKey()).orElseThrow();
+        var strongCramps = registry.getHolder(ReAnimalPotions.STRONG_CRAMPS.getKey()).orElseThrow();
 
         event.getBuilder().addMix(Potions.AWKWARD, ReAnimalItems.QUILL.get(), quill);
         event.getBuilder().addMix(quill, Items.REDSTONE, longQuill);
         event.getBuilder().addMix(quill, Items.GLOWSTONE_DUST, strongQuill);
+
+        event.getBuilder().addMix(Potions.AWKWARD, ReAnimalItems.SEA_URCHIN_CAVIAR.get(), cramps);
+        event.getBuilder().addMix(cramps, Items.REDSTONE, longCramps);
+        event.getBuilder().addMix(cramps, Items.GLOWSTONE_DUST, strongCramps);
     }
 
     @EventBusSubscriber(modid = ReAnimal.MODID, value = Dist.CLIENT)

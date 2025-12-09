@@ -1,15 +1,14 @@
 package it.hurts.shatterbyte.reanimal.common.entity.sea_urchin;
 
 import com.mojang.serialization.Dynamic;
-import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -26,11 +25,12 @@ import net.neoforged.neoforge.fluids.FluidType;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
+import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 public class SeaUrchinEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.sea_urchin.idle");
-    private static final RawAnimation WOBBLE = RawAnimation.begin().thenLoop("animation.sea_urchin.wobble");
+    private static final RawAnimation WOBBLE = RawAnimation.begin().thenLoop("animation.sea_urchin.wobbling");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -54,6 +54,39 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
         profiler.pop();
 
         super.customServerAiStep();
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        var level = this.level();
+
+        if (level.isClientSide())
+            return;
+
+        if (!this.isBaby()) {
+            var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof SeaUrchinEntity));
+
+            for (var target : targets)
+                if (target.hurt(this.damageSources().thorns(this), 5F))
+                    target.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 200, 0));
+        }
+    }
+
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        var result = super.hurt(source, amount);
+
+        if (result && !this.level().isClientSide()) {
+            var attacker = source.getEntity();
+
+            if (attacker instanceof LivingEntity entity && entity.getMainHandItem().isEmpty())
+                if (entity.hurt(this.damageSources().thorns(this), 3F))
+                    entity.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 100, 0));
+        }
+
+        return result;
     }
 
     @Override
@@ -141,7 +174,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
         var controller = state.getController();
         var entity = state.getAnimatable();
 
-        if (state.isMoving()) {
+        if (!entity.onGround() || entity.getDeltaMovement().multiply(1, 0, 1).length() > 0) {
             controller.setAnimation(WOBBLE);
         } else {
             controller.setAnimation(IDLE);
