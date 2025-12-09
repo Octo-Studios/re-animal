@@ -10,6 +10,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEntity;
@@ -89,6 +90,11 @@ public class ReAnimalEntities {
                     .sized(0.6F, 1.2F)
                     .build(ReAnimal.MODID + ":penguin"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<SeaUrchinEntity>> SEA_URCHIN = ENTITY_TYPES.register("sea_urchin", () ->
+            EntityType.Builder.of(SeaUrchinEntity::new, MobCategory.CREATURE)
+                    .sized(0.5F, 0.65F)
+                    .build(ReAnimal.MODID + ":sea_urchin"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<KiwiEggEntity>> KIWI_EGG = ENTITY_TYPES.register("kiwi_egg", () ->
             EntityType.Builder.of(KiwiEggEntity::new, MobCategory.MISC)
                     .sized(0.25F, 0.25F)
@@ -144,5 +150,6 @@ public class ReAnimalEntities {
         event.put(DRAGONFLY.get(), DragonflyEntity.createAttributes().build());
         event.put(VULTURE.get(), VultureEntity.createAttributes().build());
         event.put(PENGUIN.get(), PenguinEntity.createAttributes().build());
+        event.put(SEA_URCHIN.get(), SeaUrchinEntity.createAttributes().build());
     }
 }

@@ -11,6 +11,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.vulture.VultureRenderer;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
@@ -26,6 +27,7 @@ import net.minecraft.client.renderer.entity.ArrowRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.Items;
@@ -144,6 +146,14 @@ public class ReAnimalModEvents {
                 Animal::checkAnimalSpawnRules,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+
+        event.register(
+                ReAnimalEntities.SEA_URCHIN.get(),
+                SpawnPlacementTypes.IN_WATER,
+                Heightmap.Types.OCEAN_FLOOR,
+                (type, level, spawnType, pos, random) -> true,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
     }
 
     @SubscribeEvent
@@ -180,6 +190,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.DRAGONFLY.get(), DragonflyRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.VULTURE.get(), VultureRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PENGUIN.get(), PenguinRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.SEA_URCHIN.get(), SeaUrchinRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);

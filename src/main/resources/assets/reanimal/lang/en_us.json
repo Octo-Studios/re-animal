@@ -59,6 +59,10 @@
   "item.reanimal.penguin_spawn_egg": "Penguin Spawn Egg",
   "item.reanimal.penguin_egg": "Penguin Egg",
 
+  "entity.reanimal.sea_urchin": "Sea Urchin",
+  "item.reanimal.sea_urchin_spawn_egg": "Sea Urchin Spawn Egg",
+  "item.reanimal.sea_urchin_caviar": "Sea Urchin Caviar",
+
   "item.reanimal.quill": "Quill",
   "item.reanimal.quill_arrow": "Quill Arrow",
   "entity.reanimal.quill_arrow": "Quill Arrow",
