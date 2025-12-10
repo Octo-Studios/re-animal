@@ -141,7 +141,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
             return;
 
         this.playSound(SoundEvents.CHICKEN_EGG, 1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1F);
-        this.spawnAtLocation(ReAnimalItems.KIWI_EGG.get());
+        this.spawnAtLocation(ReAnimalItems.PENGUIN_EGG.get());
         this.gameEvent(GameEvent.ENTITY_PLACE, this);
 
         this.eggTime = this.random.nextInt(6000) + 6000;
