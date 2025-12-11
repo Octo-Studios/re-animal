@@ -1,0 +1,7 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/hedgehog_adult.png" : "outlined_sprite:reanimal/hedgehog_adult.png",
+    "reanimal:textures/entity/hedgehog_baby.png" : "outlined_sprite:reanimal/hedgehog_baby.png",
+    "default" : "model"
+  }
+}

@@ -10,6 +10,9 @@ group = mod_group_id
 
 repositories {
     mavenLocal()
+    flatDir {
+        dirs 'libs'
+    }
     mavenCentral()
     maven {
         url = "https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/"
@@ -76,6 +79,26 @@ dependencies {
     annotationProcessor "org.projectlombok:lombok:${lombok_version}"
     testCompileOnly "org.projectlombok:lombok:${lombok_version}"
     testAnnotationProcessor "org.projectlombok:lombok:${lombok_version}"
+
+    if (file("libs").isDirectory()) {
+        file("libs").eachFile { file ->
+            def splitPos = file.name.lastIndexOf("-")
+
+            if (file.name != "desktop.ini") {
+                println file.name
+
+                def modartifact = file.name.substring(0, splitPos)
+                def modversion = file.name.substring(splitPos + 1, file.name.length() - 4)
+                def modreference = "lib:$modartifact:$modversion"
+
+                dependencies {
+                    implementation (project.dependencies.create(modreference) {
+                        transitive = false
+                    })
+                }
+            }
+        }
+    } else file("libs").mkdir()
 }
 
 tasks.withType(ProcessResources).configureEach {

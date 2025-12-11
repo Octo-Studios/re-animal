@@ -1,0 +1,10 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/dragonfly_0.png" : "outlined_sprite:reanimal/dragonfly_0.png",
+    "reanimal:textures/entity/dragonfly_1.png" : "outlined_sprite:reanimal/dragonfly_1.png",
+    "reanimal:textures/entity/dragonfly_2.png" : "outlined_sprite:reanimal/dragonfly_2.png",
+    "reanimal:textures/entity/dragonfly_3.png" : "outlined_sprite:reanimal/dragonfly_3.png",
+    "reanimal:textures/entity/dragonfly_4.png" : "outlined_sprite:reanimal/dragonfly_4.png",
+    "default" : "model"
+  }
+}
