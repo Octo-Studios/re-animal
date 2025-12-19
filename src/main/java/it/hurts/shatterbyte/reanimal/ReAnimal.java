@@ -20,6 +20,7 @@ public class ReAnimal {
         ReAnimalEntityDataSerializers.register(bus);
         ReAnimalSensorTypes.register(bus);
         ReAnimalCreativeTabs.register(bus);
+        ReAnimalSoundEvents.SOUND_EVENTS.register(bus);
 
         LOGGER.info("ReAnimal initialized");
     }

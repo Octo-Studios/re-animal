@@ -1,0 +1,243 @@
+{
+  "entity.capybara.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.capybara.death",
+    "sounds": [
+      "reanimal:entity/capybara/death"
+    ]
+  },
+  "entity.capybara.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.capybara.hurt",
+    "sounds": [
+      "reanimal:entity/capybara/hurt1",
+      "reanimal:entity/capybara/hurt2"
+    ]
+  },
+  "entity.capybara.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.capybara.idle",
+    "sounds": [
+      "reanimal:entity/capybara/idle1",
+      "reanimal:entity/capybara/idle2",
+      "reanimal:entity/capybara/idle3"
+    ]
+  },
+  "entity.giraffe.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.giraffe.death",
+    "sounds": [
+      "reanimal:entity/giraffe/death"
+    ]
+  },
+  "entity.giraffe.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.giraffe.hurt",
+    "sounds": [
+      "reanimal:entity/giraffe/hurt1",
+      "reanimal:entity/giraffe/hurt2"
+    ]
+  },
+  "entity.giraffe.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.giraffe.idle",
+    "sounds": [
+      "reanimal:entity/giraffe/idle1",
+      "reanimal:entity/giraffe/idle2"
+    ]
+  },
+  "entity.hedgehog.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hedgehog.death",
+    "sounds": [
+      "reanimal:entity/hedgehog/death"
+    ]
+  },
+  "entity.hedgehog.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hedgehog.hurt",
+    "sounds": [
+      "reanimal:entity/hedgehog/hurt1",
+      "reanimal:entity/hedgehog/hurt2"
+    ]
+  },
+  "entity.hedgehog.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hedgehog.idle",
+    "sounds": [
+      "reanimal:entity/hedgehog/idle1",
+      "reanimal:entity/hedgehog/idle2"
+    ]
+  },
+  "entity.hippopotamus.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hippopotamus.death",
+    "sounds": [
+      "reanimal:entity/hippopotamus/death"
+    ]
+  },
+  "entity.hippopotamus.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hippopotamus.hurt",
+    "sounds": [
+      "reanimal:entity/hippopotamus/hurt1",
+      "reanimal:entity/hippopotamus/hurt2"
+    ]
+  },
+  "entity.hippopotamus.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hippopotamus.idle",
+    "sounds": [
+      "reanimal:entity/hippopotamus/idle1",
+      "reanimal:entity/hippopotamus/idle2"
+    ]
+  },
+  "entity.kiwi.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.kiwi.death",
+    "sounds": [
+      "reanimal:entity/kiwi/death"
+    ]
+  },
+  "entity.kiwi.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.kiwi.hurt",
+    "sounds": [
+      "reanimal:entity/kiwi/hurt1",
+      "reanimal:entity/kiwi/hurt2"
+    ]
+  },
+  "entity.kiwi.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.kiwi.idle",
+    "sounds": [
+      "reanimal:entity/kiwi/idle1",
+      "reanimal:entity/kiwi/idle2"
+    ]
+  },
+  "entity.ostrich.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.ostrich.death",
+    "sounds": [
+      "reanimal:entity/ostrich/death"
+    ]
+  },
+  "entity.ostrich.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.ostrich.hurt",
+    "sounds": [
+      "reanimal:entity/ostrich/hurt1",
+      "reanimal:entity/ostrich/hurt2",
+      "reanimal:entity/ostrich/hurt3"
+    ]
+  },
+  "entity.ostrich.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.ostrich.idle",
+    "sounds": [
+      "reanimal:entity/ostrich/idle1",
+      "reanimal:entity/ostrich/idle2"
+    ]
+  },
+  "entity.penguin.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.penguin.death",
+    "sounds": [
+      "reanimal:entity/penguin/death"
+    ]
+  },
+  "entity.penguin.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.penguin.hurt",
+    "sounds": [
+      "reanimal:entity/penguin/hurt1",
+      "reanimal:entity/penguin/hurt2"
+    ]
+  },
+  "entity.penguin.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.penguin.idle",
+    "sounds": [
+      "reanimal:entity/penguin/idle1",
+      "reanimal:entity/penguin/idle2"
+    ]
+  },
+  "entity.pigeon.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.pigeon.death",
+    "sounds": [
+      "reanimal:entity/pigeon/death"
+    ]
+  },
+  "entity.pigeon.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.pigeon.hurt",
+    "sounds": [
+      "reanimal:entity/pigeon/hurt1",
+      "reanimal:entity/pigeon/hurt2"
+    ]
+  },
+  "entity.pigeon.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.pigeon.idle",
+    "sounds": [
+      "reanimal:entity/pigeon/idle1",
+      "reanimal:entity/pigeon/idle2"
+    ]
+  },
+  "entity.pigeon.takeoff": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.pigeon.takeoff",
+    "sounds": [
+      "reanimal:entity/pigeon/takeoff1",
+      "reanimal:entity/pigeon/takeoff2",
+      "reanimal:entity/pigeon/takeoff3"
+    ]
+  },
+  "entity.seal.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.seal.death",
+    "sounds": [
+      "reanimal:entity/seal/death"
+    ]
+  },
+  "entity.seal.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.seal.hurt",
+    "sounds": [
+      "reanimal:entity/seal/hurt1",
+      "reanimal:entity/seal/hurt2"
+    ]
+  },
+  "entity.seal.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.seal.idle",
+    "sounds": [
+      "reanimal:entity/seal/idle1",
+      "reanimal:entity/seal/idle2"
+    ]
+  },
+  "entity.vulture.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.vulture.death",
+    "sounds": [
+      "reanimal:entity/vulture/death"
+    ]
+  },
+  "entity.vulture.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.vulture.hurt",
+    "sounds": [
+      "reanimal:entity/vulture/hurt1",
+      "reanimal:entity/vulture/hurt2"
+    ]
+  },
+  "entity.vulture.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.vulture.idle",
+    "sounds": [
+      "reanimal:entity/vulture/idle1",
+      "reanimal:entity/vulture/idle2"
+    ]
+  }
+}

@@ -4,6 +4,7 @@ import com.mojang.serialization.Dynamic;
 import com.google.common.collect.ImmutableMap;
 import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichAI;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -14,6 +15,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -99,6 +101,21 @@ public class GiraffeEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.GIRAFFE_FOOD);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ReAnimalSoundEvents.GIRAFFE_IDLE.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.GIRAFFE_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.GIRAFFE_DEATH.get();
     }
 
     @Override

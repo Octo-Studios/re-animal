@@ -4,9 +4,11 @@ import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeAI;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -74,6 +76,21 @@ public class KiwiEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.KIWI_FOOD);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ReAnimalSoundEvents.KIWI_IDLE.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.KIWI_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.KIWI_DEATH.get();
     }
 
     @Override

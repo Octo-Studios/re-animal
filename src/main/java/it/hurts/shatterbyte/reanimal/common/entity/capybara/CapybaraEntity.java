@@ -1,10 +1,11 @@
 package it.hurts.shatterbyte.reanimal.common.entity.capybara;
 
 import com.mojang.serialization.Dynamic;
-import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeAI;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -61,6 +62,21 @@ public class CapybaraEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.CAPYBARA_FOOD);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ReAnimalSoundEvents.CAPYBARA_IDLE.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.CAPYBARA_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.CAPYBARA_DEATH.get();
     }
 
     @Override

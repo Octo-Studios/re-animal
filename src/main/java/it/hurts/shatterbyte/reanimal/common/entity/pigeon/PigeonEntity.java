@@ -3,12 +3,14 @@ package it.hurts.shatterbyte.reanimal.common.entity.pigeon;
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -27,8 +29,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.Heightmap;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
@@ -222,6 +224,9 @@ public class PigeonEntity extends Animal implements GeoEntity {
             var target = ground.getCenter();
 
             this.getNavigation().moveTo(target.x, target.y, target.z, 1D);
+
+            if (this.onGround())
+                this.playSound(ReAnimalSoundEvents.PIGEON_TAKEOFF.get(), 1F, 1F);
         }
     }
 
@@ -258,6 +263,24 @@ public class PigeonEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.PIGEON_FOOD);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        if (!this.onGround())
+            return null;
+
+        return ReAnimalSoundEvents.PIGEON_IDLE.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.PIGEON_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.PIGEON_DEATH.get();
     }
 
     @Override

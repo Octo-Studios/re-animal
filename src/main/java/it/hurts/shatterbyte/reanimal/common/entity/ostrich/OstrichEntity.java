@@ -3,12 +3,14 @@ package it.hurts.shatterbyte.reanimal.common.entity.ostrich;
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -261,6 +263,21 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.OSTRICH_FOOD);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ReAnimalSoundEvents.OSTRICH_IDLE.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.OSTRICH_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.OSTRICH_DEATH.get();
     }
 
     @Override
