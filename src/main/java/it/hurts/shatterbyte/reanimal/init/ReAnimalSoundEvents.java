@@ -13,6 +13,8 @@ public class ReAnimalSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> HEDGEHOG_IDLE = register("entity.hedgehog.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> HEDGEHOG_HURT = register("entity.hedgehog.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> HEDGEHOG_DEATH = register("entity.hedgehog.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HEDGEHOG_ROLL = register("entity.hedgehog.roll");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HEDGEHOG_UNROLL = register("entity.hedgehog.unroll");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> OSTRICH_IDLE = register("entity.ostrich.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> OSTRICH_HURT = register("entity.ostrich.hurt");
@@ -38,6 +40,7 @@ public class ReAnimalSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> HIPPOPOTAMUS_IDLE = register("entity.hippopotamus.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> HIPPOPOTAMUS_HURT = register("entity.hippopotamus.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> HIPPOPOTAMUS_DEATH = register("entity.hippopotamus.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> HIPPOPOTAMUS_BITE = register("entity.hippopotamus.bite");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> GIRAFFE_IDLE = register("entity.giraffe.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> GIRAFFE_HURT = register("entity.giraffe.hurt");
@@ -47,9 +50,12 @@ public class ReAnimalSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> VULTURE_HURT = register("entity.vulture.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> VULTURE_DEATH = register("entity.vulture.death");
 
-    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_IDLE = register("entity.penguin.idle");
-    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_HURT = register("entity.penguin.hurt");
-    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_DEATH = register("entity.penguin.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_IDLE_ADULT = register("entity.penguin.idle_adult");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_IDLE_BABY = register("entity.penguin.idle_baby");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_HURT_ADULT = register("entity.penguin.hurt_adult");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_HURT_BABY = register("entity.penguin.hurt_baby");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_DEATH_ADULT = register("entity.penguin.death_adult");
+    public static final DeferredHolder<SoundEvent, SoundEvent> PENGUIN_DEATH_BABY = register("entity.penguin.death_baby");
 
     private static DeferredHolder<SoundEvent, SoundEvent> register(String name) {
         return SOUND_EVENTS.register(name, () -> SoundEvent.createVariableRangeEvent(ResourceLocation.fromNamespaceAndPath(ReAnimal.MODID, name)));

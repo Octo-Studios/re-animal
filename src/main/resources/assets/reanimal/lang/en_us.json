@@ -111,7 +111,10 @@
   "subtitles.reanimal.entity.hedgehog.idle": "Hedgehog chitters",
   "subtitles.reanimal.entity.hedgehog.hurt": "Hedgehog hurt",
   "subtitles.reanimal.entity.hedgehog.death": "Hedgehog dies",
+  "subtitles.reanimal.entity.hedgehog.roll": "Hedgehog rolls up",
+  "subtitles.reanimal.entity.hedgehog.unroll": "Hedgehog unrolls",
 
+  "subtitles.reanimal.entity.hippopotamus.bite": "Hippopotamus bites",
   "subtitles.reanimal.entity.hippopotamus.idle": "Hippopotamus grunts",
   "subtitles.reanimal.entity.hippopotamus.hurt": "Hippopotamus hurt",
   "subtitles.reanimal.entity.hippopotamus.death": "Hippopotamus dies",

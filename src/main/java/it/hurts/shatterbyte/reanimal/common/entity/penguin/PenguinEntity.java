@@ -79,17 +79,17 @@ public class PenguinEntity extends Animal implements GeoEntity {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        return ReAnimalSoundEvents.PENGUIN_IDLE.get();
+        return this.isBaby() ? ReAnimalSoundEvents.PENGUIN_IDLE_BABY.get() : ReAnimalSoundEvents.PENGUIN_IDLE_ADULT.get();
     }
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return ReAnimalSoundEvents.PENGUIN_HURT.get();
+        return this.isBaby() ? ReAnimalSoundEvents.PENGUIN_HURT_BABY.get() : ReAnimalSoundEvents.PENGUIN_HURT_ADULT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return ReAnimalSoundEvents.PENGUIN_DEATH.get();
+        return this.isBaby() ? ReAnimalSoundEvents.PENGUIN_DEATH_BABY.get() : ReAnimalSoundEvents.PENGUIN_DEATH_ADULT.get();
     }
 
     @Override

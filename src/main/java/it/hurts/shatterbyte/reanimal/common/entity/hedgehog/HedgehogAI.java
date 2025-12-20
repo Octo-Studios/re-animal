@@ -191,9 +191,8 @@ public class HedgehogAI {
                         this.nextPeekTimer = this.pickNextPeekTimer(entity);
                     }
 
-                    if (i < (long) HedgehogEntity.HedgehogState.UNROLLING.getAnimationDuration()) {
+                    if (i < (long) HedgehogEntity.HedgehogState.UNROLLING.getAnimationDuration())
                         entity.setState(HedgehogEntity.HedgehogState.UNROLLING);
-                    }
 
                 } else if (state == HedgehogEntity.HedgehogState.UNROLLING && i > (long) HedgehogEntity.HedgehogState.UNROLLING.getAnimationDuration())
                     entity.setState(HedgehogEntity.HedgehogState.SCARED);

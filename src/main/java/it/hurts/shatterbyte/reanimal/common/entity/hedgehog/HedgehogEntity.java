@@ -16,7 +16,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
@@ -148,6 +147,11 @@ public class HedgehogEntity extends Animal implements GeoEntity {
 
             if (damagedSomeone)
                 this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80);
+        }
+
+        if (this.getState() == HedgehogState.UNROLLING
+                && this.inStateTicks == (long) HedgehogState.UNROLLING.getAnimationDuration() - 10) {
+            this.playSound(ReAnimalSoundEvents.HEDGEHOG_UNROLL.get(), 1F, 1F);
         }
     }
 
@@ -351,7 +355,7 @@ public class HedgehogEntity extends Animal implements GeoEntity {
         this.resetLove();
 
         this.gameEvent(GameEvent.ENTITY_ACTION);
-        this.makeSound(SoundEvents.ARMADILLO_ROLL);
+        this.makeSound(ReAnimalSoundEvents.HEDGEHOG_ROLL.get());
         this.setState(HedgehogState.ROLLING);
     }
 

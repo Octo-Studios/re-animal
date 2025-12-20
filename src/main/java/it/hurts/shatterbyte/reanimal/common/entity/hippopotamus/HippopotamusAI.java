@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
@@ -321,8 +322,12 @@ public class HippopotamusAI {
             HippopotamusAI.getAttackTarget(entity).ifPresent(target -> {
                 entity.getLookControl().setLookAt(target, 30F, 30F);
 
-                if (!this.dealtDamage && this.elapsedTicks == this.hitTick && entity.isWithinMeleeAttackRange(target))
+                if (!this.dealtDamage && this.elapsedTicks == this.hitTick && entity.isWithinMeleeAttackRange(target)) {
                     this.dealtDamage = entity.doHurtTarget(target);
+
+                    if (this.dealtDamage)
+                        entity.playSound(ReAnimalSoundEvents.HIPPOPOTAMUS_BITE.get(), 1F, 1F);
+                }
             });
         }
 

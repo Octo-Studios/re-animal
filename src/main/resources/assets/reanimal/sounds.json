@@ -35,7 +35,8 @@
     "subtitle": "subtitles.reanimal.entity.giraffe.hurt",
     "sounds": [
       "reanimal:entity/giraffe/hurt1",
-      "reanimal:entity/giraffe/hurt2"
+      "reanimal:entity/giraffe/hurt2",
+      "reanimal:entity/giraffe/hurt3"
     ]
   },
   "entity.giraffe.idle": {
@@ -43,7 +44,9 @@
     "subtitle": "subtitles.reanimal.entity.giraffe.idle",
     "sounds": [
       "reanimal:entity/giraffe/idle1",
-      "reanimal:entity/giraffe/idle2"
+      "reanimal:entity/giraffe/idle2",
+      "reanimal:entity/giraffe/idle3",
+      "reanimal:entity/giraffe/idle4"
     ]
   },
   "entity.hedgehog.death": {
@@ -66,7 +69,22 @@
     "subtitle": "subtitles.reanimal.entity.hedgehog.idle",
     "sounds": [
       "reanimal:entity/hedgehog/idle1",
-      "reanimal:entity/hedgehog/idle2"
+      "reanimal:entity/hedgehog/idle2",
+      "reanimal:entity/hedgehog/idle3"
+    ]
+  },
+  "entity.hedgehog.roll": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hedgehog.roll",
+    "sounds": [
+      "reanimal:entity/hedgehog/roll"
+    ]
+  },
+  "entity.hedgehog.unroll": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hedgehog.unroll",
+    "sounds": [
+      "reanimal:entity/hedgehog/unroll"
     ]
   },
   "entity.hippopotamus.death": {
@@ -82,6 +100,15 @@
     "sounds": [
       "reanimal:entity/hippopotamus/hurt1",
       "reanimal:entity/hippopotamus/hurt2"
+    ]
+  },
+  "entity.hippopotamus.bite": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.hippopotamus.bite",
+    "sounds": [
+      "reanimal:entity/hippopotamus/bite1",
+      "reanimal:entity/hippopotamus/bite2",
+      "reanimal:entity/hippopotamus/bite3"
     ]
   },
   "entity.hippopotamus.idle": {
@@ -139,27 +166,52 @@
       "reanimal:entity/ostrich/idle2"
     ]
   },
-  "entity.penguin.death": {
+  "entity.penguin.death_adult": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.penguin.death",
     "sounds": [
-      "reanimal:entity/penguin/death"
+      "reanimal:entity/penguin/death_adult"
     ]
   },
-  "entity.penguin.hurt": {
+  "entity.penguin.death_baby": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.penguin.death",
+    "sounds": [
+      "reanimal:entity/penguin/death_baby"
+    ]
+  },
+  "entity.penguin.hurt_adult": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.penguin.hurt",
     "sounds": [
-      "reanimal:entity/penguin/hurt1",
-      "reanimal:entity/penguin/hurt2"
+      "reanimal:entity/penguin/hurt_adult1",
+      "reanimal:entity/penguin/hurt_adult2",
+      "reanimal:entity/penguin/hurt_adult3"
     ]
   },
-  "entity.penguin.idle": {
+  "entity.penguin.hurt_baby": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.penguin.hurt",
+    "sounds": [
+      "reanimal:entity/penguin/hurt_baby1",
+      "reanimal:entity/penguin/hurt_baby2"
+    ]
+  },
+  "entity.penguin.idle_adult": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.penguin.idle",
     "sounds": [
-      "reanimal:entity/penguin/idle1",
-      "reanimal:entity/penguin/idle2"
+      "reanimal:entity/penguin/idle_adult1",
+      "reanimal:entity/penguin/idle_adult2",
+      "reanimal:entity/penguin/idle_adult3"
+    ]
+  },
+  "entity.penguin.idle_baby": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.penguin.idle",
+    "sounds": [
+      "reanimal:entity/penguin/idle_baby1",
+      "reanimal:entity/penguin/idle_baby2"
     ]
   },
   "entity.pigeon.death": {
@@ -206,7 +258,8 @@
     "subtitle": "subtitles.reanimal.entity.seal.hurt",
     "sounds": [
       "reanimal:entity/seal/hurt1",
-      "reanimal:entity/seal/hurt2"
+      "reanimal:entity/seal/hurt2",
+      "reanimal:entity/seal/hurt3"
     ]
   },
   "entity.seal.idle": {
@@ -214,7 +267,8 @@
     "subtitle": "subtitles.reanimal.entity.seal.idle",
     "sounds": [
       "reanimal:entity/seal/idle1",
-      "reanimal:entity/seal/idle2"
+      "reanimal:entity/seal/idle2",
+      "reanimal:entity/seal/idle3"
     ]
   },
   "entity.vulture.death": {
