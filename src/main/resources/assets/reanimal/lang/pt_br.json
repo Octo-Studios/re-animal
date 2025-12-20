@@ -98,5 +98,46 @@
   "block.reanimal.quill_platform": "Plataforma de Espinhos",
 
   "effect.reanimal.quill": "Espinho",
-  "effect.reanimal.cramps": "Cãibras"
+  "effect.reanimal.cramps": "Cãibras",
+
+  "subtitles.reanimal.entity.capybara.idle": "Capivara grunhe",
+  "subtitles.reanimal.entity.capybara.hurt": "Capivara ferida",
+  "subtitles.reanimal.entity.capybara.death": "Capivara morre",
+
+  "subtitles.reanimal.entity.giraffe.idle": "Girafa bufa",
+  "subtitles.reanimal.entity.giraffe.hurt": "Girafa ferida",
+  "subtitles.reanimal.entity.giraffe.death": "Girafa morre",
+
+  "subtitles.reanimal.entity.hedgehog.idle": "Ouriço chilreia",
+  "subtitles.reanimal.entity.hedgehog.hurt": "Ouriço ferido",
+  "subtitles.reanimal.entity.hedgehog.death": "Ouriço morre",
+
+  "subtitles.reanimal.entity.hippopotamus.idle": "Hipopótamo grunhe",
+  "subtitles.reanimal.entity.hippopotamus.hurt": "Hipopótamo ferido",
+  "subtitles.reanimal.entity.hippopotamus.death": "Hipopótamo morre",
+
+  "subtitles.reanimal.entity.kiwi.idle": "Quivi assobia",
+  "subtitles.reanimal.entity.kiwi.hurt": "Quivi ferido",
+  "subtitles.reanimal.entity.kiwi.death": "Quivi morre",
+
+  "subtitles.reanimal.entity.ostrich.idle": "Avestruz chama",
+  "subtitles.reanimal.entity.ostrich.hurt": "Avestruz ferido",
+  "subtitles.reanimal.entity.ostrich.death": "Avestruz morre",
+
+  "subtitles.reanimal.entity.penguin.idle": "Pinguim guincha",
+  "subtitles.reanimal.entity.penguin.hurt": "Pinguim ferido",
+  "subtitles.reanimal.entity.penguin.death": "Pinguim morre",
+
+  "subtitles.reanimal.entity.pigeon.idle": "Pombo arrulha",
+  "subtitles.reanimal.entity.pigeon.hurt": "Pombo ferido",
+  "subtitles.reanimal.entity.pigeon.death": "Pombo morre",
+  "subtitles.reanimal.entity.pigeon.takeoff": "Pombo levanta voo",
+
+  "subtitles.reanimal.entity.seal.idle": "Foca late",
+  "subtitles.reanimal.entity.seal.hurt": "Foca ferida",
+  "subtitles.reanimal.entity.seal.death": "Foca morre",
+
+  "subtitles.reanimal.entity.vulture.idle": "Urubu grunhe",
+  "subtitles.reanimal.entity.vulture.hurt": "Urubu ferido",
+  "subtitles.reanimal.entity.vulture.death": "Urubu morre"
 }
