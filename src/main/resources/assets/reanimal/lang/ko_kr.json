@@ -1,0 +1,146 @@
+{
+  "itemGroup.reanimal": "Re:Animal",
+
+  "entity.reanimal.hedgehog": "고슴도치",
+  "item.reanimal.hedgehog_spawn_egg": "고슴도치의 스폰 달걀",
+  "item.reanimal.raw_hedgehog_meat": "원시 고슴도치 고기",
+  "item.reanimal.cooked_hedgehog_meat": "구운 고슴도치 고기",
+
+  "entity.reanimal.ostrich": "타조",
+  "item.reanimal.ostrich_spawn_egg": "타조 스폰 달걀",
+  "item.reanimal.ostrich_egg": "타조 계란",
+  "item.reanimal.raw_ostrich_meat": "원시 타조 고기",
+  "item.reanimal.cooked_ostrich_meat": "구운 타조 고기",
+
+  "entity.reanimal.kiwi": "키위",
+  "item.reanimal.kiwi_spawn_egg": "키위의 스폰에그",
+  "item.reanimal.kiwi_egg": "키위 계란",
+  "item.reanimal.raw_kiwi_meat": "원시 키위 고기",
+  "item.reanimal.cooked_kiwi_meat": "구운 키위 고기",
+
+  "entity.reanimal.pigeon": "비둘기",
+  "item.reanimal.pigeon_spawn_egg": "비둘기의 스폰 달걀",
+  "item.reanimal.pigeon_egg": "비둘기 계란",
+  "item.reanimal.raw_pigeon_meat": "원시 비둘기",
+  "item.reanimal.cooked_pigeon_meat": "구운 비둘기",
+
+  "entity.reanimal.butterfly": "나비",
+  "item.reanimal.butterfly_spawn_egg": "나비의 스폰 달걀",
+  "item.reanimal.butterfly_pollen": "나비 꽃가루",
+
+  "entity.reanimal.capybara": "카피바라",
+  "item.reanimal.capybara_spawn_egg": "카피바라의 스폰 달걀",
+  "item.reanimal.raw_capybara_meat": "원시 카피바라 고기",
+  "item.reanimal.cooked_capybara_meat": "구운 카피바라 고기",
+
+  "entity.reanimal.seal": "물개",
+  "item.reanimal.seal_spawn_egg": "물개의 스폰 달걀",
+  "item.reanimal.raw_seal_meat": "원시 물개 고기",
+  "item.reanimal.cooked_seal_meat": "구운 물개 고기",
+
+  "entity.reanimal.hippopotamus": "하마",
+  "item.reanimal.hippopotamus_spawn_egg": "하마의 스폰 달걀",
+  "item.reanimal.raw_hippopotamus_meat": "원시 하마 고기",
+  "item.reanimal.cooked_hippopotamus_meat": "구운 하마 고기",
+
+  "entity.reanimal.giraffe": "기린",
+  "item.reanimal.giraffe_spawn_egg": "기린의 스폰 달걀",
+  "item.reanimal.raw_giraffe_meat": "원시 기린 고기",
+  "item.reanimal.cooked_giraffe_meat": "구운 기린 고기",
+
+  "entity.reanimal.dragonfly": "잠자리",
+  "item.reanimal.dragonfly_spawn_egg": "잠자리의 스폰 달걀",
+
+  "entity.reanimal.vulture": "대머리 독수리",
+  "item.reanimal.vulture_spawn_egg": "대머리 독수리의 스폰 달걀",
+  "item.reanimal.vulture_egg": "대머리 독수리 계란",
+
+  "entity.reanimal.penguin": "펭귄",
+  "item.reanimal.penguin_spawn_egg": "펭귄의 스폰 달걀",
+  "item.reanimal.penguin_egg": "펭귄 알",
+
+  "entity.reanimal.sea_urchin": "성게",
+  "item.reanimal.sea_urchin_spawn_egg": "성게의 스폰 달걀",
+  "item.reanimal.sea_urchin_caviar": "성게의 몸",
+
+  "item.reanimal.quill": "가시",
+  "item.reanimal.quill_arrow": "가시의 화살",
+  "entity.reanimal.quill_arrow": "가시의 화살",
+
+  "item.minecraft.potion.effect.quill": "가시의 물약",
+  "item.minecraft.potion.effect.long_quill": "가시의 물약",
+  "item.minecraft.potion.effect.strong_quill": "가시의 물약,
+  "item.minecraft.potion.effect.cramps": "경련의 물약",
+  "item.minecraft.potion.effect.long_cramps": "경련의 물약",
+  "item.minecraft.potion.effect.strong_cramps": "경련의 물약",
+
+  "item.minecraft.splash_potion.effect.quill": "가시의 스플래시 포션",
+  "item.minecraft.splash_potion.effect.long_quill": "가시의 스플래시 포션",
+  "item.minecraft.splash_potion.effect.strong_quill": "가시의 스플래시 포션",
+  "item.minecraft.splash_potion.effect.cramps": "경련의 스플래시 물약",
+  "item.minecraft.splash_potion.effect.long_cramps": "경련의 스플래시 물약",
+  "item.minecraft.splash_potion.effect.strong_cramps": "경련의 스플래시 물약",
+
+  "item.minecraft.lingering_potion.effect.quill": "가시의 잔류 물약",
+  "item.minecraft.lingering_potion.effect.long_quill": "가시의 잔류 물약",
+  "item.minecraft.lingering_potion.effect.strong_quill": "가시의 잔류 물약",
+  "item.minecraft.lingering_potion.effect.cramps": "경련의 잔류 물약",
+  "item.minecraft.lingering_potion.effect.long_cramps": "경련의 잔류 물약",
+  "item.minecraft.lingering_potion.effect.strong_cramps": "경련의 잔류 물약",
+
+  "item.minecraft.tipped_arrow.effect.quill": "가시의 화살",
+  "item.minecraft.tipped_arrow.effect.long_quill": "가시의 화살",
+  "item.minecraft.tipped_arrow.effect.strong_quill": "가시의 화살",
+  "item.minecraft.tipped_arrow.effect.cramps": "경련의 화살",
+  "item.minecraft.tipped_arrow.effect.long_cramps": "경련의 화살",
+  "item.minecraft.tipped_arrow.effect.strong_cramps": "경련의 화살",
+
+  "block.reanimal.quill_platform": "가시가 달린 널",
+
+  "effect.reanimal.quill": "가시",
+  "effect.reanimal.cramps": "경련",
+
+  "subtitles.reanimal.entity.capybara.idle": "카피바라가 씹는",
+  "subtitles.reanimal.entity.capybara.hurt": "카피바라가 피해를 입",
+  "subtitles.reanimal.entity.capybara.death": "카피바라가 죽는",
+
+  "subtitles.reanimal.entity.giraffe.idle": "기린이 코를 울리는",
+  "subtitles.reanimal.entity.giraffe.hurt": "기린이 피해를 입",
+  "subtitles.reanimal.entity.giraffe.death": "기린이 죽는",
+
+  "subtitles.reanimal.entity.hedgehog.idle": "고슴도치가 울린다",
+  "subtitles.reanimal.entity.hedgehog.hurt": "고슴도치가 피해를 입습니다",
+  "subtitles.reanimal.entity.hedgehog.death": "고슴도치가 죽는다",
+  "subtitles.reanimal.entity.hedgehog.roll": "고슴도치가 둥글다",
+  "subtitles.reanimal.entity.hedgehog.unroll": "고슴도치가 돌아가기",
+
+  "subtitles.reanimal.entity.hippopotamus.bite": "하마가 씹는",
+  "subtitles.reanimal.entity.hippopotamus.idle": "하마가 씹는",
+  "subtitles.reanimal.entity.hippopotamus.hurt": "하마가 피해를 입습니다",
+  "subtitles.reanimal.entity.hippopotamus.death": "하마가 죽는",
+
+  "subtitles.reanimal.entity.kiwi.idle": "키위가 울린다",
+  "subtitles.reanimal.entity.kiwi.hurt": "키위가 데미지를 입는다",
+  "subtitles.reanimal.entity.kiwi.death": "키위가 죽는다",
+
+  "subtitles.reanimal.entity.ostrich.idle": "타조가 울린다",
+  "subtitles.reanimal.entity.ostrich.hurt": "타조가 피해를 입는다",
+  "subtitles.reanimal.entity.ostrich.death": "타조가 죽는다",
+
+  "subtitles.reanimal.entity.penguin.idle": "펭귄이 울린다",
+  "subtitles.reanimal.entity.penguin.hurt": "펭귄이 피해를 입",
+  "subtitles.reanimal.entity.penguin.death": "펭귄이 죽다",
+
+  "subtitles.reanimal.entity.pigeon.idle": "비둘기가 울린다",
+  "subtitles.reanimal.entity.pigeon.hurt": "비둘기가 피해를 입습니다",
+  "subtitles.reanimal.entity.pigeon.death": "비둘기가 죽는",
+  "subtitles.reanimal.entity.pigeon.takeoff": "비둘기가 날개",
+
+  "subtitles.reanimal.entity.seal.idle": "물개가 울린다",
+  "subtitles.reanimal.entity.seal.hurt": "물개가 피해를 입는다",
+  "subtitles.reanimal.entity.seal.death": "물개가 죽는다",
+
+  "subtitles.reanimal.entity.vulture.idle": "대머리 독수리가 씹는",
+  "subtitles.reanimal.entity.vulture.hurt": "대머리 독수리가 피해를 입습니다",
+  "subtitles.reanimal.entity.vulture.death": "대머리 독수리가 죽는다"
+}
