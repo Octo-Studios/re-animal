@@ -30,6 +30,7 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, SpawnEggItem> VULTURE_SPAWN_EGG = ITEMS.register("vulture_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.VULTURE.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> PENGUIN_SPAWN_EGG = ITEMS.register("penguin_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.PENGUIN.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> SEA_URCHIN_SPAWN_EGG = ITEMS.register("sea_urchin_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.SEA_URCHIN.get(), 0xffffff, 0xffffff, new Item.Properties()));
+    public static final DeferredHolder<Item, SpawnEggItem> JELLYFISH_SPAWN_EGG = ITEMS.register("jellyfish_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.JELLYFISH.get(), 0xffffff, 0xffffff, new Item.Properties()));
 
     public static final DeferredHolder<Item, KiwiEgg> KIWI_EGG = ITEMS.register("kiwi_egg", () -> new KiwiEgg(new Item.Properties()));
     public static final DeferredHolder<Item, OstrichEgg> OSTRICH_EGG = ITEMS.register("ostrich_egg", () -> new OstrichEgg(new Item.Properties()));

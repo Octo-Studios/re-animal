@@ -1,0 +1,10 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/jellyfish_0.png" : "outlined_sprite:reanimal/jellyfish_0.png",
+    "reanimal:textures/entity/jellyfish_1.png" : "outlined_sprite:reanimal/jellyfish_1.png",
+    "reanimal:textures/entity/jellyfish_2.png" : "outlined_sprite:reanimal/jellyfish_2.png",
+    "reanimal:textures/entity/jellyfish_3.png" : "outlined_sprite:reanimal/jellyfish_3.png",
+    "reanimal:textures/entity/jellyfish_4.png" : "outlined_sprite:reanimal/jellyfish_4.png",
+    "default" : "model"
+  }
+}

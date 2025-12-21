@@ -7,6 +7,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.dragonfly.DragonflyRenderer
 import it.hurts.shatterbyte.reanimal.client.renderer.giraffe.GiraffeRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hedgehog.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.jellyfish.JellyfishRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
@@ -29,6 +30,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.WaterAnimal;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -153,6 +155,14 @@ public class ReAnimalModEvents {
                 (type, level, spawnType, pos, random) -> true,
                 RegisterSpawnPlacementsEvent.Operation.REPLACE
         );
+
+        event.register(
+                ReAnimalEntities.JELLYFISH.get(),
+                SpawnPlacementTypes.IN_WATER,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                (type, level, spawnType, pos, random) -> true,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
     }
 
     @SubscribeEvent
@@ -197,6 +207,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.VULTURE.get(), VultureRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PENGUIN.get(), PenguinRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.SEA_URCHIN.get(), SeaUrchinRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.JELLYFISH.get(), JellyfishRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);

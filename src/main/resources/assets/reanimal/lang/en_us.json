@@ -62,6 +62,8 @@
   "entity.reanimal.sea_urchin": "Sea Urchin",
   "item.reanimal.sea_urchin_spawn_egg": "Sea Urchin Spawn Egg",
   "item.reanimal.sea_urchin_caviar": "Sea Urchin Caviar",
+  "entity.reanimal.jellyfish": "Jellyfish",
+  "item.reanimal.jellyfish_spawn_egg": "Jellyfish Spawn Egg",
 
   "item.reanimal.quill": "Quill",
   "item.reanimal.quill_arrow": "Quill Arrow",
