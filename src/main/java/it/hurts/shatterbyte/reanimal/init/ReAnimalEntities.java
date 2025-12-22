@@ -5,6 +5,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEntity;
@@ -136,6 +137,13 @@ public class ReAnimalEntities {
                     .clientTrackingRange(4)
                     .updateInterval(10)
                     .build(ReAnimal.MODID + ":penguin_egg"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<GlowStickEntity>> GLOW_STICK = ENTITY_TYPES.register("glow_stick", () ->
+            EntityType.Builder.<GlowStickEntity>of(GlowStickEntity::new, MobCategory.MISC)
+                    .sized(0.5F, 0.5F)
+                    .clientTrackingRange(4)
+                    .updateInterval(10)
+                    .build(ReAnimal.MODID + ":glow_stick"));
 
     public static final DeferredHolder<EntityType<?>, EntityType<QuillArrowEntity>> QUILL_ARROW = ENTITY_TYPES.register("quill_arrow", () ->
             EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC)

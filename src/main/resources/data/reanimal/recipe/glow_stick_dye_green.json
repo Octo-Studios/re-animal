@@ -1,0 +1,58 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    [
+      {
+        "item": "reanimal:glow_stick_white"
+      },
+      {
+        "item": "reanimal:glow_stick_orange"
+      },
+      {
+        "item": "reanimal:glow_stick_magenta"
+      },
+      {
+        "item": "reanimal:glow_stick_light_blue"
+      },
+      {
+        "item": "reanimal:glow_stick_yellow"
+      },
+      {
+        "item": "reanimal:glow_stick_lime"
+      },
+      {
+        "item": "reanimal:glow_stick_pink"
+      },
+      {
+        "item": "reanimal:glow_stick_gray"
+      },
+      {
+        "item": "reanimal:glow_stick_light_gray"
+      },
+      {
+        "item": "reanimal:glow_stick_cyan"
+      },
+      {
+        "item": "reanimal:glow_stick_purple"
+      },
+      {
+        "item": "reanimal:glow_stick_blue"
+      },
+      {
+        "item": "reanimal:glow_stick_brown"
+      },
+      {
+        "item": "reanimal:glow_stick_red"
+      },
+      {
+        "item": "reanimal:glow_stick_black"
+      }
+    ],
+    {
+      "item": "minecraft:green_dye"
+    }
+  ],
+  "result": {
+    "id": "reanimal:glow_stick_green"
+  }
+}

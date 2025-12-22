@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.init;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
+import it.hurts.shatterbyte.reanimal.common.block.GlowLightBlock;
 import it.hurts.shatterbyte.reanimal.common.block.QuillPlatformBlock;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
@@ -19,6 +20,14 @@ public class ReAnimalBlocks {
                     .sound(SoundType.WOOD)
                     .noCollission()
                     .noOcclusion()));
+
+    public static final DeferredHolder<Block, GlowLightBlock> GLOW_LIGHT = BLOCKS.register("glow_light", () ->
+            new GlowLightBlock(BlockBehaviour.Properties.of()
+                    .strength(0.0F)
+                    .lightLevel(state -> 15)
+                    .noCollission()
+                    .noOcclusion()
+                    .noLootTable()));
 
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);

@@ -5,6 +5,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer
 import it.hurts.shatterbyte.reanimal.client.renderer.capybara.CapybaraRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.dragonfly.DragonflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.giraffe.GiraffeRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.glow_stick.GlowStickRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hedgehog.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.jellyfish.JellyfishRenderer;
@@ -213,6 +214,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.VULTURE_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PENGUIN_EGG.get(), ThrownItemRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.GLOW_STICK.get(), GlowStickRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW.get(), context -> new ArrowRenderer<QuillArrowEntity>(context) {
                 @Override
                 public ResourceLocation getTextureLocation(QuillArrowEntity entity) {

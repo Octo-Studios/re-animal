@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "I",
+    "J",
+    "I"
+  ],
+  "key": {
+    "I": {
+      "item": "minecraft:iron_nugget"
+    },
+    "J": {
+      "item": "reanimal:jellyfish_jelly"
+    }
+  },
+  "result": {
+    "id": "reanimal:glow_stick_light_blue",
+    "count": 4
+  }
+}

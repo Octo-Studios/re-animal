@@ -42,6 +42,22 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, Item> QUILL = ITEMS.register("quill", () -> new Item(new Item.Properties()));
     public static final DeferredHolder<Item, QuillArrowItem> QUILL_ARROW = ITEMS.register("quill_arrow", () -> new QuillArrowItem(new Item.Properties()));
     public static final DeferredHolder<Item, BlockItem> QUILL_PLATFORM = ITEMS.register("quill_platform", () -> new BlockItem(ReAnimalBlocks.QUILL_PLATFORM.get(), new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_WHITE = ITEMS.register("glow_stick_white", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_ORANGE = ITEMS.register("glow_stick_orange", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_MAGENTA = ITEMS.register("glow_stick_magenta", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_LIGHT_BLUE = ITEMS.register("glow_stick_light_blue", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_YELLOW = ITEMS.register("glow_stick_yellow", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_LIME = ITEMS.register("glow_stick_lime", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_PINK = ITEMS.register("glow_stick_pink", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_GRAY = ITEMS.register("glow_stick_gray", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_LIGHT_GRAY = ITEMS.register("glow_stick_light_gray", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_CYAN = ITEMS.register("glow_stick_cyan", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_PURPLE = ITEMS.register("glow_stick_purple", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_BLUE = ITEMS.register("glow_stick_blue", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_BROWN = ITEMS.register("glow_stick_brown", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_GREEN = ITEMS.register("glow_stick_green", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_RED = ITEMS.register("glow_stick_red", () -> new GlowStickItem(new Item.Properties()));
+    public static final DeferredHolder<Item, GlowStickItem> GLOW_STICK_BLACK = ITEMS.register("glow_stick_black", () -> new GlowStickItem(new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> RAW_HEDGEHOG_MEAT = ITEMS.register("raw_hedgehog_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 1.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_HEDGEHOG_MEAT = ITEMS.register("cooked_hedgehog_meat", () -> new Item(new Item.Properties().food(new FoodProperties(5, 6F, false, 1.6F, Optional.empty(), List.of()))));
@@ -60,4 +76,5 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, Item> RAW_GIRAFFE_MEAT = ITEMS.register("raw_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 1.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_GIRAFFE_MEAT = ITEMS.register("cooked_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(8, 12.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> SEA_URCHIN_CAVIAR = ITEMS.register("sea_urchin_caviar", () -> new Item(new Item.Properties().food(new FoodProperties(3, 5F, false, 1.6F, Optional.empty(), List.of()))));
+    public static final DeferredHolder<Item, Item> JELLYFISH_JELLY = ITEMS.register("jellyfish_jelly", () -> new Item(new Item.Properties().food(new FoodProperties(2, 0.6F, false, 1.6F, Optional.empty(), List.of()))));
 }

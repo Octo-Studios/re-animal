@@ -13,6 +13,7 @@ public class ReAnimal {
 
     public ReAnimal(IEventBus bus) {
         ReAnimalBlocks.BLOCKS.register(bus);
+        ReAnimalBlockEntities.BLOCK_ENTITIES.register(bus);
         ReAnimalEntities.ENTITY_TYPES.register(bus);
         ReAnimalItems.ITEMS.register(bus);
         ReAnimalMobEffects.MOB_EFFECTS.register(bus);

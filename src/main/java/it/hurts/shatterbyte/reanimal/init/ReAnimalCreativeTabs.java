@@ -40,6 +40,9 @@ public class ReAnimalCreativeTabs {
             var crampsHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.CRAMPS.getKey());
             var longCrampsHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.LONG_CRAMPS.getKey());
             var strongCrampsHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.STRONG_CRAMPS.getKey());
+            var glowingHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.GLOWING.getKey());
+            var longGlowingHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.LONG_GLOWING.getKey());
+            var strongGlowingHolder = BuiltInRegistries.POTION.getHolderOrThrow(ReAnimalPotions.STRONG_GLOWING.getKey());
 
             var quillPotion = PotionContents.createItemStack(Items.POTION, quillHolder);
             var longQuillPotion = PotionContents.createItemStack(Items.POTION, longQuillHolder);
@@ -47,6 +50,9 @@ public class ReAnimalCreativeTabs {
             var crampsPotion = PotionContents.createItemStack(Items.POTION, crampsHolder);
             var longCrampsPotion = PotionContents.createItemStack(Items.POTION, longCrampsHolder);
             var strongCrampsPotion = PotionContents.createItemStack(Items.POTION, strongCrampsHolder);
+            var glowingPotion = PotionContents.createItemStack(Items.POTION, glowingHolder);
+            var longGlowingPotion = PotionContents.createItemStack(Items.POTION, longGlowingHolder);
+            var strongGlowingPotion = PotionContents.createItemStack(Items.POTION, strongGlowingHolder);
 
             var quillSplash = PotionContents.createItemStack(Items.SPLASH_POTION, quillHolder);
             var longQuillSplash = PotionContents.createItemStack(Items.SPLASH_POTION, longQuillHolder);
@@ -54,6 +60,9 @@ public class ReAnimalCreativeTabs {
             var crampsSplash = PotionContents.createItemStack(Items.SPLASH_POTION, crampsHolder);
             var longCrampsSplash = PotionContents.createItemStack(Items.SPLASH_POTION, longCrampsHolder);
             var strongCrampsSplash = PotionContents.createItemStack(Items.SPLASH_POTION, strongCrampsHolder);
+            var glowingSplash = PotionContents.createItemStack(Items.SPLASH_POTION, glowingHolder);
+            var longGlowingSplash = PotionContents.createItemStack(Items.SPLASH_POTION, longGlowingHolder);
+            var strongGlowingSplash = PotionContents.createItemStack(Items.SPLASH_POTION, strongGlowingHolder);
 
             var quillLingering = PotionContents.createItemStack(Items.LINGERING_POTION, quillHolder);
             var longQuillLingering = PotionContents.createItemStack(Items.LINGERING_POTION, longQuillHolder);
@@ -61,6 +70,9 @@ public class ReAnimalCreativeTabs {
             var crampsLingering = PotionContents.createItemStack(Items.LINGERING_POTION, crampsHolder);
             var longCrampsLingering = PotionContents.createItemStack(Items.LINGERING_POTION, longCrampsHolder);
             var strongCrampsLingering = PotionContents.createItemStack(Items.LINGERING_POTION, strongCrampsHolder);
+            var glowingLingering = PotionContents.createItemStack(Items.LINGERING_POTION, glowingHolder);
+            var longGlowingLingering = PotionContents.createItemStack(Items.LINGERING_POTION, longGlowingHolder);
+            var strongGlowingLingering = PotionContents.createItemStack(Items.LINGERING_POTION, strongGlowingHolder);
 
             var quillArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, quillHolder);
             var longQuillArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, longQuillHolder);
@@ -68,16 +80,23 @@ public class ReAnimalCreativeTabs {
             var crampsArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, crampsHolder);
             var longCrampsArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, longCrampsHolder);
             var strongCrampsArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, strongCrampsHolder);
+            var glowingArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, glowingHolder);
+            var longGlowingArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, longGlowingHolder);
+            var strongGlowingArrow = PotionContents.createItemStack(Items.TIPPED_ARROW, strongGlowingHolder);
 
             event.acceptAll(
                     List.of(
                             crampsPotion, longCrampsPotion, strongCrampsPotion,
+                            glowingPotion, longGlowingPotion, strongGlowingPotion,
                             quillPotion, longQuillPotion, strongQuillPotion,
                             crampsSplash, longCrampsSplash, strongCrampsSplash,
+                            glowingSplash, longGlowingSplash, strongGlowingSplash,
                             quillSplash, longQuillSplash, strongQuillSplash,
                             crampsLingering, longCrampsLingering, strongCrampsLingering,
+                            glowingLingering, longGlowingLingering, strongGlowingLingering,
                             quillLingering, longQuillLingering, strongQuillLingering,
                             crampsArrow, longCrampsArrow, strongCrampsArrow,
+                            glowingArrow, longGlowingArrow, strongGlowingArrow,
                             quillArrow, longQuillArrow, strongQuillArrow
                     )
             );
