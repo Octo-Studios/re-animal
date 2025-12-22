@@ -168,6 +168,18 @@
   "subtitles.reanimal.entity.pigeon.death": "Pigeon dies",
   "subtitles.reanimal.entity.pigeon.takeoff": "Pigeon takes off",
 
+  "subtitles.reanimal.entity.butterfly.idle": "Butterfly flutters",
+  "subtitles.reanimal.entity.butterfly.hurt": "Butterfly hurt",
+  "subtitles.reanimal.entity.butterfly.death": "Butterfly dies",
+
+  "subtitles.reanimal.entity.dragonfly.loop": "Dragonfly buzzes",
+  "subtitles.reanimal.entity.dragonfly.hurt": "Dragonfly hurt",
+  "subtitles.reanimal.entity.dragonfly.death": "Dragonfly dies",
+
+  "subtitles.reanimal.entity.sea_urchin.idle": "Sea urchin rustles",
+  "subtitles.reanimal.entity.sea_urchin.hurt": "Sea urchin hurt",
+  "subtitles.reanimal.entity.sea_urchin.death": "Sea urchin dies",
+
   "subtitles.reanimal.entity.seal.idle": "Seal barks",
   "subtitles.reanimal.entity.seal.hurt": "Seal hurt",
   "subtitles.reanimal.entity.seal.death": "Seal dies",

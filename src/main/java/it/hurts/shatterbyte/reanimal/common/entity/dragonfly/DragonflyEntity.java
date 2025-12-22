@@ -1,12 +1,14 @@
 package it.hurts.shatterbyte.reanimal.common.entity.dragonfly;
 
 import com.mojang.serialization.Dynamic;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -124,6 +126,16 @@ public class DragonflyEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return false;
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.DRAGONFLY_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.DRAGONFLY_DEATH.get();
     }
 
     @Override

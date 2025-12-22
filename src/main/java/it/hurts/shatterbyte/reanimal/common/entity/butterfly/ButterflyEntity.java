@@ -1,12 +1,14 @@
 package it.hurts.shatterbyte.reanimal.common.entity.butterfly;
 
 import com.mojang.serialization.Dynamic;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -127,6 +129,21 @@ public class ButterflyEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return false;
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ReAnimalSoundEvents.BUTTERFLY_IDLE.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.BUTTERFLY_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.BUTTERFLY_DEATH.get();
     }
 
     @Override

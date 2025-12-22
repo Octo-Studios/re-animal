@@ -1,4 +1,25 @@
 {
+  "entity.butterfly.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.butterfly.death",
+    "sounds": [
+      "reanimal:entity/butterfly/death"
+    ]
+  },
+  "entity.butterfly.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.butterfly.hurt",
+    "sounds": [
+      "reanimal:entity/butterfly/hurt"
+    ]
+  },
+  "entity.butterfly.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.butterfly.idle",
+    "sounds": [
+      "reanimal:entity/butterfly/idle"
+    ]
+  },
   "entity.capybara.death": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.capybara.death",
@@ -21,6 +42,31 @@
       "reanimal:entity/capybara/idle1",
       "reanimal:entity/capybara/idle2",
       "reanimal:entity/capybara/idle3"
+    ]
+  },
+  "entity.dragonfly.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.dragonfly.death",
+    "sounds": [
+      "reanimal:entity/dragonfly/death"
+    ]
+  },
+  "entity.dragonfly.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.dragonfly.hurt",
+    "sounds": [
+      "reanimal:entity/dragonfly/hurt1",
+      "reanimal:entity/dragonfly/hurt2"
+    ]
+  },
+  "entity.dragonfly.loop": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.dragonfly.loop",
+    "sounds": [
+      "reanimal:entity/dragonfly/loop1",
+      "reanimal:entity/dragonfly/loop2",
+      "reanimal:entity/dragonfly/loop3",
+      "reanimal:entity/dragonfly/loop4"
     ]
   },
   "entity.giraffe.death": {
@@ -244,6 +290,29 @@
       "reanimal:entity/pigeon/takeoff1",
       "reanimal:entity/pigeon/takeoff2",
       "reanimal:entity/pigeon/takeoff3"
+    ]
+  },
+  "entity.sea_urchin.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.sea_urchin.death",
+    "sounds": [
+      "reanimal:entity/sea_urchin/death"
+    ]
+  },
+  "entity.sea_urchin.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.sea_urchin.hurt",
+    "sounds": [
+      "reanimal:entity/sea_urchin/hurt1",
+      "reanimal:entity/sea_urchin/hurt2"
+    ]
+  },
+  "entity.sea_urchin.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.sea_urchin.idle",
+    "sounds": [
+      "reanimal:entity/sea_urchin/idle1",
+      "reanimal:entity/sea_urchin/idle2"
     ]
   },
   "entity.seal.death": {
