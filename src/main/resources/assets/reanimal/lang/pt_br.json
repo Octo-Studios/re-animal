@@ -62,6 +62,8 @@
   "entity.reanimal.sea_urchin": "Ouriço do mar",
   "item.reanimal.sea_urchin_spawn_egg": "Ovo de Geração de Ouriço do mar",
   "item.reanimal.sea_urchin_caviar": "Caviar de Ouriço do mar",
+  "entity.reanimal.jellyfish": "Água-viva",
+  "item.reanimal.jellyfish_spawn_egg": "Ovo de Geração de Água-viva",
 
   "item.reanimal.quill": "Espinho",
   "item.reanimal.quill_arrow": "Flecha de Espinho",
@@ -111,7 +113,10 @@
   "subtitles.reanimal.entity.hedgehog.idle": "Ouriço chilreia",
   "subtitles.reanimal.entity.hedgehog.hurt": "Ouriço ferido",
   "subtitles.reanimal.entity.hedgehog.death": "Ouriço morre",
+  "subtitles.reanimal.entity.hedgehog.roll": "Ouriço se enrola",
+  "subtitles.reanimal.entity.hedgehog.unroll": "Ouriço se desenrola",
 
+  "subtitles.reanimal.entity.hippopotamus.bite": "Hipopótamo morde",
   "subtitles.reanimal.entity.hippopotamus.idle": "Hipopótamo grunhe",
   "subtitles.reanimal.entity.hippopotamus.hurt": "Hipopótamo ferido",
   "subtitles.reanimal.entity.hippopotamus.death": "Hipopótamo morre",
