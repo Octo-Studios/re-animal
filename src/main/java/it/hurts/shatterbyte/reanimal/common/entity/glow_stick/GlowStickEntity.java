@@ -6,6 +6,10 @@ import it.hurts.shatterbyte.reanimal.common.blockentity.GlowLightBlockEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -32,8 +36,12 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.glow_stick.idle");
     private static final double BOUNCE_DAMPING = 0.7D;
     private static final double BOUNCE_Y_CUTOFF = 0.18D;
-    private static final double STOP_SPEED_SQR = 0.03D * 0.03D;
+    private static final double STOP_SPEED_SQR = 0.03D;
     private static final int MAX_LIFETIME = 6000;
+
+    private static final EntityDataAccessor<Float> RENDER_YAW = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> RENDER_PITCH = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> RENDER_ROLL = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private float renderYaw;
@@ -48,6 +56,15 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
     public GlowStickEntity(EntityType<? extends GlowStickEntity> entityType, Level level) {
         super(entityType, level);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+
+        builder.define(RENDER_YAW, 0.0F);
+        builder.define(RENDER_PITCH, 0.0F);
+        builder.define(RENDER_ROLL, 0.0F);
     }
 
     @Override
@@ -67,17 +84,14 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         var motion = this.getDeltaMovement();
         var normal = Vec3.atLowerCornerOf(result.getDirection().getNormal()).normalize();
         var reflected = motion.subtract(normal.scale(2.0D * motion.dot(normal)));
+
         motion = reflected.scale(BOUNCE_DAMPING);
 
         if (result.getDirection().getAxis() == net.minecraft.core.Direction.Axis.Y && Math.abs(motion.y) < BOUNCE_Y_CUTOFF)
             motion = new Vec3(motion.x, 0.0D, motion.z);
 
-        if (motion.lengthSqr() < STOP_SPEED_SQR) {
-            this.setDeltaMovement(Vec3.ZERO);
-            return;
-        }
-
         this.setDeltaMovement(motion);
+
         this.hasImpulse = true;
     }
 
@@ -99,41 +113,95 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         if (this.tickCount > 1)
             tryPlaceGlowLight(this.level(), BlockPos.containing(this.position()));
 
-        double speedSqr = motion.lengthSqr();
-        double lerp = speedSqr > 0.0025D ? 0.25D : 0.12D;
-        var targetMotion = speedSqr > STOP_SPEED_SQR ? motion : Vec3.ZERO;
+        var speedSqr = motion.lengthSqr();
+        var lerp = speedSqr > 0.0025D ? 0.25D : 0.12D;
+
+        var targetMotion = speedSqr > STOP_SPEED_SQR * STOP_SPEED_SQR ? motion : Vec3.ZERO;
+
         this.renderMotion = new Vec3(
                 Mth.lerp(lerp, this.renderMotion.x, targetMotion.x),
                 Mth.lerp(lerp, this.renderMotion.y, targetMotion.y),
                 Mth.lerp(lerp, this.renderMotion.z, targetMotion.z)
         );
 
-        double horSqr = this.renderMotion.x * this.renderMotion.x + this.renderMotion.z * this.renderMotion.z;
+        var horSqr = this.renderMotion.x * this.renderMotion.x + this.renderMotion.z * this.renderMotion.z;
+
         if (horSqr > 1.0E-4D) {
-            var dir = this.renderMotion.normalize();
-            var targetYaw = (float) (Mth.atan2(dir.z, dir.x) * (180.0F / (float) Math.PI));
+            var dir = new Vec3(this.renderMotion.x, 0.0D, this.renderMotion.z).normalize();
+            var targetYaw = (float) (Mth.atan2(dir.x, dir.z) * (180.0F / (float) Math.PI));
 
             this.renderYaw = Mth.rotLerp(0.18F, this.renderYaw, targetYaw);
             this.renderPitch = Mth.lerp(0.12F, this.renderPitch, 0.0F);
         }
 
-        if (speedSqr < STOP_SPEED_SQR && this.onGround()) {
-            this.rollSpeed = 0.0F;
-            this.renderMotion = Vec3.ZERO;
-            this.renderRoll = 0.0F;
-        } else {
-            float speed = (float) this.renderMotion.length();
-            float targetSpin = Mth.clamp(speed * 25.0F, speed > 0.02F ? 1.0F : 0.0F, 12.0F);
-            this.rollSpeed = Mth.lerp(0.2F, this.rollSpeed, targetSpin);
-            this.rollSpeed *= this.onGround() ? 0.9F : 0.97F;
-            this.renderRoll += this.rollSpeed;
-        }
+        var speed = (float) this.renderMotion.length();
+        var speedFactor = Mth.clamp(speed / 0.2F, 0.0F, 1.0F);
 
-        if (!this.level().isClientSide() && this.isNoGravity())
-            this.setNoGravity(false);
+        speedFactor *= speedFactor;
+
+        var targetSpin = Mth.clamp(speed * 140.0F, speed > 0.02F ? 3.0F : 0.0F, 36.0F);
+
+        this.rollSpeed = Mth.lerp(0.2F, this.rollSpeed, targetSpin);
+        this.rollSpeed *= this.onGround() ? 0.95F : 0.99F;
+        this.renderRoll += this.rollSpeed * speedFactor;
 
         if (!this.level().isClientSide() && this.tickCount > MAX_LIFETIME)
             this.expireToItem();
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+
+        tag.putFloat("renderYaw", this.renderYaw);
+        tag.putFloat("renderPitch", this.renderPitch);
+        tag.putFloat("renderRoll", this.renderRoll);
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+
+        if (tag.contains("renderYaw")) {
+            var yaw = tag.getFloat("renderYaw");
+
+            this.renderYaw = yaw;
+            this.getEntityData().set(RENDER_YAW, yaw);
+        }
+
+        if (tag.contains("renderPitch")) {
+            var pitch = tag.getFloat("renderPitch");
+
+            this.renderPitch = pitch;
+            this.getEntityData().set(RENDER_PITCH, pitch);
+        }
+
+        if (tag.contains("renderRoll")) {
+            var roll = tag.getFloat("renderRoll");
+
+            this.renderRoll = roll;
+            this.getEntityData().set(RENDER_ROLL, roll);
+        }
+
+        this.renderYawO = this.renderYaw;
+        this.renderPitchO = this.renderPitch;
+        this.renderRollO = this.renderRoll;
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+
+        if (key == RENDER_YAW) {
+            this.renderYaw = this.getEntityData().get(RENDER_YAW);
+            this.renderYawO = this.renderYaw;
+        } else if (key == RENDER_PITCH) {
+            this.renderPitch = this.getEntityData().get(RENDER_PITCH);
+            this.renderPitchO = this.renderPitch;
+        } else if (key == RENDER_ROLL) {
+            this.renderRoll = this.getEntityData().get(RENDER_ROLL);
+            this.renderRollO = this.renderRoll;
+        }
     }
 
     public static void tryPlaceGlowLight(Level level, BlockPos basePos) {
