@@ -6,6 +6,7 @@ import it.hurts.shatterbyte.reanimal.common.blockentity.GlowLightBlockEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -20,10 +21,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
@@ -82,15 +85,42 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     @Override
     protected void onHitBlock(BlockHitResult result) {
         var motion = this.getDeltaMovement();
-        var normal = Vec3.atLowerCornerOf(result.getDirection().getNormal()).normalize();
-        var reflected = motion.subtract(normal.scale(2.0D * motion.dot(normal)));
+        var hitPos = result.getLocation();
+        var normal = Vec3.atLowerCornerOf(result.getDirection().getNormal());
 
-        motion = reflected.scale(BOUNCE_DAMPING);
+        var bounce = motion.subtract(normal.scale(2.0D * motion.dot(normal))).scale(BOUNCE_DAMPING);
 
-        if (result.getDirection().getAxis() == net.minecraft.core.Direction.Axis.Y && Math.abs(motion.y) < BOUNCE_Y_CUTOFF)
-            motion = new Vec3(motion.x, 0.0D, motion.z);
+        if (result.getDirection().getAxis() == Direction.Axis.Y && Math.abs(bounce.y) < BOUNCE_Y_CUTOFF)
+            bounce = new Vec3(bounce.x, 0.0D, bounce.z);
 
-        this.setDeltaMovement(motion);
+        var pos = new Vec3(hitPos.x + normal.x * 0.01D, hitPos.y + normal.y * 0.01D, hitPos.z + normal.z * 0.01D);
+
+        for (int i = 0; i < 2 && bounce.lengthSqr() > 1.0E-8D; i++) {
+            var hit = this.level().clip(new ClipContext(pos, pos.add(bounce), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this));
+
+            if (hit.getType() != HitResult.Type.BLOCK)
+                break;
+
+            var hitLocation = hit.getLocation();
+
+            if (hitLocation.distanceToSqr(pos) < 1.0E-10D)
+                break;
+
+            var hitNormal = Vec3.atLowerCornerOf(hit.getDirection().getNormal());
+
+            bounce = bounce.subtract(hitNormal.scale(2.0D * bounce.dot(hitNormal))).scale(BOUNCE_DAMPING);
+            if (hit.getDirection().getAxis() == Direction.Axis.Y && Math.abs(bounce.y) < BOUNCE_Y_CUTOFF)
+                bounce = new Vec3(bounce.x, 0.0D, bounce.z);
+
+            pos = new Vec3(
+                    hitLocation.x + hitNormal.x * 0.01D,
+                    hitLocation.y + hitNormal.y * 0.01D,
+                    hitLocation.z + hitNormal.z * 0.01D
+            );
+        }
+
+        this.setPos(pos.x, pos.y, pos.z);
+        this.setDeltaMovement(bounce);
 
         this.hasImpulse = true;
     }
@@ -265,9 +295,6 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
-        if (this.level().isClientSide())
-            return InteractionResult.SUCCESS;
-
         if (this.tickCount > 20 && player.getInventory().add(this.getItem().copy())) {
             this.discard();
 
