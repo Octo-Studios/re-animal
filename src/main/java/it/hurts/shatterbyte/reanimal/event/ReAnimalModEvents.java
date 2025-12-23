@@ -1,5 +1,6 @@
 package it.hurts.shatterbyte.reanimal.event;
 
+import it.hurts.octostudios.octolib.module.particle.trail.EntityTrailRegistry;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.capybara.CapybaraRenderer;
@@ -16,13 +17,17 @@ import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.vulture.VultureRenderer;
+import it.hurts.shatterbyte.reanimal.client.sound.DragonflySoundInstance;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.QuillArrowEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalPotions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.ArrowRenderer;
@@ -42,6 +47,7 @@ import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.brewing.RegisterBrewingRecipesEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
 
 @EventBusSubscriber(modid = ReAnimal.MODID)
@@ -191,6 +197,17 @@ public class ReAnimalModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             event.enqueueWork(() -> ItemBlockRenderTypes.setRenderLayer(ReAnimalBlocks.QUILL_PLATFORM.get(), RenderType.cutout()));
+
+            EntityTrailRegistry.registerProvider(ReAnimalEntities.GLOW_STICK.get(), GlowStickEntity.TrailProvider::new);
+        }
+
+        @SubscribeEvent
+        public static void onEntityJoin(EntityJoinLevelEvent event) {
+            if (!event.getLevel().isClientSide())
+                return;
+
+            if (event.getEntity() instanceof DragonflyEntity dragonfly)
+                Minecraft.getInstance().getSoundManager().queueTickingSound(new DragonflySoundInstance(dragonfly));
         }
 
         @SubscribeEvent

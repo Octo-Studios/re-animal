@@ -18,9 +18,9 @@ public class DragonflySoundInstance extends AbstractTickableSoundInstance {
     public DragonflySoundInstance(DragonflyEntity dragonfly) {
         super(ReAnimalSoundEvents.DRAGONFLY_LOOP.get(), SoundSource.NEUTRAL, SoundInstance.createUnseededRandom());
         this.dragonfly = dragonfly;
-        this.x = (float) dragonfly.getX();
-        this.y = (float) dragonfly.getY();
-        this.z = (float) dragonfly.getZ();
+        this.x = (double) ((float) dragonfly.getX());
+        this.y = (double) ((float) dragonfly.getY());
+        this.z = (double) ((float) dragonfly.getZ());
         this.looping = true;
         this.delay = 0;
         this.volume = 0.0F;
@@ -33,12 +33,17 @@ public class DragonflySoundInstance extends AbstractTickableSoundInstance {
             return;
         }
 
-        this.x = (float) dragonfly.getX();
-        this.y = (float) dragonfly.getY();
-        this.z = (float) dragonfly.getZ();
+        this.x = (double) ((float) dragonfly.getX());
+        this.y = (double) ((float) dragonfly.getY());
+        this.z = (double) ((float) dragonfly.getZ());
+
+        if (dragonfly.onGround()) {
+            this.pitch = 0.0F;
+            this.volume = 0.0F;
+            return;
+        }
 
         float speed = (float) dragonfly.getDeltaMovement().horizontalDistance();
-
         if (speed >= SPEED_MIN) {
             this.pitch = Mth.lerp(Mth.clamp(speed, getMinPitch(), getMaxPitch()), getMinPitch(), getMaxPitch());
             this.volume = Mth.lerp(Mth.clamp(speed, 0.0F, 0.5F), 0.0F, VOLUME_MAX);
