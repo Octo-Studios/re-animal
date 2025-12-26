@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.hedgehog;
 
 import com.mojang.serialization.Dynamic;
 import io.netty.buffer.ByteBuf;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntityDataSerializers;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -140,7 +141,7 @@ public class HedgehogEntity extends Animal implements GeoEntity {
             var damagedSomeone = false;
 
             for (var target : targets) {
-                var damaged = target.hurt(level.damageSources().thorns(this), this.getState() == HedgehogState.SCARED ? 5 : 1);
+                var damaged = target.hurt(level.damageSources().source(ReAnimalDamageTypes.HEDGEHOG_SPIKES, this), this.getState() == HedgehogState.SCARED ? 5 : 1);
 
                 damagedSomeone = damagedSomeone || damaged;
             }
@@ -179,7 +180,7 @@ public class HedgehogEntity extends Animal implements GeoEntity {
             var attacker = source.getEntity();
 
             if (attacker instanceof LivingEntity entity && entity.getMainHandItem().isEmpty())
-                entity.hurt(this.damageSources().thorns(this), 1F);
+                entity.hurt(this.damageSources().source(ReAnimalDamageTypes.HEDGEHOG_SPIKES, this), 1F);
         }
 
         return result;

@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.common.entity.jellyfish;
 
 import com.mojang.serialization.Dynamic;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
@@ -123,7 +124,7 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity {
             var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof JellyfishEntity));
 
             for (var target : targets)
-                if (target.hurt(this.damageSources().thorns(this), 3F))
+                if (target.hurt(this.damageSources().source(ReAnimalDamageTypes.JELLYFISH_STING, this), 3F))
                     target.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 200, 0));
         }
     }
@@ -136,7 +137,7 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity {
             var attacker = source.getEntity();
 
             if (attacker instanceof LivingEntity entity && entity.getMainHandItem().isEmpty())
-                if (entity.hurt(this.damageSources().thorns(this), 1F))
+                if (entity.hurt(this.damageSources().source(ReAnimalDamageTypes.JELLYFISH_STING, this), 1F))
                     entity.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 100, 0));
         }
 

@@ -138,6 +138,13 @@
   "effect.reanimal.quill": "Quill",
   "effect.reanimal.cramps": "Cramps",
 
+  "death.attack.reanimal.hedgehog_spikes": "%1$s was pricked by a hedgehog",
+  "death.attack.reanimal.hedgehog_spikes.player": "%1$s was pricked by %2$s",
+  "death.attack.reanimal.sea_urchin_spikes": "%1$s was pricked by a sea urchin",
+  "death.attack.reanimal.sea_urchin_spikes.player": "%1$s was pricked by %2$s",
+  "death.attack.reanimal.jellyfish_sting": "%1$s was stung by a jellyfish",
+  "death.attack.reanimal.jellyfish_sting.player": "%1$s was stung by %2$s",
+
   "subtitles.reanimal.entity.capybara.idle": "Capybara grunts",
   "subtitles.reanimal.entity.capybara.hurt": "Capybara hurt",
   "subtitles.reanimal.entity.capybara.death": "Capybara dies",

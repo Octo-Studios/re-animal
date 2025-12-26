@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.common.entity.sea_urchin;
 
 import com.mojang.serialization.Dynamic;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -71,7 +72,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
             var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof SeaUrchinEntity));
 
             for (var target : targets)
-                if (target.hurt(this.damageSources().thorns(this), 5F))
+                if (target.hurt(this.damageSources().source(ReAnimalDamageTypes.SEA_URCHIN_SPIKES, this), 5F))
                     target.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 200, 0));
         }
     }
@@ -84,7 +85,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
             var attacker = source.getEntity();
 
             if (attacker instanceof LivingEntity entity && entity.getMainHandItem().isEmpty())
-                if (entity.hurt(this.damageSources().thorns(this), 3F))
+                if (entity.hurt(this.damageSources().source(ReAnimalDamageTypes.SEA_URCHIN_SPIKES, this), 3F))
                     entity.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 100, 0));
         }
 
