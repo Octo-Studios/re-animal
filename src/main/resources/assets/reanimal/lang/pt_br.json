@@ -1,0 +1,148 @@
+{
+  "itemGroup.reanimal": "Re:Animal",
+
+  "entity.reanimal.hedgehog": "Ouriço",
+  "item.reanimal.hedgehog_spawn_egg": "Ovo de Geração de Ouriço",
+  "item.reanimal.raw_hedgehog_meat": "Carne Crua de Ouriço",
+  "item.reanimal.cooked_hedgehog_meat": "Carne Cozida de Ouriço",
+
+  "entity.reanimal.ostrich": "Avestruz",
+  "item.reanimal.ostrich_spawn_egg": "Ovo de Geração de Avestruz",
+  "item.reanimal.ostrich_egg": "Ovo de Avestruz",
+  "item.reanimal.raw_ostrich_meat": "Carne Crua de Avestruz",
+  "item.reanimal.cooked_ostrich_meat": "Carne Cozida de Avestruz",
+
+  "entity.reanimal.kiwi": "Quivi",
+  "item.reanimal.kiwi_spawn_egg": "Ovo de Geração de Quivi",
+  "item.reanimal.kiwi_egg": "Ovo de Quivi",
+  "item.reanimal.raw_kiwi_meat": "Carne Crua de Quivi",
+  "item.reanimal.cooked_kiwi_meat": "Carne Cozida de Quivi",
+
+  "entity.reanimal.pigeon": "Pombo",
+  "item.reanimal.pigeon_spawn_egg": "Ovo de Geração de Pombo",
+  "item.reanimal.pigeon_egg": "Ovo de Pombo",
+  "item.reanimal.raw_pigeon_meat": "Carne Crua de Pombo",
+  "item.reanimal.cooked_pigeon_meat": "Carne Cozida de Pombo",
+
+  "entity.reanimal.butterfly": "Borboleta",
+  "item.reanimal.butterfly_spawn_egg": "Ovo de Geração de Borboleta",
+  "item.reanimal.butterfly_pollen": "Pólen de Borboleta",
+
+  "entity.reanimal.capybara": "Capivara",
+  "item.reanimal.capybara_spawn_egg": "Ovo de Geração de Capivara",
+  "item.reanimal.raw_capybara_meat": "Carne Crua de Capivara",
+  "item.reanimal.cooked_capybara_meat": "Carne Cozida de Capivara",
+
+  "entity.reanimal.seal": "Foca",
+  "item.reanimal.seal_spawn_egg": "Ovo de Geração de Foca",
+  "item.reanimal.raw_seal_meat": "Carne Crua de Foca",
+  "item.reanimal.cooked_seal_meat": "Carne Cozida de Foca",
+
+  "entity.reanimal.hippopotamus": "Hipopótamo",
+  "item.reanimal.hippopotamus_spawn_egg": "Ovo de Geração de Hipopótamo",
+  "item.reanimal.raw_hippopotamus_meat": "Carne Crua de Hipopótamo",
+  "item.reanimal.cooked_hippopotamus_meat": "Carne Cozida de Hipopótamo",
+
+  "entity.reanimal.giraffe": "Girafa",
+  "item.reanimal.giraffe_spawn_egg": "Ovo de Geração de Girafa",
+  "item.reanimal.raw_giraffe_meat": "Carne Crua de Girafa",
+  "item.reanimal.cooked_giraffe_meat": "Carne Cozida de Girafa",
+
+  "entity.reanimal.dragonfly": "Libélula",
+  "item.reanimal.dragonfly_spawn_egg": "Ovo de Geração de Libélula",
+
+  "entity.reanimal.vulture": "Urubu",
+  "item.reanimal.vulture_spawn_egg": "Ovo de Geração de Urubu",
+  "item.reanimal.vulture_egg": "Ovo de Urubu",
+
+  "entity.reanimal.penguin": "Pinguim",
+  "item.reanimal.penguin_spawn_egg": "Ovo de Geração de Pinguim",
+  "item.reanimal.penguin_egg": "Ovo de Pinguim",
+
+  "entity.reanimal.sea_urchin": "Ouriço do mar",
+  "item.reanimal.sea_urchin_spawn_egg": "Ovo de Geração de Ouriço do mar",
+  "item.reanimal.sea_urchin_caviar": "Caviar de Ouriço do mar",
+  "entity.reanimal.jellyfish": "Água-viva",
+  "item.reanimal.jellyfish_spawn_egg": "Ovo de Geração de Água-viva",
+
+  "item.reanimal.quill": "Espinho",
+  "item.reanimal.quill_arrow": "Flecha de Espinho",
+  "entity.reanimal.quill_arrow": "Flecha de Espinho",
+
+  "item.minecraft.potion.effect.quill": "Poção de Espinhos",
+  "item.minecraft.potion.effect.long_quill": "Poção de Espinhos",
+  "item.minecraft.potion.effect.strong_quill": "Poção de Espinhos",
+  "item.minecraft.potion.effect.cramps": "Poção de Cãibras",
+  "item.minecraft.potion.effect.long_cramps": "Poção de Cãibras",
+  "item.minecraft.potion.effect.strong_cramps": "Poção de Cãibras",
+
+  "item.minecraft.splash_potion.effect.quill": "Poção de Arremesso de Espinhos",
+  "item.minecraft.splash_potion.effect.long_quill": "Poção de Arremesso de Espinhos",
+  "item.minecraft.splash_potion.effect.strong_quill": "Poção de Arremesso de Espinhos",
+  "item.minecraft.splash_potion.effect.cramps": "Poção de Arremesso de Cãibras",
+  "item.minecraft.splash_potion.effect.long_cramps": "Poção de Arremesso de Cãibras",
+  "item.minecraft.splash_potion.effect.strong_cramps": "Poção de Arremesso de Cãibras",
+
+  "item.minecraft.lingering_potion.effect.quill": "Poção Persistente de Espinhos",
+  "item.minecraft.lingering_potion.effect.long_quill": "Poção Persistente de Espinhos",
+  "item.minecraft.lingering_potion.effect.strong_quill": "Poção Persistente de Espinhos",
+  "item.minecraft.lingering_potion.effect.cramps": "Poção Persistente de Cãibras",
+  "item.minecraft.lingering_potion.effect.long_cramps": "Poção Persistente de Cãibras",
+  "item.minecraft.lingering_potion.effect.strong_cramps": "Poção Persistente de Cãibras",
+
+  "item.minecraft.tipped_arrow.effect.quill": "Flecha com Ponta de Espinhos",
+  "item.minecraft.tipped_arrow.effect.long_quill": "Flecha com Ponta de Espinhos",
+  "item.minecraft.tipped_arrow.effect.strong_quill": "Flecha com Ponta de Espinhos",
+  "item.minecraft.tipped_arrow.effect.cramps": "Flecha com Ponta de Cãibras",
+  "item.minecraft.tipped_arrow.effect.long_cramps": "Flecha com Ponta de Cãibras",
+  "item.minecraft.tipped_arrow.effect.strong_cramps": "Flecha com Ponta de Cãibras",
+
+  "block.reanimal.quill_platform": "Plataforma de Espinhos",
+
+  "effect.reanimal.quill": "Espinho",
+  "effect.reanimal.cramps": "Cãibras",
+
+  "subtitles.reanimal.entity.capybara.idle": "Capivara grunhe",
+  "subtitles.reanimal.entity.capybara.hurt": "Capivara ferida",
+  "subtitles.reanimal.entity.capybara.death": "Capivara morre",
+
+  "subtitles.reanimal.entity.giraffe.idle": "Girafa bufa",
+  "subtitles.reanimal.entity.giraffe.hurt": "Girafa ferida",
+  "subtitles.reanimal.entity.giraffe.death": "Girafa morre",
+
+  "subtitles.reanimal.entity.hedgehog.idle": "Ouriço chilreia",
+  "subtitles.reanimal.entity.hedgehog.hurt": "Ouriço ferido",
+  "subtitles.reanimal.entity.hedgehog.death": "Ouriço morre",
+  "subtitles.reanimal.entity.hedgehog.roll": "Ouriço se enrola",
+  "subtitles.reanimal.entity.hedgehog.unroll": "Ouriço se desenrola",
+
+  "subtitles.reanimal.entity.hippopotamus.bite": "Hipopótamo morde",
+  "subtitles.reanimal.entity.hippopotamus.idle": "Hipopótamo grunhe",
+  "subtitles.reanimal.entity.hippopotamus.hurt": "Hipopótamo ferido",
+  "subtitles.reanimal.entity.hippopotamus.death": "Hipopótamo morre",
+
+  "subtitles.reanimal.entity.kiwi.idle": "Quivi assobia",
+  "subtitles.reanimal.entity.kiwi.hurt": "Quivi ferido",
+  "subtitles.reanimal.entity.kiwi.death": "Quivi morre",
+
+  "subtitles.reanimal.entity.ostrich.idle": "Avestruz chama",
+  "subtitles.reanimal.entity.ostrich.hurt": "Avestruz ferido",
+  "subtitles.reanimal.entity.ostrich.death": "Avestruz morre",
+
+  "subtitles.reanimal.entity.penguin.idle": "Pinguim guincha",
+  "subtitles.reanimal.entity.penguin.hurt": "Pinguim ferido",
+  "subtitles.reanimal.entity.penguin.death": "Pinguim morre",
+
+  "subtitles.reanimal.entity.pigeon.idle": "Pombo arrulha",
+  "subtitles.reanimal.entity.pigeon.hurt": "Pombo ferido",
+  "subtitles.reanimal.entity.pigeon.death": "Pombo morre",
+  "subtitles.reanimal.entity.pigeon.takeoff": "Pombo levanta voo",
+
+  "subtitles.reanimal.entity.seal.idle": "Foca late",
+  "subtitles.reanimal.entity.seal.hurt": "Foca ferida",
+  "subtitles.reanimal.entity.seal.death": "Foca morre",
+
+  "subtitles.reanimal.entity.vulture.idle": "Urubu grunhe",
+  "subtitles.reanimal.entity.vulture.hurt": "Urubu ferido",
+  "subtitles.reanimal.entity.vulture.death": "Urubu morre"
+}
