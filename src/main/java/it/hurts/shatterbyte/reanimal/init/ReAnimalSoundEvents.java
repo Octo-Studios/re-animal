@@ -32,10 +32,15 @@ public class ReAnimalSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> BUTTERFLY_IDLE = register("entity.butterfly.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> BUTTERFLY_HURT = register("entity.butterfly.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> BUTTERFLY_DEATH = register("entity.butterfly.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> BUTTERFLY_LOOP = register("entity.butterfly.loop");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> DRAGONFLY_HURT = register("entity.dragonfly.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> DRAGONFLY_DEATH = register("entity.dragonfly.death");
     public static final DeferredHolder<SoundEvent, SoundEvent> DRAGONFLY_LOOP = register("entity.dragonfly.loop");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> JELLYFISH_IDLE = register("entity.jellyfish.idle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> JELLYFISH_HURT = register("entity.jellyfish.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> JELLYFISH_DEATH = register("entity.jellyfish.death");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> CAPYBARA_IDLE = register("entity.capybara.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> CAPYBARA_HURT = register("entity.capybara.hurt");

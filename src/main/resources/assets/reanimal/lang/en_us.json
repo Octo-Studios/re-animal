@@ -182,10 +182,15 @@
   "subtitles.reanimal.entity.butterfly.idle": "Butterfly flutters",
   "subtitles.reanimal.entity.butterfly.hurt": "Butterfly hurt",
   "subtitles.reanimal.entity.butterfly.death": "Butterfly dies",
+  "subtitles.reanimal.entity.butterfly.loop": "Butterfly flutters",
 
   "subtitles.reanimal.entity.dragonfly.loop": "Dragonfly buzzes",
   "subtitles.reanimal.entity.dragonfly.hurt": "Dragonfly hurt",
   "subtitles.reanimal.entity.dragonfly.death": "Dragonfly dies",
+
+  "subtitles.reanimal.entity.jellyfish.idle": "Jellyfish pulses",
+  "subtitles.reanimal.entity.jellyfish.hurt": "Jellyfish hurt",
+  "subtitles.reanimal.entity.jellyfish.death": "Jellyfish dies",
 
   "subtitles.reanimal.entity.sea_urchin.idle": "Sea urchin rustles",
   "subtitles.reanimal.entity.sea_urchin.hurt": "Sea urchin hurt",

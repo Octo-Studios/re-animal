@@ -2,12 +2,14 @@ package it.hurts.shatterbyte.reanimal.common.entity.jellyfish;
 
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -139,6 +141,21 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity {
         }
 
         return result;
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ReAnimalSoundEvents.JELLYFISH_IDLE.get();
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.JELLYFISH_HURT.get();
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.JELLYFISH_DEATH.get();
     }
 
     @Override

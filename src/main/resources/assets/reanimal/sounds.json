@@ -10,14 +10,29 @@
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.butterfly.hurt",
     "sounds": [
-      "reanimal:entity/butterfly/hurt"
+      "reanimal:entity/butterfly/hurt1",
+      "reanimal:entity/butterfly/hurt2",
+      "reanimal:entity/butterfly/hurt3"
     ]
   },
   "entity.butterfly.idle": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.butterfly.idle",
     "sounds": [
-      "reanimal:entity/butterfly/idle"
+      "reanimal:entity/butterfly/loop1",
+      "reanimal:entity/butterfly/loop2",
+      "reanimal:entity/butterfly/loop3",
+      "reanimal:entity/butterfly/loop4"
+    ]
+  },
+  "entity.butterfly.loop": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.butterfly.loop",
+    "sounds": [
+      "reanimal:entity/butterfly/loop1",
+      "reanimal:entity/butterfly/loop2",
+      "reanimal:entity/butterfly/loop3",
+      "reanimal:entity/butterfly/loop4"
     ]
   },
   "entity.capybara.death": {
@@ -67,6 +82,31 @@
       "reanimal:entity/dragonfly/loop2",
       "reanimal:entity/dragonfly/loop3",
       "reanimal:entity/dragonfly/loop4"
+    ]
+  },
+  "entity.jellyfish.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.jellyfish.death",
+    "sounds": [
+      "reanimal:entity/jellyfish/death"
+    ]
+  },
+  "entity.jellyfish.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.jellyfish.hurt",
+    "sounds": [
+      "reanimal:entity/jellyfish/hurt1",
+      "reanimal:entity/jellyfish/hurt2",
+      "reanimal:entity/jellyfish/hurt3"
+    ]
+  },
+  "entity.jellyfish.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.jellyfish.idle",
+    "sounds": [
+      "reanimal:entity/jellyfish/idle1",
+      "reanimal:entity/jellyfish/idle2",
+      "reanimal:entity/jellyfish/idle3"
     ]
   },
   "entity.giraffe.death": {

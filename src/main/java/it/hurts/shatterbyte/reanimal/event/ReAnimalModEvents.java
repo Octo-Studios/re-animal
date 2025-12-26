@@ -18,6 +18,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.vulture.VultureRenderer;
+import it.hurts.shatterbyte.reanimal.client.sound.ButterflySoundInstance;
 import it.hurts.shatterbyte.reanimal.client.sound.DragonflySoundInstance;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
@@ -214,6 +215,9 @@ public class ReAnimalModEvents {
         public static void onEntityJoin(EntityJoinLevelEvent event) {
             if (!event.getLevel().isClientSide())
                 return;
+
+            if (event.getEntity() instanceof ButterflyEntity butterfly)
+                Minecraft.getInstance().getSoundManager().queueTickingSound(new ButterflySoundInstance(butterfly));
 
             if (event.getEntity() instanceof DragonflyEntity dragonfly)
                 Minecraft.getInstance().getSoundManager().queueTickingSound(new DragonflySoundInstance(dragonfly));
