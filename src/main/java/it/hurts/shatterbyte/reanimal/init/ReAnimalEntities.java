@@ -3,6 +3,8 @@ package it.hurts.shatterbyte.reanimal.init;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.crocodile.CrocodileEggEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.crocodile.CrocodileEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
@@ -72,6 +74,11 @@ public class ReAnimalEntities {
                     .sized(1.5F, 1.75F)
                     .build(ReAnimal.MODID + ":hippopotamus"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<CrocodileEntity>> CROCODILE = ENTITY_TYPES.register("crocodile", () ->
+            EntityType.Builder.of(CrocodileEntity::new, MobCategory.CREATURE)
+                    .sized(1.5F, 0.6F)
+                    .build(ReAnimal.MODID + ":crocodile"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<GiraffeEntity>> GIRAFFE = ENTITY_TYPES.register("giraffe", () ->
             EntityType.Builder.of(GiraffeEntity::new, MobCategory.CREATURE)
                     .sized(1.75F, 6F)
@@ -138,6 +145,13 @@ public class ReAnimalEntities {
                     .updateInterval(10)
                     .build(ReAnimal.MODID + ":penguin_egg"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<CrocodileEggEntity>> CROCODILE_EGG = ENTITY_TYPES.register("crocodile_egg", () ->
+            EntityType.Builder.of(CrocodileEggEntity::new, MobCategory.MISC)
+                    .sized(0.25F, 0.25F)
+                    .clientTrackingRange(4)
+                    .updateInterval(10)
+                    .build(ReAnimal.MODID + ":crocodile_egg"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<GlowStickEntity>> GLOW_STICK = ENTITY_TYPES.register("glow_stick", () ->
             EntityType.Builder.<GlowStickEntity>of(GlowStickEntity::new, MobCategory.MISC)
                     .sized(0.5F, 0.5F)
@@ -161,6 +175,7 @@ public class ReAnimalEntities {
         event.put(CAPYBARA.get(), CapybaraEntity.createAttributes().build());
         event.put(SEAL.get(), SealEntity.createAttributes().build());
         event.put(HIPPOPOTAMUS.get(), HippopotamusEntity.createAttributes().build());
+        event.put(CROCODILE.get(), CrocodileEntity.createAttributes().build());
         event.put(GIRAFFE.get(), GiraffeEntity.createAttributes().build());
         event.put(DRAGONFLY.get(), DragonflyEntity.createAttributes().build());
         event.put(VULTURE.get(), VultureEntity.createAttributes().build());

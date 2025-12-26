@@ -4,6 +4,7 @@ import it.hurts.octostudios.octolib.module.particle.trail.EntityTrailRegistry;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.capybara.CapybaraRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.crocodile.CrocodileRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.dragonfly.DragonflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.giraffe.GiraffeRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.glow_stick.GlowStickRenderer;
@@ -132,6 +133,14 @@ public class ReAnimalModEvents {
         );
 
         event.register(
+                ReAnimalEntities.CROCODILE.get(),
+                SpawnPlacementTypes.ON_GROUND,
+                Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+                Animal::checkAnimalSpawnRules,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+
+        event.register(
                 ReAnimalEntities.GIRAFFE.get(),
                 SpawnPlacementTypes.ON_GROUND,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
@@ -220,6 +229,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.CAPYBARA.get(), CapybaraRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.SEAL.get(), SealRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.HIPPOPOTAMUS.get(), HippopotamusRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.CROCODILE.get(), CrocodileRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.GIRAFFE.get(), GiraffeRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.DRAGONFLY.get(), DragonflyRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.VULTURE.get(), VultureRenderer::new);
@@ -231,6 +241,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.VULTURE_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PENGUIN_EGG.get(), ThrownItemRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.CROCODILE_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.GLOW_STICK.get(), GlowStickRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW.get(), context -> new ArrowRenderer<QuillArrowEntity>(context) {
                 @Override

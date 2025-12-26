@@ -25,6 +25,7 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, SpawnEggItem> CAPYBARA_SPAWN_EGG = ITEMS.register("capybara_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.CAPYBARA.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> SEAL_SPAWN_EGG = ITEMS.register("seal_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.SEAL.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> HIPPOPOTAMUS_SPAWN_EGG = ITEMS.register("hippopotamus_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.HIPPOPOTAMUS.get(), 0xffffff, 0xffffff, new Item.Properties()));
+    public static final DeferredHolder<Item, SpawnEggItem> CROCODILE_SPAWN_EGG = ITEMS.register("crocodile_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.CROCODILE.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> GIRAFFE_SPAWN_EGG = ITEMS.register("giraffe_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.GIRAFFE.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> DRAGONFLY_SPAWN_EGG = ITEMS.register("dragonfly_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.DRAGONFLY.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> VULTURE_SPAWN_EGG = ITEMS.register("vulture_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.VULTURE.get(), 0xffffff, 0xffffff, new Item.Properties()));
@@ -37,6 +38,7 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, PigeonEgg> PIGEON_EGG = ITEMS.register("pigeon_egg", () -> new PigeonEgg(new Item.Properties()));
     public static final DeferredHolder<Item, VultureEgg> VULTURE_EGG = ITEMS.register("vulture_egg", () -> new VultureEgg(new Item.Properties()));
     public static final DeferredHolder<Item, PenguinEgg> PENGUIN_EGG = ITEMS.register("penguin_egg", () -> new PenguinEgg(new Item.Properties()));
+    public static final DeferredHolder<Item, CrocodileEgg> CROCODILE_EGG = ITEMS.register("crocodile_egg", () -> new CrocodileEgg(new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> BUTTERFLY_POLLEN = ITEMS.register("butterfly_pollen", () -> new BoneMealItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> QUILL = ITEMS.register("quill", () -> new Item(new Item.Properties()));
@@ -73,6 +75,8 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, Item> COOKED_PIGEON_MEAT = ITEMS.register("cooked_pigeon_meat", () -> new Item(new Item.Properties().food(new FoodProperties(5, 5F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> RAW_HIPPOPOTAMUS_MEAT = ITEMS.register("raw_hippopotamus_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 1.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_HIPPOPOTAMUS_MEAT = ITEMS.register("cooked_hippopotamus_meat", () -> new Item(new Item.Properties().food(new FoodProperties(10, 14.8F, false, 1.6F, Optional.empty(), List.of()))));
+    public static final DeferredHolder<Item, Item> RAW_CROCODILE_MEAT = ITEMS.register("raw_crocodile_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 1.8F, false, 1.6F, Optional.empty(), List.of()))));
+    public static final DeferredHolder<Item, Item> COOKED_CROCODILE_MEAT = ITEMS.register("cooked_crocodile_meat", () -> new Item(new Item.Properties().food(new FoodProperties(9, 12.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> RAW_GIRAFFE_MEAT = ITEMS.register("raw_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 1.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_GIRAFFE_MEAT = ITEMS.register("cooked_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(8, 12.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> SEA_URCHIN_CAVIAR = ITEMS.register("sea_urchin_caviar", () -> new Item(new Item.Properties().food(new FoodProperties(3, 5F, false, 1.6F, Optional.empty(), List.of()))));

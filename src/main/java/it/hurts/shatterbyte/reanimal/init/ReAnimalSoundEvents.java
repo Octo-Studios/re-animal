@@ -50,6 +50,11 @@ public class ReAnimalSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> HIPPOPOTAMUS_DEATH = register("entity.hippopotamus.death");
     public static final DeferredHolder<SoundEvent, SoundEvent> HIPPOPOTAMUS_BITE = register("entity.hippopotamus.bite");
 
+    public static final DeferredHolder<SoundEvent, SoundEvent> CROCODILE_IDLE = register("entity.crocodile.idle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CROCODILE_HURT = register("entity.crocodile.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CROCODILE_DEATH = register("entity.crocodile.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> CROCODILE_BITE = register("entity.crocodile.bite");
+
     public static final DeferredHolder<SoundEvent, SoundEvent> GIRAFFE_IDLE = register("entity.giraffe.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> GIRAFFE_HURT = register("entity.giraffe.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> GIRAFFE_DEATH = register("entity.giraffe.death");

@@ -43,6 +43,12 @@
   "item.reanimal.raw_hippopotamus_meat": "Raw Hippopotamus Meat",
   "item.reanimal.cooked_hippopotamus_meat": "Cooked Hippopotamus Meat",
 
+  "entity.reanimal.crocodile": "Crocodile",
+  "item.reanimal.crocodile_spawn_egg": "Crocodile Spawn Egg",
+  "item.reanimal.crocodile_egg": "Crocodile Egg",
+  "item.reanimal.raw_crocodile_meat": "Raw Crocodile Meat",
+  "item.reanimal.cooked_crocodile_meat": "Cooked Crocodile Meat",
+
   "entity.reanimal.giraffe": "Giraffe",
   "item.reanimal.giraffe_spawn_egg": "Giraffe Spawn Egg",
   "item.reanimal.raw_giraffe_meat": "Raw Giraffe Meat",
@@ -150,6 +156,11 @@
   "subtitles.reanimal.entity.hippopotamus.idle": "Hippopotamus grunts",
   "subtitles.reanimal.entity.hippopotamus.hurt": "Hippopotamus hurt",
   "subtitles.reanimal.entity.hippopotamus.death": "Hippopotamus dies",
+
+  "subtitles.reanimal.entity.crocodile.bite": "Crocodile bites",
+  "subtitles.reanimal.entity.crocodile.idle": "Crocodile hisses",
+  "subtitles.reanimal.entity.crocodile.hurt": "Crocodile hurt",
+  "subtitles.reanimal.entity.crocodile.death": "Crocodile dies",
 
   "subtitles.reanimal.entity.kiwi.idle": "Kiwi whistles",
   "subtitles.reanimal.entity.kiwi.hurt": "Kiwi hurt",

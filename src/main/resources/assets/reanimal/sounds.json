@@ -165,6 +165,37 @@
       "reanimal:entity/hippopotamus/idle2"
     ]
   },
+  "entity.crocodile.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.crocodile.death",
+    "sounds": [
+      "reanimal:entity/crocodile/death"
+    ]
+  },
+  "entity.crocodile.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.crocodile.hurt",
+    "sounds": [
+      "reanimal:entity/crocodile/hurt1",
+      "reanimal:entity/crocodile/hurt2"
+    ]
+  },
+  "entity.crocodile.bite": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.crocodile.bite",
+    "sounds": [
+      "reanimal:entity/crocodile/bite1",
+      "reanimal:entity/crocodile/bite2"
+    ]
+  },
+  "entity.crocodile.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.crocodile.idle",
+    "sounds": [
+      "reanimal:entity/crocodile/idle1",
+      "reanimal:entity/crocodile/idle2"
+    ]
+  },
   "entity.kiwi.death": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.kiwi.death",
