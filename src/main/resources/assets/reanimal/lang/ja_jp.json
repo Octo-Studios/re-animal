@@ -1,0 +1,146 @@
+{
+  "itemGroup.reanimal": "Re:Animal",
+
+  "entity.reanimal.hedgehog": "ハリネズミ",
+  "item.reanimal.hedgehog_spawn_egg": "ハリネズミのスポーンエッグ",
+  "item.reanimal.raw_hedgehog_meat": "生のハリネズミ肉",
+  "item.reanimal.cooked_hedgehog_meat": "焼きハリネズミ肉",
+
+  "entity.reanimal.ostrich": "ダチョウ",
+  "item.reanimal.ostrich_spawn_egg": "ダチョウのスポーンエッグ",
+  "item.reanimal.ostrich_egg": "ダチョウの卵",
+  "item.reanimal.raw_ostrich_meat": "生のダチョウ肉",
+  "item.reanimal.cooked_ostrich_meat": "焼きダチョウ肉",
+
+  "entity.reanimal.kiwi": "キーウィ",
+  "item.reanimal.kiwi_spawn_egg": "キーウィのスポーンエッグ",
+  "item.reanimal.kiwi_egg": "キーウィの卵",
+  "item.reanimal.raw_kiwi_meat": "生のキーウィ肉",
+  "item.reanimal.cooked_kiwi_meat": "焼きキーウィ肉",
+
+  "entity.reanimal.pigeon": "ハト",
+  "item.reanimal.pigeon_spawn_egg": "ハトのスポーンエッグ",
+  "item.reanimal.pigeon_egg": "ハトの卵",
+  "item.reanimal.raw_pigeon_meat": "生の鳩肉",
+  "item.reanimal.cooked_pigeon_meat": "焼き鳩肉",
+
+  "entity.reanimal.butterfly": "チョウ",
+  "item.reanimal.butterfly_spawn_egg": "チョウのスポーンエッグ",
+  "item.reanimal.butterfly_pollen": "チョウの花粉",
+
+  "entity.reanimal.capybara": "カピバラ",
+  "item.reanimal.capybara_spawn_egg": "カピバラのスポーンエッグ",
+  "item.reanimal.raw_capybara_meat": "生のカピバラ肉",
+  "item.reanimal.cooked_capybara_meat": "焼きカピバラ肉",
+
+  "entity.reanimal.seal": "アザラシ",
+  "item.reanimal.seal_spawn_egg": "アザラシのスポーンエッグ",
+  "item.reanimal.raw_seal_meat": "生のアザラシ肉",
+  "item.reanimal.cooked_seal_meat": "焼きアザラシ肉",
+
+  "entity.reanimal.hippopotamus": "カバ",
+  "item.reanimal.hippopotamus_spawn_egg": "カバのスポーンエッグ",
+  "item.reanimal.raw_hippopotamus_meat": "生のカバ肉",
+  "item.reanimal.cooked_hippopotamus_meat": "焼きカバ肉",
+
+  "entity.reanimal.giraffe": "キリン",
+  "item.reanimal.giraffe_spawn_egg": "キリンのスポーンエッグ",
+  "item.reanimal.raw_giraffe_meat": "生のキリン肉",
+  "item.reanimal.cooked_giraffe_meat": "焼きキリン肉",
+
+  "entity.reanimal.dragonfly": "トンボ",
+  "item.reanimal.dragonfly_spawn_egg": "トンボのスポーンエッグ",
+
+  "entity.reanimal.vulture": "ハゲワシ",
+  "item.reanimal.vulture_spawn_egg": "ハゲワシのスポーンエッグ",
+  "item.reanimal.vulture_egg": "ハゲワシの卵",
+
+  "entity.reanimal.penguin": "ペンギン",
+  "item.reanimal.penguin_spawn_egg": "ペンギンのスポーンエッグ",
+  "item.reanimal.penguin_egg": "ペンギンの卵",
+
+  "entity.reanimal.sea_urchin": "ウニ",
+  "item.reanimal.sea_urchin_spawn_egg": "ウニのスポーンエッグ",
+  "item.reanimal.sea_urchin_caviar": "ウニの身",
+
+  "item.reanimal.quill": "棘",
+  "item.reanimal.quill_arrow": "棘の矢",
+  "entity.reanimal.quill_arrow": "棘の矢",
+
+  "item.minecraft.potion.effect.quill": "棘々のポーション",
+  "item.minecraft.potion.effect.long_quill": "棘々のポーション",
+  "item.minecraft.potion.effect.strong_quill": "棘々のポーション",
+  "item.minecraft.potion.effect.cramps": "痙攣のポーション",
+  "item.minecraft.potion.effect.long_cramps": "痙攣のポーション",
+  "item.minecraft.potion.effect.strong_cramps": "痙攣のポーション",
+
+  "item.minecraft.splash_potion.effect.quill": "棘々のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.long_quill": "棘々のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.strong_quill": "棘々のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.cramps": "痙攣のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.long_cramps": "痙攣のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.strong_cramps": "痙攣のスプラッシュポーション",
+
+  "item.minecraft.lingering_potion.effect.quill": "棘々の残留ポーション",
+  "item.minecraft.lingering_potion.effect.long_quill": "棘々の残留ポーション",
+  "item.minecraft.lingering_potion.effect.strong_quill": "棘々の残留ポーション",
+  "item.minecraft.lingering_potion.effect.cramps": "痙攣の残留ポーション",
+  "item.minecraft.lingering_potion.effect.long_cramps": "痙攣の残留ポーション",
+  "item.minecraft.lingering_potion.effect.strong_cramps": "痙攣の残留ポーション",
+
+  "item.minecraft.tipped_arrow.effect.quill": "棘々の矢",
+  "item.minecraft.tipped_arrow.effect.long_quill": "棘々の矢",
+  "item.minecraft.tipped_arrow.effect.strong_quill": "棘々の矢",
+  "item.minecraft.tipped_arrow.effect.cramps": "痙攣の矢",
+  "item.minecraft.tipped_arrow.effect.long_cramps": "痙攣の矢",
+  "item.minecraft.tipped_arrow.effect.strong_cramps": "痙攣の矢",
+
+  "block.reanimal.quill_platform": "棘付き板",
+
+  "effect.reanimal.quill": "棘々",
+  "effect.reanimal.cramps": "痙攣",
+
+  "subtitles.reanimal.entity.capybara.idle": "カピバラが唸る",
+  "subtitles.reanimal.entity.capybara.hurt": "カピバラがダメージを受ける",
+  "subtitles.reanimal.entity.capybara.death": "カピバラが死ぬ",
+
+  "subtitles.reanimal.entity.giraffe.idle": "キリンが鼻を鳴らす",
+  "subtitles.reanimal.entity.giraffe.hurt": "キリンがダメージを受ける",
+  "subtitles.reanimal.entity.giraffe.death": "キリンが死ぬ",
+
+  "subtitles.reanimal.entity.hedgehog.idle": "ハリネズミが鳴く",
+  "subtitles.reanimal.entity.hedgehog.hurt": "ハリネズミがダメージを受ける",
+  "subtitles.reanimal.entity.hedgehog.death": "ハリネズミが死ぬ",
+  "subtitles.reanimal.entity.hedgehog.roll": "ハリネズミが丸まる",
+  "subtitles.reanimal.entity.hedgehog.unroll": "ハリネズミが元に戻る",
+
+  "subtitles.reanimal.entity.hippopotamus.bite": "カバが噛みつく",
+  "subtitles.reanimal.entity.hippopotamus.idle": "カバが唸る",
+  "subtitles.reanimal.entity.hippopotamus.hurt": "カバがダメージを受ける",
+  "subtitles.reanimal.entity.hippopotamus.death": "カバが死ぬ",
+
+  "subtitles.reanimal.entity.kiwi.idle": "キーウィが鳴く",
+  "subtitles.reanimal.entity.kiwi.hurt": "キーウィがダメージを受ける",
+  "subtitles.reanimal.entity.kiwi.death": "キーウィが死ぬ",
+
+  "subtitles.reanimal.entity.ostrich.idle": "ダチョウが鳴く",
+  "subtitles.reanimal.entity.ostrich.hurt": "ダチョウがダメージを受ける",
+  "subtitles.reanimal.entity.ostrich.death": "ダチョウが死ぬ",
+
+  "subtitles.reanimal.entity.penguin.idle": "ペンギンが鳴く",
+  "subtitles.reanimal.entity.penguin.hurt": "ペンギンがダメージを受ける",
+  "subtitles.reanimal.entity.penguin.death": "ペンギンが死ぬ",
+
+  "subtitles.reanimal.entity.pigeon.idle": "ハトが鳴く",
+  "subtitles.reanimal.entity.pigeon.hurt": "ハトがダメージを受ける",
+  "subtitles.reanimal.entity.pigeon.death": "ハトが死ぬ",
+  "subtitles.reanimal.entity.pigeon.takeoff": "ハトが羽ばたく",
+
+  "subtitles.reanimal.entity.seal.idle": "アザラシが鳴く",
+  "subtitles.reanimal.entity.seal.hurt": "アザラシがダメージを受ける",
+  "subtitles.reanimal.entity.seal.death": "アザラシが死ぬ",
+
+  "subtitles.reanimal.entity.vulture.idle": "ハゲワシが唸る",
+  "subtitles.reanimal.entity.vulture.hurt": "ハゲワシがダメージを受ける",
+  "subtitles.reanimal.entity.vulture.death": "ハゲワシが死ぬ"
+}
