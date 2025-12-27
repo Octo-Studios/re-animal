@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/very_cracked_turtle_egg",
+  "textures": {
+    "all": "reanimal:block/crocodile_egg_very_cracked",
+    "particle": "reanimal:block/crocodile_egg_very_cracked"
+  }
+}

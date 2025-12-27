@@ -116,7 +116,6 @@ public class CrocodileAI {
                         ),
                         Pair.of(4, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(5, new CrocodileMoveToEnvironmentTarget(1.2F)),
-                        Pair.of(6, new CrocodileSwitchEnvironment(16, 0.1F)),
                         Pair.of(
                                 7,
                                 new RunOne<>(
@@ -172,7 +171,7 @@ public class CrocodileAI {
     private static Optional<? extends LivingEntity> findNearestAttackableEntity(CrocodileEntity entity) {
         var brain = entity.getBrain();
 
-        if (brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER) || brain.hasMemoryValue(MemoryModuleType.IS_TEMPTED)
+        if (brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
                 || !brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
             return Optional.empty();
 
@@ -378,101 +377,6 @@ public class CrocodileAI {
                 return false;
 
             return crocodile.isInWaterOrBubble();
-        }
-    }
-
-    public static class CrocodileSwitchEnvironment extends Behavior<CrocodileEntity> {
-        private final int radius;
-        private final float startChance;
-        private long lastSwitchGameTime;
-
-        public CrocodileSwitchEnvironment(int radius, float startChance) {
-            super(ImmutableMap.of());
-
-            this.radius = radius;
-            this.startChance = startChance;
-        }
-
-        @Override
-        protected boolean checkExtraStartConditions(ServerLevel level, CrocodileEntity crocodile) {
-            var time = level.getGameTime();
-
-            var inWater = crocodile.isInWaterOrBubble();
-            var minInterval = inWater ? 400 : 800;
-
-            if (time - this.lastSwitchGameTime < minInterval)
-                return false;
-
-            var chance = this.startChance * (inWater ? 1.25F : 0.25F);
-
-            if (crocodile.getRandom().nextFloat() > chance)
-                return false;
-
-            return true;
-        }
-
-        @Override
-        protected void start(ServerLevel level, CrocodileEntity crocodile, long gameTime) {
-            var best = this.findTarget(level, crocodile);
-
-            if (best != null) {
-                crocodile.setEnvironmentTarget(best);
-
-                this.lastSwitchGameTime = gameTime;
-            }
-        }
-
-        private BlockPos findTarget(ServerLevel level, CrocodileEntity crocodile) {
-            var origin = crocodile.blockPosition();
-            var random = crocodile.getRandom();
-
-            var toLand = crocodile.isInWaterOrBubble();
-
-            for (var i = 0; i < 40; i++) {
-                var dx = random.nextInt(this.radius * 2 + 1) - this.radius;
-                var dz = random.nextInt(this.radius * 2 + 1) - this.radius;
-
-                var x = origin.getX() + dx;
-                var z = origin.getZ() + dz;
-
-                var topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-
-                if (topY <= level.getMinBuildHeight())
-                    continue;
-
-                var surface = new BlockPos(x, topY - 1, z);
-
-                var surfaceState = level.getBlockState(surface);
-                var surfaceFluid = level.getFluidState(surface);
-
-                var head = surface.above();
-
-                var headState = level.getBlockState(head);
-                var headFluid = level.getFluidState(head);
-
-                if (toLand) {
-                    if (surfaceState.isAir() || surfaceFluid.is(FluidTags.WATER))
-                        continue;
-
-                    if (!headState.isAir() || !headFluid.isEmpty())
-                        continue;
-                } else {
-                    if (!surfaceFluid.is(FluidTags.WATER))
-                        continue;
-
-                    if (!headState.isAir() && !headFluid.is(FluidTags.WATER))
-                        continue;
-                }
-
-                return head.immutable();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected boolean canStillUse(ServerLevel level, CrocodileEntity crocodile, long gameTime) {
-            return false;
         }
     }
 

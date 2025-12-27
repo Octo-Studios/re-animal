@@ -1,10 +1,10 @@
 package it.hurts.shatterbyte.reanimal.common.item;
 
-import it.hurts.shatterbyte.reanimal.common.entity.crocodile.CrocodileEggEntity;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.BlockItem;
 
-public class CrocodileEgg extends EggItem<CrocodileEggEntity> {
-    public CrocodileEgg(Properties properties) {
-        super(properties, ReAnimalEntities.CROCODILE_EGG);
+public class CrocodileEgg extends BlockItem {
+    public CrocodileEgg(Block block, Properties properties) {
+        super(block, properties);
     }
 }

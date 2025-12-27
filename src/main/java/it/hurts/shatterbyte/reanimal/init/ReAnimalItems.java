@@ -38,7 +38,7 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, PigeonEgg> PIGEON_EGG = ITEMS.register("pigeon_egg", () -> new PigeonEgg(new Item.Properties()));
     public static final DeferredHolder<Item, VultureEgg> VULTURE_EGG = ITEMS.register("vulture_egg", () -> new VultureEgg(new Item.Properties()));
     public static final DeferredHolder<Item, PenguinEgg> PENGUIN_EGG = ITEMS.register("penguin_egg", () -> new PenguinEgg(new Item.Properties()));
-    public static final DeferredHolder<Item, CrocodileEgg> CROCODILE_EGG = ITEMS.register("crocodile_egg", () -> new CrocodileEgg(new Item.Properties()));
+    public static final DeferredHolder<Item, CrocodileEgg> CROCODILE_EGG = ITEMS.register("crocodile_egg", () -> new CrocodileEgg(ReAnimalBlocks.CROCODILE_EGG.get(), new Item.Properties()));
 
     public static final DeferredHolder<Item, Item> BUTTERFLY_POLLEN = ITEMS.register("butterfly_pollen", () -> new BoneMealItem(new Item.Properties()));
     public static final DeferredHolder<Item, Item> QUILL = ITEMS.register("quill", () -> new Item(new Item.Properties()));

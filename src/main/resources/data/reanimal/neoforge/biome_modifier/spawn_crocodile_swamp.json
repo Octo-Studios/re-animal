@@ -4,9 +4,9 @@
   "spawners": [
     {
       "type": "reanimal:crocodile",
-      "weight": 8,
-      "minCount": 1,
-      "maxCount": 3
+      "weight": 10,
+      "minCount": 2,
+      "maxCount": 5
     }
   ]
 }

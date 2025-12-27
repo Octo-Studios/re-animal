@@ -1,8 +1,9 @@
 package it.hurts.shatterbyte.reanimal.common.entity.crocodile;
 
 import com.mojang.serialization.Dynamic;
+import it.hurts.shatterbyte.reanimal.common.block.CrocodileEggBlock;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.Util;
@@ -14,6 +15,8 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
@@ -30,6 +33,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.NeoForgeMod;
@@ -51,12 +55,11 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private static final RawAnimation[] ATTACKS = new RawAnimation[]{ATTACK_1, ATTACK_2};
 
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> HAS_EGG = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int attackAnimationTicks;
-
-    private int eggTime = this.random.nextInt(6000) + 6000;
 
     @Nullable
     private BlockPos environmentTarget;
@@ -77,6 +80,14 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
     public void setAttacking(boolean attacking) {
         this.entityData.set(ATTACKING, attacking);
+    }
+
+    public boolean hasEgg() {
+        return this.entityData.get(HAS_EGG);
+    }
+
+    public void setHasEgg(boolean hasEgg) {
+        this.entityData.set(HAS_EGG, hasEgg);
     }
 
     public void startAttackAnimation() {
@@ -162,14 +173,14 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
 
-        tag.putInt("eggTime", this.eggTime);
+        tag.putBoolean("hasEgg", this.hasEgg());
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
 
-        this.eggTime = tag.contains("eggTime") ? tag.getInt("eggTime") : this.random.nextInt(6000) + 6000;
+        this.setHasEgg(tag.getBoolean("hasEgg"));
     }
 
     @Override
@@ -209,12 +220,34 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        var baby = ReAnimalEntities.CROCODILE.get().create(level);
+        return ReAnimalEntities.CROCODILE.get().create(level);
+    }
 
-        if (baby != null)
-            baby.setBaby(true);
+    @Override
+    public void spawnChildFromBreeding(ServerLevel level, Animal mate) {
+        if (!(mate instanceof CrocodileEntity crocodileMate)) {
+            super.spawnChildFromBreeding(level, mate);
 
-        return baby;
+            return;
+        }
+
+        if (this.hasEgg() || crocodileMate.hasEgg())
+            return;
+
+        this.setHasEgg(true);
+
+        this.finalizeSpawnChildFromBreeding(level, mate, null);
+    }
+
+    @Override
+    public boolean canMate(Animal other) {
+        if (this.hasEgg())
+            return false;
+
+        if (other instanceof CrocodileEntity crocodile && crocodile.hasEgg())
+            return false;
+
+        return super.canMate(other);
     }
 
     @Override
@@ -295,19 +328,70 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         super.defineSynchedData(buidler);
 
         buidler.define(ATTACKING, false);
+        buidler.define(HAS_EGG, false);
     }
 
     private void tickEggLaying() {
         if (this.isBaby())
             return;
 
-        if (--this.eggTime > 0)
+        if (!this.hasEgg())
             return;
 
-        this.playSound(SoundEvents.CHICKEN_EGG, 1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1F);
-        this.spawnAtLocation(ReAnimalItems.CROCODILE_EGG.get());
-        this.gameEvent(GameEvent.ENTITY_PLACE, this);
+        var level = (ServerLevel) this.level();
+        var pos = this.blockPosition();
 
-        this.eggTime = this.random.nextInt(6000) + 6000;
+        if (this.canLayEggAt(level, pos)) {
+            this.layEgg(level, pos);
+            this.setHasEgg(false);
+        } else if (this.tickCount % 200 == 0 && !this.hasEnvironmentTarget()) {
+            var target = this.findEggLayTarget(level);
+            if (target != null)
+                this.setEnvironmentTarget(target);
+        }
+    }
+
+    private boolean canLayEggAt(ServerLevel level, BlockPos pos) {
+        return level.getBlockState(pos).isAir() && level.getFluidState(pos).isEmpty();
+    }
+
+    private void layEgg(ServerLevel level, BlockPos pos) {
+        var eggs = Mth.nextInt(this.random, CrocodileEggBlock.MIN_EGGS, CrocodileEggBlock.MAX_EGGS);
+        var state = ReAnimalBlocks.CROCODILE_EGG.get().defaultBlockState().setValue(CrocodileEggBlock.EGGS, eggs);
+
+        level.setBlock(pos, state, 3);
+        level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(this, state));
+        this.playSound(SoundEvents.TURTLE_LAY_EGG, 1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1F);
+    }
+
+    @Nullable
+    private BlockPos findEggLayTarget(ServerLevel level) {
+        var origin = this.blockPosition();
+        var random = this.getRandom();
+
+        for (int i = 0; i < 40; i++) {
+            var dx = random.nextInt(17) - 8;
+            var dz = random.nextInt(17) - 8;
+
+            var x = origin.getX() + dx;
+            var z = origin.getZ() + dz;
+            var topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+
+            if (topY <= level.getMinBuildHeight())
+                continue;
+
+            var eggPos = new BlockPos(x, topY, z);
+            var ground = eggPos.below();
+
+            if (!level.getBlockState(ground).is(BlockTags.SAND))
+                continue;
+
+            if (!level.getBlockState(eggPos).isAir() || !level.getFluidState(eggPos).isEmpty())
+                continue;
+
+            return eggPos;
+        }
+
+        return null;
     }
 }

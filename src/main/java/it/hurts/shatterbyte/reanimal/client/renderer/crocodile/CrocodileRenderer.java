@@ -18,11 +18,11 @@ public class CrocodileRenderer extends GeoEntityRenderer<CrocodileEntity> {
         if (animatable.isBaby()) {
             poseStack.scale(0.5F, 0.5F, 0.5F);
 
-            this.shadowRadius = 0.8F * 0.5F;
+            this.shadowRadius = 0.6F * 0.5F;
         } else {
             poseStack.scale(1F, 1F, 1F);
 
-            this.shadowRadius = 0.8F;
+            this.shadowRadius = 0.6F;
         }
 
         super.scaleModelForRender(widthScale, heightScale, poseStack, animatable, model, isReRender, partialTick, packedLight, packedOverlay);
