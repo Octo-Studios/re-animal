@@ -217,7 +217,8 @@
     "subtitle": "subtitles.reanimal.entity.crocodile.hurt",
     "sounds": [
       "reanimal:entity/crocodile/hurt1",
-      "reanimal:entity/crocodile/hurt2"
+      "reanimal:entity/crocodile/hurt2",
+      "reanimal:entity/crocodile/hurt3"
     ]
   },
   "entity.crocodile.bite": {
@@ -225,7 +226,8 @@
     "subtitle": "subtitles.reanimal.entity.crocodile.bite",
     "sounds": [
       "reanimal:entity/crocodile/bite1",
-      "reanimal:entity/crocodile/bite2"
+      "reanimal:entity/crocodile/bite2",
+      "reanimal:entity/crocodile/bite3"
     ]
   },
   "entity.crocodile.idle": {
@@ -233,7 +235,8 @@
     "subtitle": "subtitles.reanimal.entity.crocodile.idle",
     "sounds": [
       "reanimal:entity/crocodile/idle1",
-      "reanimal:entity/crocodile/idle2"
+      "reanimal:entity/crocodile/idle2",
+      "reanimal:entity/crocodile/idle3"
     ]
   },
   "entity.kiwi.death": {
