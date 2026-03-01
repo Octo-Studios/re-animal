@@ -210,8 +210,29 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
         return baby;
     }
-
-@Override
+    
+   @Override
+   public void spawnChildFromBreeding(ServerLevel level, Animal partner) {
+    if (this.isInWater()) {
+        AgeableMob baby = this.getBreedOffspring(level, partner);
+        if (baby != null) {
+            baby.setBaby(true);
+            baby.moveTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
+            
+            level.addFreshEntityWithNoPersistence(baby);
+            level.broadcastEntityEvent(this, (byte)18);
+            
+            if (level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBLOOT)) {
+                level.addFreshEntity(new net.minecraft.world.entity.ExperienceOrb(level, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
+            }
+        }
+    } else {
+        this.setInLoveTime(600); 
+        partner.setInLoveTime(600);
+       }
+   }
+    
+    @Override
     public boolean doHurtTarget(Entity target) {
         if (this.isBaby()) {
             return false;
