@@ -90,27 +90,30 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
         this.setAttacking(true);
     }
 
-    @Override
+@Override
     protected void customServerAiStep() {
         var brain = (Brain<HippopotamusEntity>) this.getBrain();
-
         var lastAttacker = this.getLastHurtByMob();
 
-        if (lastAttacker != null && HippopotamusAI.isValidTarget(this, lastAttacker))
-            brain.setMemory(MemoryModuleType.ATTACK_TARGET, lastAttacker);
+        if (!this.isBaby()) {
+            if (lastAttacker != null && HippopotamusAI.isValidTarget(this, lastAttacker))
+                brain.setMemory(MemoryModuleType.ATTACK_TARGET, lastAttacker);
 
-        brain.getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(target -> {
-            if (!HippopotamusAI.isValidTarget(this, target) || HippopotamusAI.isHoldingFavoriteFood(target)) {
-                brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
-                brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
-            }
-        });
+            brain.getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(target -> {
+                if (!HippopotamusAI.isValidTarget(this, target) || HippopotamusAI.isHoldingFavoriteFood(target)) {
+                    brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
+                    brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+                }
+            });
+        } else {
+            brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
+        }
 
         var level = this.level();
         var profiler = level.getProfiler();
 
         profiler.push("hippopotamusBrain");
-        ((Brain<HippopotamusEntity>) this.getBrain()).tick((ServerLevel) this.level(), this);
+        brain.tick((ServerLevel) this.level(), this);
         profiler.pop();
 
         profiler.push("hippopotamusActivityUpdate");
@@ -207,9 +210,33 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
         return baby;
     }
-
+    
+   @Override
+   public void spawnChildFromBreeding(ServerLevel level, Animal partner) {
+    if (this.isInWater()) {
+        AgeableMob baby = this.getBreedOffspring(level, partner);
+        if (baby != null) {
+            baby.setBaby(true);
+            baby.moveTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
+            
+            level.addFreshEntityWithNoPersistence(baby);
+            level.broadcastEntityEvent(this, (byte)18);
+            
+            if (level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_DOMOBLOOT)) {
+                level.addFreshEntity(new net.minecraft.world.entity.ExperienceOrb(level, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
+            }
+        }
+    } else {
+        this.setInLoveTime(600); 
+        partner.setInLoveTime(600);
+       }
+   }
+    
     @Override
     public boolean doHurtTarget(Entity target) {
+        if (this.isBaby()) {
+            return false;
+        }
         return super.doHurtTarget(target);
     }
 
