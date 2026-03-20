@@ -101,6 +101,10 @@ public class SealEntity extends Animal implements GeoEntity {
         var level = this.level();
         var profiler = level.getProfiler();
 
+        if (this.tickCount % 20 == 0) {
+            this.checkForThreats();
+        }
+
         profiler.push("sealBrain");
         ((Brain<SealEntity>) this.getBrain()).tick((ServerLevel) this.level(), this);
         profiler.pop();
@@ -185,7 +189,27 @@ public class SealEntity extends Animal implements GeoEntity {
 
         return result;
     }
+    
+    private void checkForThreats() {
+        if (this.level().isClientSide) return;
 
+        var polarBear = this.level().getNearestEntity(
+                PolarBear.class, 
+                TargetingConditions.forNonCombat().range(12.0D), 
+                this, 
+                this.getX(), this.getY(), this.getZ(), 
+                this.getBoundingBox().inflate(12.0D, 6.0D, 12.0D)
+        );
+
+        if (polarBear != null) {
+            this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+            
+            if (this.isLaying() && this.getLayState() != LayState.GETTING_UP) {
+                this.startGettingUp();
+            }
+        }
+    }
+    
     @Override
     public void updateSwimming() {
         this.setSwimming(this.isEffectiveAi() && this.isInWaterOrBubble());
