@@ -1,4 +1,4 @@
-package it.hurts.shatterbyte.reanimal.common.entity.redpanda;
+package it.hurts.shatterbyte.reanimal.common.entity.red_panda;
 
 import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
