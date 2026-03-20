@@ -1,4 +1,4 @@
-package it.hurts.shatterbyte.reanimal.common.entity.redpanda;
+package it.hurts.shatterbyte.reanimal.common.entity.red_panda;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -24,6 +24,7 @@ public class RedPandaAI {
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.NEAREST_PLAYERS,
             SensorType.HURT_BY,
+            ReAnimalSensorTypes.RED_PANDA_TEMPTATIONS.get(),
             SensorType.NEAREST_ADULT
     );
 
@@ -124,5 +125,9 @@ public class RedPandaAI {
         } else {
             entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
         }
+    }
+    
+    public static Predicate<ItemStack> getTemptations() {
+        return stack -> stack.is(ReAnimalTags.Items.RED_PANDA_FOOD);
     }
 }
