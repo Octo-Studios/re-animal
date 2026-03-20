@@ -4,7 +4,8 @@
   "package": "it.hurts.shatterbyte.reanimal.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "DebugPacketsMixin"
+    "DebugPacketsMixin",
+    "PolarBearMixin"
   ],
   "client": [
     "DebugRendererMixin",
