@@ -32,6 +32,8 @@ import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -401,36 +403,5 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         level.setBlock(pos, state, 3);
         level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(this, state));
         this.playSound(SoundEvents.TURTLE_LAY_EGG, 1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1F);
-    }
-
-    @Nullable
-    private BlockPos findEggLayTarget(ServerLevel level) {
-        var origin = this.blockPosition();
-        var random = this.getRandom();
-
-        for (int i = 0; i < 40; i++) {
-            var dx = random.nextInt(17) - 8;
-            var dz = random.nextInt(17) - 8;
-
-            var x = origin.getX() + dx;
-            var z = origin.getZ() + dz;
-            var topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
-
-            if (topY <= level.getMinBuildHeight())
-                continue;
-
-            var eggPos = new BlockPos(x, topY, z);
-            var ground = eggPos.below();
-
-            if (!level.getBlockState(ground).is(BlockTags.SAND))
-                continue;
-
-            if (!level.getBlockState(eggPos).isAir() || !level.getFluidState(eggPos).isEmpty())
-                continue;
-
-            return eggPos;
-        }
-
-        return null;
     }
 }

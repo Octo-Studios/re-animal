@@ -24,7 +24,9 @@ import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
+import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.animal.PolarBear;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -194,8 +196,8 @@ public class SealEntity extends Animal implements GeoEntity {
         if (this.level().isClientSide) return;
 
         var polarBear = this.level().getNearestEntity(
-                PolarBear.class, 
-                TargetingConditions.forNonCombat().range(12.0D), 
+                PolarBear.class,
+                TargetingConditions.forNonCombat().range(12.0D),
                 this, 
                 this.getX(), this.getY(), this.getZ(), 
                 this.getBoundingBox().inflate(12.0D, 6.0D, 12.0D)
