@@ -1,23 +1,23 @@
 package it.hurts.shatterbyte.reanimal.common.entity.redpanda;
 
+import com.mojang.serialization.Dynamic;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.syncher.EntityDataAccessor;
-import net.minecraft.network.syncher.EntityDataSerializers;
-import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.goal.*;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -34,7 +34,6 @@ public class RedPandaEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.red_panda.walk");
     private static final RawAnimation SLEEP = RawAnimation.begin().thenLoop("animation.red_panda.sleep");
 
-    private static final EntityDataAccessor<Boolean> IS_SLEEPING = SynchedEntityData.defineId(RedPandaEntity.class, EntityDataSerializers.BOOLEAN);
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public RedPandaEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
@@ -43,43 +42,37 @@ public class RedPandaEntity extends TamableAnimal implements GeoEntity {
     }
 
     @Override
-    protected void registerGoals() {
-        this.goalSelector.addGoal(0, new FloatGoal(this));
-        this.goalSelector.addGoal(1, new SitWhenOrderedToGoal(this));
-        this.goalSelector.addGoal(2, new BreedGoal(this, 1.0D));
-        this.goalSelector.addGoal(3, new TemptGoal(this, 1.1D, stack -> stack.is(Items.BAMBOO) || stack.is(Items.SWEET_BERRIES), false));
-        this.goalSelector.addGoal(4, new FollowOwnerGoal(this, 1.1D, 10.0F, 2.0F, false));
-        this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 1.0D));
-        this.goalSelector.addGoal(6, new LookAtPlayerGoal(this, Player.class, 6.0F));
-        this.goalSelector.addGoal(7, new RandomLookAroundGoal(this));
+    protected Brain.Provider<RedPandaEntity> brainProvider() {
+        return RedPandaAI.brainProvider();
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        this.entityData.define(IS_SLEEPING, false);
+    protected Brain<?> makeBrain(Dynamic<?> dynamic) {
+        return RedPandaAI.makeBrain(this.brainProvider().makeBrain(dynamic));
     }
 
     @Override
-    public void tick() {
-        super.tick();
-        
-        if (!this.level().isClientSide) {
-            boolean isDay = this.level().isDay();
-            if (isDay && !this.isSleeping() && this.getNavigation().isDone()) {
-                this.setSleeping(true);
-            } else if (!isDay && this.isSleeping()) {
-                this.setSleeping(false);
-            }
+    protected void customServerAiStep() {
+        var level = this.level();
+        var profiler = level.getProfiler();
 
-            if (this.isTame() && this.tickCount % 10 == 0) {
-                scareHostiles();
-            }
+        profiler.push("redPandaBrain");
+        ((Brain<RedPandaEntity>) this.getBrain()).tick((ServerLevel) this.level(), this);
+        profiler.pop();
+
+        profiler.push("redPandaActivityUpdate");
+        RedPandaAI.updateActivity(this);
+        profiler.pop();
+
+        if (this.isTame() && this.tickCount % 10 == 0) {
+            scareHostiles();
         }
+
+        super.customServerAiStep();
     }
 
     private void scareHostiles() {
-        List<Monster> monsters = this.level().getEntitiesOfClass(Monster.class, this.getBoundingBox().inflate(12.0D));
+        List<Monster> monsters = this.level().getEntitiesOfClass(Monster.class, this.getBoundingBox().inflate(10.0D));
         for (Monster monster : monsters) {
             Vec3 fleePos = DefaultRandomPos.getPosAway(monster, 16, 7, this.position());
             if (fleePos != null) {
@@ -111,16 +104,22 @@ public class RedPandaEntity extends TamableAnimal implements GeoEntity {
     }
 
     @Override
+    public boolean hurt(DamageSource source, float amount) {
+        var result = super.hurt(source, amount);
+        if (result) {
+            this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+            RedPandaAI.updateActivity(this);
+        }
+        return result;
+    }
+
+    @Override
     public boolean isFood(ItemStack stack) {
-        return stack.is(ReAnimalTags.Items.RED_PANDA_FOOD)
+        return stack.is(ReAnimalTags.Items.RED_PANDA_FOOD);
     }
 
     public boolean isSleeping() {
-        return this.entityData.get(IS_SLEEPING);
-    }
-
-    public void setSleeping(boolean sleeping) {
-        this.entityData.set(IS_SLEEPING, sleeping);
+        return this.getBrain().isActive(Activity.REST);
     }
 
     @Override
@@ -148,13 +147,16 @@ public class RedPandaEntity extends TamableAnimal implements GeoEntity {
     }
 
     private PlayState mainPredicate(AnimationState<RedPandaEntity> state) {
+        var controller = state.getController();
+
         if (this.isSleeping()) {
-            state.getController().setAnimation(SLEEP);
+            controller.setAnimation(SLEEP);
         } else if (state.isMoving()) {
-            state.getController().setAnimation(WALK);
+            controller.setAnimation(WALK);
         } else {
-            state.getController().setAnimation(IDLE);
+            controller.setAnimation(IDLE);
         }
+
         return PlayState.CONTINUE;
     }
 }
