@@ -13,6 +13,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraAI;
 import it.hurts.shatterbyte.reanimal.common.entity.crocodile.CrocodileAI;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealAI;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureAI;
+import it.hurts.shatterbyte.reanimal.common.entity.red_panda.RedPandaAI;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.sensing.MobSensor;
@@ -27,6 +28,7 @@ public class ReAnimalSensorTypes {
 
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> HEDGEHOG_TEMPTATIONS = SENSOR_TYPES.register("hedgehog_temptations", () -> new SensorType<>(() -> new TemptingSensor(HedgehogAI.getTemptations())));
     public static final DeferredHolder<SensorType<?>, SensorType<MobSensor<HedgehogEntity>>> HEDGEHOG_SCARE_DETECTED = SENSOR_TYPES.register("hedgehog_scare_detected", () -> new SensorType<>(() -> new MobSensor<>(5, HedgehogEntity::isScaredBy, HedgehogEntity::canStayRolledUp, MemoryModuleType.DANGER_DETECTED_RECENTLY, 80)));
+    public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> RED_PANDA_TEMPTATIONS = SENSOR_TYPES.register("red_panda_temptations", () -> new SensorType<>(() -> new TemptingSensor(RedPandaAI.getTemptations())));
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> OSTRICH_TEMPTATIONS = SENSOR_TYPES.register("ostrich_temptations", () -> new SensorType<>(() -> new TemptingSensor(OstrichAI.getTemptations())));
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> KIWI_TEMPTATIONS = SENSOR_TYPES.register("kiwi_temptations", () -> new SensorType<>(() -> new TemptingSensor(KiwiAI.getTemptations())));
     public static final DeferredHolder<SensorType<?>, SensorType<TemptingSensor>> PIGEON_TEMPTATIONS = SENSOR_TYPES.register("pigeon_temptations", () -> new SensorType<>(() -> new TemptingSensor(PigeonAI.getTemptations())));

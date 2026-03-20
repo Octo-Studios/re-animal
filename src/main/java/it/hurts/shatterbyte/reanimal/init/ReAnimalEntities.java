@@ -38,7 +38,12 @@ public class ReAnimalEntities {
             EntityType.Builder.of(HedgehogEntity::new, MobCategory.CREATURE)
                     .sized(0.6F, 0.5F)
                     .build(ReAnimal.MODID + ":hedgehog"));
-
+    
+    public static final DeferredHolder<EntityType<?>, EntityType<RedPandaEntity>> RED_PANDA = ENTITY_TYPES.register("red_panda", () ->
+        EntityType.Builder.of(RedPandaEntity::new, MobCategory.CREATURE)
+                .sized(0.7F, 0.6F)
+                .build(ReAnimal.MODID + ":red_panda"));
+    
     public static final DeferredHolder<EntityType<?>, EntityType<OstrichEntity>> OSTRICH = ENTITY_TYPES.register("ostrich", () ->
             EntityType.Builder.of(OstrichEntity::new, MobCategory.CREATURE)
                     .sized(1.25F, 2.75F)
@@ -168,6 +173,7 @@ public class ReAnimalEntities {
 
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(HEDGEHOG.get(), HedgehogEntity.createAttributes().build());
+        event.put(RED_PANDA.get(), RedPandaEntity.createAttributes().build());
         event.put(OSTRICH.get(), OstrichEntity.createAttributes().build());
         event.put(KIWI.get(), KiwiEntity.createAttributes().build());
         event.put(PIGEON.get(), PigeonEntity.createAttributes().build());
