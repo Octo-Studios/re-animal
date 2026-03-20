@@ -352,7 +352,46 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     }
 
     private boolean canLayEggAt(ServerLevel level, BlockPos pos) {
-        return level.getBlockState(pos).isAir() && level.getFluidState(pos).isEmpty();
+        BlockPos groundPos = pos.below();
+        BlockState groundState = level.getBlockState(groundPos);
+        
+        boolean isValidGround = groundState.is(BlockTags.SAND) || groundState.is(Blocks.MUD);
+        boolean isSpaceClear = level.getBlockState(pos).isAir() && level.getFluidState(pos).isEmpty();
+        
+        return isValidGround && isSpaceClear;
+    }
+
+    @Nullable
+    private BlockPos findEggLayTarget(ServerLevel level) {
+        var origin = this.blockPosition();
+        var random = this.getRandom();
+
+        for (int i = 0; i < 40; i++) {
+            var dx = random.nextInt(17) - 8;
+            var dz = random.nextInt(17) - 8;
+
+            var x = origin.getX() + dx;
+            var z = origin.getZ() + dz;
+            
+            var topY = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z);
+
+            if (topY <= level.getMinBuildHeight())
+                continue;
+
+            var eggPos = new BlockPos(x, topY, z);
+            var ground = eggPos.below();
+            BlockState stateBelow = level.getBlockState(ground);
+
+            if (!stateBelow.is(BlockTags.SAND) && !stateBelow.is(Blocks.MUD))
+                continue;
+
+            if (!level.getBlockState(eggPos).isAir() || !level.getFluidState(eggPos).isEmpty())
+                continue;
+
+            return eggPos;
+        }
+
+        return null;
     }
 
     private void layEgg(ServerLevel level, BlockPos pos) {
