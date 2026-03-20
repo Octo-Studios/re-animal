@@ -1,9 +1,12 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.hedgehog;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import it.hurts.shatterbyte.reanimal.client.model.hedgehog.HedgehogModel;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
+import net.minecraft.util.Mth;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.world.entity.player.Player;
 import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
@@ -27,5 +30,20 @@ public class HedgehogRenderer extends GeoEntityRenderer<HedgehogEntity> {
         }
 
         super.scaleModelForRender(widthScale, heightScale, poseStack, animatable, model, isReRender, partialTick, packedLight, packedOverlay);
+    }
+
+    @Override
+    protected void applyRotations(HedgehogEntity animatable, PoseStack poseStack, float ageInTicks, float rotationYaw, float partialTick, float nativeScale) {
+        if (animatable.getVehicle() instanceof Player player) {
+            var headYaw = Mth.rotLerp(partialTick, player.yHeadRotO, player.yHeadRot);
+            var headPitch = Mth.lerp(partialTick, player.xRotO, player.getXRot());
+
+            super.applyRotations(animatable, poseStack, ageInTicks, headYaw, partialTick, nativeScale);
+            poseStack.mulPose(Axis.XP.rotationDegrees(-headPitch));
+
+            return;
+        }
+
+        super.applyRotations(animatable, poseStack, ageInTicks, rotationYaw, partialTick, nativeScale);
     }
 }

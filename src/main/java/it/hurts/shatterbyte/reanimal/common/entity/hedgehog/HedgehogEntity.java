@@ -17,6 +17,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.Direction;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
@@ -24,26 +25,38 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.monster.Phantom;
+import net.minecraft.world.entity.monster.Spider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.*;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
+import javax.annotation.Nullable;
 import java.util.function.IntFunction;
 
-public class HedgehogEntity extends Animal implements GeoEntity {
+public class HedgehogEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.hedgehog.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.hedgehog.walk");
     private static final RawAnimation ROLL = RawAnimation.begin().then("animation.hedgehog.roll", Animation.LoopType.PLAY_ONCE);
@@ -77,7 +90,7 @@ public class HedgehogEntity extends Animal implements GeoEntity {
         return this.entityData.get(STATE) != HedgehogState.IDLE;
     }
 
-    public HedgehogEntity(EntityType<? extends Animal> entityType, Level level) {
+    public HedgehogEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
 
         this.getNavigation().setCanFloat(true);
@@ -87,10 +100,24 @@ public class HedgehogEntity extends Animal implements GeoEntity {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         var level = this.level();
 
-        var back = this.getStack();
         var held = player.getItemInHand(hand);
+        var owner = this.getOwner();
+        var back = this.getStack();
+
+        if (this.isTame() && this.isOwnedBy(player) && player.isShiftKeyDown() && held.isEmpty() && !this.isPassenger()) {
+            if (this.isScared())
+                this.rollOut();
+
+            this.getNavigation().stop();
+            this.startRiding(player, true);
+
+            return InteractionResult.sidedSuccess(level.isClientSide());
+        }
 
         if (!back.isEmpty()) {
+            if (player.isShiftKeyDown())
+                return super.mobInteract(player, hand);
+
             if (!level.isClientSide()) {
                 var toGive = back.copy();
 
@@ -105,6 +132,31 @@ public class HedgehogEntity extends Animal implements GeoEntity {
 
         if (!held.isEmpty()) {
             if (this.isFood(held)) {
+                if (!this.isTame()) {
+                    if (!level.isClientSide()) {
+                        if (!player.getAbilities().instabuild)
+                            held.shrink(1);
+
+                        this.tame(player);
+                        this.setTarget(null);
+                        this.getNavigation().stop();
+                        level.broadcastEntityEvent(this, (byte) 7);
+                    }
+
+                    return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+
+                if (owner == player && this.getHealth() < this.getMaxHealth()) {
+                    if (!level.isClientSide()) {
+                        if (!player.getAbilities().instabuild)
+                            held.shrink(1);
+
+                        this.heal(2F);
+                    }
+
+                    return InteractionResult.sidedSuccess(level.isClientSide());
+                }
+
                 var result = super.mobInteract(player, hand);
 
                 if (result.consumesAction())
@@ -137,10 +189,14 @@ public class HedgehogEntity extends Animal implements GeoEntity {
 
         if (!this.isBaby()) {
             var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof HedgehogEntity));
+            var owner = this.getOwner();
 
             var damagedSomeone = false;
 
             for (var target : targets) {
+                if (target == owner || target == this.getVehicle())
+                    continue;
+
                 var damaged = target.hurt(level.damageSources().source(ReAnimalDamageTypes.HEDGEHOG_SPIKES, this), this.getState() == HedgehogState.SCARED ? 5 : 1);
 
                 damagedSomeone = damagedSomeone || damaged;
@@ -284,8 +340,24 @@ public class HedgehogEntity extends Animal implements GeoEntity {
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
         var baby = ReAnimalEntities.HEDGEHOG.get().create(level);
 
-        if (baby != null)
+        if (baby != null) {
             baby.setBaby(true);
+
+            var thisOwnerUUID = this.isTame() ? this.getOwnerUUID() : null;
+            var otherOwnerUUID = partner instanceof HedgehogEntity other && other.isTame() ? other.getOwnerUUID() : null;
+
+            var ownerUUID = thisOwnerUUID;
+
+            if (thisOwnerUUID != null && otherOwnerUUID != null)
+                ownerUUID = thisOwnerUUID.equals(otherOwnerUUID) || this.random.nextBoolean() ? thisOwnerUUID : otherOwnerUUID;
+            else if (ownerUUID == null)
+                ownerUUID = otherOwnerUUID;
+
+            if (ownerUUID != null) {
+                baby.setOwnerUUID(ownerUUID);
+                baby.setTame(true, true);
+            }
+        }
 
         return baby;
     }
@@ -341,10 +413,25 @@ public class HedgehogEntity extends Animal implements GeoEntity {
             return true;
         else if (this.getLastHurtByMob() == entity)
             return true;
-        else if (entity instanceof Player player)
-            return !player.isSpectator() && (player.isSprinting() || player.isPassenger());
+        else if (entity instanceof Player player) {
+            if (player.isSpectator())
+                return false;
+
+            if (this.isTame() && this.isOwnedBy(player))
+                return false;
+
+            return player.isSprinting() || player.isPassenger();
+        }
         else
             return false;
+    }
+
+    @Override
+    public Vec3 getVehicleAttachmentPoint(Entity vehicle) {
+        if (vehicle instanceof Player)
+            return new Vec3(0,-0.1,0);
+
+        return super.getVehicleAttachmentPoint(vehicle);
     }
 
     public void rollUp() {
@@ -366,6 +453,114 @@ public class HedgehogEntity extends Animal implements GeoEntity {
 
         this.gameEvent(GameEvent.ENTITY_ACTION);
         this.setState(HedgehogState.IDLE);
+    }
+
+    public boolean isOnHeadOf(Player player) {
+        return this.isPassenger() && this.getVehicle() == player;
+    }
+
+    @Nullable
+    public static HedgehogEntity getHeadPassenger(Player player) {
+        for (var passenger : player.getPassengers()) {
+            if (passenger instanceof HedgehogEntity hedgehog && hedgehog.isOnHeadOf(player))
+                return hedgehog;
+        }
+
+        return null;
+    }
+
+    @EventBusSubscriber
+    public static class CommonEvents {
+        @SubscribeEvent
+        public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+            var player = event.getEntity();
+
+            if (!player.isShiftKeyDown())
+                return;
+
+            if (event.getHand() != InteractionHand.MAIN_HAND)
+                return;
+
+            if (!player.getItemInHand(event.getHand()).isEmpty())
+                return;
+
+            var hedgehog = HedgehogEntity.getHeadPassenger(player);
+
+            if (hedgehog == null)
+                return;
+
+            var level = player.level();
+            var clickedPos = event.getPos();
+            var state = level.getBlockState(clickedPos);
+
+            var topY = clickedPos.getY() + state.getCollisionShape(level, clickedPos).max(Direction.Axis.Y);
+
+            if (topY <= clickedPos.getY())
+                topY = clickedPos.getY() + 1D;
+
+            var x = clickedPos.getX() + 0.5D;
+            var y = topY;
+            var z = clickedPos.getZ() + 0.5D;
+
+            hedgehog.stopRiding();
+            hedgehog.getNavigation().stop();
+            hedgehog.absMoveTo(x, y, z, player.getYRot(), hedgehog.getXRot());
+            hedgehog.setDeltaMovement(Vec3.ZERO);
+
+            if (!level.noCollision(hedgehog, hedgehog.getBoundingBox())) {
+                var fallback = player.blockPosition().above();
+                hedgehog.absMoveTo(fallback.getX() + 0.5D, fallback.getY(), fallback.getZ() + 0.5D, player.getYRot(), hedgehog.getXRot());
+            }
+
+            event.setCanceled(true);
+            event.setCancellationResult(InteractionResult.sidedSuccess(level.isClientSide()));
+        }
+
+        @SubscribeEvent
+        public static void onEntityJoin(EntityJoinLevelEvent event) {
+            if (event.getLevel().isClientSide())
+                return;
+
+            if (!(event.getEntity() instanceof Spider spider))
+                return;
+
+            var hasAvoidGoal = spider.goalSelector.getAvailableGoals()
+                    .stream()
+                    .anyMatch(goal -> goal.getGoal() instanceof SpiderAvoidHedgehogGoal);
+
+            if (!hasAvoidGoal)
+                spider.goalSelector.addGoal(2, new SpiderAvoidHedgehogGoal(spider));
+        }
+
+        @SubscribeEvent
+        public static void onLivingIncomingDamage(LivingIncomingDamageEvent event) {
+            if (event.getEntity().level().isClientSide())
+                return;
+
+            if (!(event.getEntity() instanceof Player player))
+                return;
+
+            if (!(event.getSource().getEntity() instanceof Phantom phantom))
+                return;
+
+            if (!phantom.isAlive())
+                return;
+
+            var hedgehog = HedgehogEntity.getHeadPassenger(player);
+
+            if (hedgehog == null)
+                return;
+
+            event.setCanceled(true);
+
+            phantom.hurt(player.damageSources().thorns(hedgehog), 5F);
+        }
+
+        private static class SpiderAvoidHedgehogGoal extends AvoidEntityGoal<HedgehogEntity> {
+            public SpiderAvoidHedgehogGoal(Spider spider) {
+                super(spider, HedgehogEntity.class, 6F, 1D, 1.2D, living -> living instanceof HedgehogEntity hedgehog && !hedgehog.isBaby());
+            }
+        }
     }
 
     @Getter

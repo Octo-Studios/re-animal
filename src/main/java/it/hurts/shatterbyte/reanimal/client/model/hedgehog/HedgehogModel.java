@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.client.model.hedgehog;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.model.GeoModel;
@@ -36,6 +37,13 @@ public class HedgehogModel extends GeoModel<HedgehogEntity> {
 
         if (head == null)
             return;
+
+        if (animatable.getVehicle() instanceof Player) {
+            head.setRotY(0F);
+            head.setRotX(0F);
+
+            return;
+        }
 
         var modelData = state.getData(DataTickets.ENTITY_MODEL_DATA);
 
