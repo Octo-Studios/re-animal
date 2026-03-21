@@ -141,7 +141,7 @@
 
   "death.attack.reanimal.hedgehog_spikes": "Їжак заколено %1$s",
   "death.attack.reanimal.hedgehog_spikes.player": "%2$s заколов %1$s",
-  "death.attack.reanimal.sea_urchin_spikes": "Морський Їжак заколов %1$s",
+  "death.attack.reanimal.sea_urchin_spikes": "Морський їжак заколов %1$s",
   "death.attack.reanimal.sea_urchin_spikes.player": "%2$s заколов %1$s",
   "death.attack.reanimal.jellyfish_sting": "Медуза оглушив %1$s",
   "death.attack.reanimal.jellyfish_sting.player": "%2$s оглушив %1$s",
