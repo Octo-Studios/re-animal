@@ -43,6 +43,13 @@
   "item.reanimal.raw_hippopotamus_meat": "Сира бегемотятина",
   "item.reanimal.cooked_hippopotamus_meat": "Смажена бегемотятина",
 
+  "entity.reanimal.crocodile": "Крокодил",
+  "item.reanimal.crocodile_spawn_egg": "Яйце виклику крокодила",
+  "item.reanimal.crocodile_egg": "Крокодиляче яйце",
+  "block.reanimal.crocodile_egg": "Крокодиляче яйце",
+  "item.reanimal.raw_crocodile_meat": "Сира крокодилятина",
+  "item.reanimal.cooked_crocodile_meat": "Смажена крокодилятина",
+
   "entity.reanimal.giraffe": "Жираф",
   "item.reanimal.giraffe_spawn_egg": "Яйце виклику жирафа",
   "item.reanimal.raw_giraffe_meat": "Сира жирафина",
@@ -132,6 +139,13 @@
   "effect.reanimal.quill": "Голка",
   "effect.reanimal.cramps": "Судоми",
 
+  "death.attack.reanimal.hedgehog_spikes": "Їжак заколено %1$s",
+  "death.attack.reanimal.hedgehog_spikes.player": "%2$s заколов %1$s",
+  "death.attack.reanimal.sea_urchin_spikes": "Морський їжак заколов %1$s",
+  "death.attack.reanimal.sea_urchin_spikes.player": "%2$s заколов %1$s",
+  "death.attack.reanimal.jellyfish_sting": "Медуза оглушив %1$s",
+  "death.attack.reanimal.jellyfish_sting.player": "%2$s оглушив %1$s",
+
   "subtitles.reanimal.entity.capybara.idle": "Капібара бурчить",
   "subtitles.reanimal.entity.capybara.hurt": "Капібару поранено",
   "subtitles.reanimal.entity.capybara.death": "Капібара гине",
@@ -144,12 +158,17 @@
   "subtitles.reanimal.entity.hedgehog.hurt": "Їжака поранено",
   "subtitles.reanimal.entity.hedgehog.death": "Їжак гине",
   "subtitles.reanimal.entity.hedgehog.roll": "Їжак згортається",
-  "subtitles.reanimal.entity.hedgehog.unroll": "Їжак рохгортається",
+  "subtitles.reanimal.entity.hedgehog.unroll": "Їжак розгортається",
 
   "subtitles.reanimal.entity.hippopotamus.bite": "Бегемот кусає",
   "subtitles.reanimal.entity.hippopotamus.idle": "Бегемот бурчить",
   "subtitles.reanimal.entity.hippopotamus.hurt": "Бегемота поранено",
   "subtitles.reanimal.entity.hippopotamus.death": "Бегемот гине",
+
+  "subtitles.reanimal.entity.crocodile.bite": "Крокодил кусає",
+  "subtitles.reanimal.entity.crocodile.idle": "Крокодил шипить",
+  "subtitles.reanimal.entity.crocodile.hurt": "Крокодила поранено",
+  "subtitles.reanimal.entity.crocodile.death": "Крокодил гине",
 
   "subtitles.reanimal.entity.kiwi.idle": "Ківі свистить",
   "subtitles.reanimal.entity.kiwi.hurt": "Ківі поранено",
@@ -171,10 +190,15 @@
   "subtitles.reanimal.entity.butterfly.idle": "Метелик пурхає",
   "subtitles.reanimal.entity.butterfly.hurt": "Метелика поранено",
   "subtitles.reanimal.entity.butterfly.death": "Метелик гине",
+  "subtitles.reanimal.entity.butterfly.loop": "Метелик пурхає",
 
   "subtitles.reanimal.entity.dragonfly.loop": "Бабка дзижчить",
   "subtitles.reanimal.entity.dragonfly.hurt": "Бабку поранено",
   "subtitles.reanimal.entity.dragonfly.death": "Бабка гине",
+
+  "subtitles.reanimal.entity.jellyfish.idle": "Медуза пульсує",
+  "subtitles.reanimal.entity.jellyfish.hurt": "Медузу поранено",
+  "subtitles.reanimal.entity.jellyfish.death": "Медуза гине",
 
   "subtitles.reanimal.entity.sea_urchin.idle": "Морський їжак шелестить",
   "subtitles.reanimal.entity.sea_urchin.hurt": "Морського їжака поранено",
