@@ -109,6 +109,28 @@ public class StarfishEntity extends Animal implements GeoEntity {
     }
 
     @Override
+    public void baseTick() {
+        int air = this.getAirSupply();
+        super.baseTick();
+
+        if (!this.isNoAi())
+            this.handleAirSupply(air);
+    }
+
+    protected void handleAirSupply(int airSupply) {
+        if (this.isAlive() && !this.isInWaterOrBubble()) {
+            this.setAirSupply(airSupply - 1);
+
+            if (this.getAirSupply() == -20) {
+                this.setAirSupply(0);
+                this.hurt(this.damageSources().dryOut(), 2F);
+            }
+        } else {
+            this.setAirSupply(this.getMaxAirSupply());
+        }
+    }
+
+    @Override
     public boolean hurt(DamageSource source, float amount) {
         var result = super.hurt(source, amount);
 
