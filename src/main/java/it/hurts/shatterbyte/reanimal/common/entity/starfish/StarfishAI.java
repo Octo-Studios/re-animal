@@ -20,7 +20,6 @@ import net.minecraft.world.entity.ai.behavior.RandomLookAround;
 import net.minecraft.world.entity.ai.behavior.RandomStroll;
 import net.minecraft.world.entity.ai.behavior.RunOne;
 import net.minecraft.world.entity.ai.behavior.SetEntityLookTargetSometimes;
-import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromLookTarget;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
@@ -106,8 +105,7 @@ public class StarfishAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
-                                                Pair.of(RandomStroll.stroll(1F), 1),
-                                                Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
+                                                Pair.of(RandomStroll.swim(1F), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
                                         )
                                 )

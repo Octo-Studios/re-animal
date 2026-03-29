@@ -16,6 +16,8 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -41,6 +43,12 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
         super(entityType, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
+        this.setPathfindingMalus(PathType.WATER_BORDER, 16F);
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        return new WaterBoundPathNavigation(this, level);
     }
 
     @Override
