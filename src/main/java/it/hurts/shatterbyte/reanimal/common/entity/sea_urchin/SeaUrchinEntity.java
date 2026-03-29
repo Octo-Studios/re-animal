@@ -113,6 +113,16 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
     }
 
     @Override
+    public void jumpFromGround() {
+
+    }
+
+    @Override
+    public void jumpInFluid(FluidType type) {
+
+    }
+
+    @Override
     public boolean checkSpawnObstruction(LevelReader level) {
         return level.isUnobstructed(this);
     }
@@ -121,7 +131,6 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
     public boolean checkSpawnRules(LevelAccessor level, MobSpawnType type) {
         return true;
     }
-
 
     @Override
     protected Brain.Provider<SeaUrchinEntity> brainProvider() {
@@ -206,6 +215,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity {
                 .add(Attributes.MAX_HEALTH, 4D)
                 .add(Attributes.MOVEMENT_SPEED, 0.025D)
                 .add(NeoForgeMod.SWIM_SPEED, 0.1D)
-                .add(Attributes.FOLLOW_RANGE, 4D);
+                .add(Attributes.FOLLOW_RANGE, 4D)
+                .add(Attributes.STEP_HEIGHT, 1.1D);
     }
 }
