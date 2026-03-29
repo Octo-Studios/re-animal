@@ -63,6 +63,11 @@
   "item.reanimal.sea_urchin_spawn_egg": "성게의 스폰 달걀",
   "item.reanimal.sea_urchin_caviar": "성게의 몸",
 
+  "item.reanimal.raw_starfish_caviar": "날 불가사리 알",
+  "item.reanimal.cooked_starfish_caviar": "익힌 불가사리 알",
+  "entity.reanimal.starfish": "불가사리",
+  "item.reanimal.starfish_spawn_egg": "불가사리의 스폰 달걀",
+
   "item.reanimal.quill": "가시",
   "item.reanimal.quill_arrow": "가시의 화살",
   "entity.reanimal.quill_arrow": "가시의 화살",

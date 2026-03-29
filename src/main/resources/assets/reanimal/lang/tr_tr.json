@@ -1,4 +1,4 @@
-
+{
   "itemGroup.reanimal": "Re:Animal",
 
   "entity.reanimal.hedgehog": "Kirpi",
@@ -69,6 +69,12 @@
   "entity.reanimal.sea_urchin": "Deniz Kestanesi",
   "item.reanimal.sea_urchin_spawn_egg": "Deniz Kestanesi Yumurtası",
   "item.reanimal.sea_urchin_caviar": "Deniz Kestanesi Havyarı",
+
+  "item.reanimal.raw_starfish_caviar": "Çiğ Deniz Yıldızı Havyarı",
+  "item.reanimal.cooked_starfish_caviar": "Pişmiş Deniz Yıldızı Havyarı",
+  "entity.reanimal.starfish": "Deniz Yıldızı",
+  "item.reanimal.starfish_spawn_egg": "Deniz Yıldızı Yumurtası",
+
   "item.reanimal.jellyfish_jelly": "Denizanası Jölesi",
   "entity.reanimal.jellyfish": "Denizanası",
   "item.reanimal.jellyfish_spawn_egg": "Denizanası Yumurtası",

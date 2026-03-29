@@ -62,6 +62,12 @@
   "entity.reanimal.sea_urchin": "Ouriço do mar",
   "item.reanimal.sea_urchin_spawn_egg": "Ovo de Geração de Ouriço do mar",
   "item.reanimal.sea_urchin_caviar": "Caviar de Ouriço do mar",
+
+  "item.reanimal.raw_starfish_caviar": "Caviar cru de estrela-do-mar",
+  "item.reanimal.cooked_starfish_caviar": "Caviar cozido de estrela-do-mar",
+  "entity.reanimal.starfish": "Estrela-do-mar",
+  "item.reanimal.starfish_spawn_egg": "Ovo de Geração de Estrela-do-mar",
+
   "entity.reanimal.jellyfish": "Água-viva",
   "item.reanimal.jellyfish_spawn_egg": "Ovo de Geração de Água-viva",
 

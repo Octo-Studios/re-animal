@@ -17,6 +17,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.starfish.StarfishRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.vulture.VultureRenderer;
 import it.hurts.shatterbyte.reanimal.client.sound.ButterflySoundInstance;
 import it.hurts.shatterbyte.reanimal.client.sound.DragonflySoundInstance;
@@ -172,6 +173,14 @@ public class ReAnimalModEvents {
         );
 
         event.register(
+                ReAnimalEntities.STARFISH.get(),
+                SpawnPlacementTypes.IN_WATER,
+                Heightmap.Types.OCEAN_FLOOR,
+                (type, level, spawnType, pos, random) -> true,
+                RegisterSpawnPlacementsEvent.Operation.REPLACE
+        );
+
+        event.register(
                 ReAnimalEntities.JELLYFISH.get(),
                 SpawnPlacementTypes.IN_WATER,
                 Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
@@ -230,6 +239,7 @@ public class ReAnimalModEvents {
             event.registerEntityRenderer(ReAnimalEntities.VULTURE.get(), VultureRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.PENGUIN.get(), PenguinRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.SEA_URCHIN.get(), SeaUrchinRenderer::new);
+            event.registerEntityRenderer(ReAnimalEntities.STARFISH.get(), StarfishRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.JELLYFISH.get(), JellyfishRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG.get(), ThrownItemRenderer::new);
             event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG.get(), ThrownItemRenderer::new);

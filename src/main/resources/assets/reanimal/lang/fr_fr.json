@@ -69,6 +69,12 @@
   "entity.reanimal.sea_urchin": "Oursin",
   "item.reanimal.sea_urchin_spawn_egg": "Œuf d'oursin",
   "item.reanimal.sea_urchin_caviar": "Caviar d'oursin",
+
+  "item.reanimal.raw_starfish_caviar": "Caviar d'étoile de mer cru",
+  "item.reanimal.cooked_starfish_caviar": "Caviar d'étoile de mer cuit",
+  "entity.reanimal.starfish": "Étoile de mer",
+  "item.reanimal.starfish_spawn_egg": "Œuf d'étoile de mer",
+
   "item.reanimal.jellyfish_jelly": "Gelée de méduses",
   "entity.reanimal.jellyfish": "Méduse",
   "item.reanimal.jellyfish_spawn_egg": "Œuf de méduse",

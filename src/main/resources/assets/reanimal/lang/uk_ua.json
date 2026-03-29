@@ -62,6 +62,12 @@
   "entity.reanimal.sea_urchin": "Морський їжак",
   "item.reanimal.sea_urchin_spawn_egg": "Яйце виклику морського їжака",
   "item.reanimal.sea_urchin_caviar": "Ікра морського їжака",
+
+  "item.reanimal.raw_starfish_caviar": "Сира ікра морської зірки",
+  "item.reanimal.cooked_starfish_caviar": "Смажена ікра морської зірки",
+  "entity.reanimal.starfish": "Морська зірка",
+  "item.reanimal.starfish_spawn_egg": "Яйце виклику морської зірки",
+
   "item.reanimal.jellyfish_jelly": "Желе медузи",
   "entity.reanimal.jellyfish": "Медуза",
   "item.reanimal.jellyfish_spawn_egg": "Яйце виклику медузи",

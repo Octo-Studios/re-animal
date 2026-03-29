@@ -63,6 +63,11 @@
   "item.reanimal.sea_urchin_spawn_egg": "ウニのスポーンエッグ",
   "item.reanimal.sea_urchin_caviar": "ウニの身",
 
+  "item.reanimal.raw_starfish_caviar": "生ヒトデの身",
+  "item.reanimal.cooked_starfish_caviar": "焼きヒトデの身",
+  "entity.reanimal.starfish": "ヒトデ",
+  "item.reanimal.starfish_spawn_egg": "ヒトデのスポーンエッグ",
+
   "item.reanimal.quill": "棘",
   "item.reanimal.quill_arrow": "棘の矢",
   "entity.reanimal.quill_arrow": "棘の矢",

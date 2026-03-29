@@ -69,6 +69,12 @@
   "entity.reanimal.sea_urchin": "Sea Urchin",
   "item.reanimal.sea_urchin_spawn_egg": "Sea Urchin Spawn Egg",
   "item.reanimal.sea_urchin_caviar": "Sea Urchin Caviar",
+
+  "item.reanimal.raw_starfish_caviar": "Raw Starfish Caviar",
+  "item.reanimal.cooked_starfish_caviar": "Cooked Starfish Caviar",
+  "entity.reanimal.starfish": "Starfish",
+  "item.reanimal.starfish_spawn_egg": "Starfish Spawn Egg",
+
   "item.reanimal.jellyfish_jelly": "Jellyfish Jelly",
   "entity.reanimal.jellyfish": "Jellyfish",
   "item.reanimal.jellyfish_spawn_egg": "Jellyfish Spawn Egg",

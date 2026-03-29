@@ -1,0 +1,10 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/starfish_0.png" : "outlined_sprite:reanimal/starfish_0.png",
+    "reanimal:textures/entity/starfish_1.png" : "outlined_sprite:reanimal/starfish_1.png",
+    "reanimal:textures/entity/starfish_2.png" : "outlined_sprite:reanimal/starfish_2.png",
+    "reanimal:textures/entity/starfish_3.png" : "outlined_sprite:reanimal/starfish_3.png",
+    "reanimal:textures/entity/starfish_4.png" : "outlined_sprite:reanimal/starfish_4.png",
+    "default" : "model"
+  }
+}

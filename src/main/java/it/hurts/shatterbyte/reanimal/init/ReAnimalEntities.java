@@ -15,6 +15,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.starfish.StarfishEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEntity;
@@ -104,6 +105,11 @@ public class ReAnimalEntities {
                     .sized(0.5F, 0.65F)
                     .build(ReAnimal.MODID + ":sea_urchin"));
 
+    public static final DeferredHolder<EntityType<?>, EntityType<StarfishEntity>> STARFISH = ENTITY_TYPES.register("starfish", () ->
+            EntityType.Builder.of(StarfishEntity::new, MobCategory.CREATURE)
+                    .sized(0.75F, 0.35F)
+                    .build(ReAnimal.MODID + ":starfish"));
+
     public static final DeferredHolder<EntityType<?>, EntityType<JellyfishEntity>> JELLYFISH = ENTITY_TYPES.register("jellyfish", () ->
             EntityType.Builder.of(JellyfishEntity::new, MobCategory.WATER_CREATURE)
                     .sized(1F, 1F)
@@ -181,6 +187,7 @@ public class ReAnimalEntities {
         event.put(VULTURE.get(), VultureEntity.createAttributes().build());
         event.put(PENGUIN.get(), PenguinEntity.createAttributes().build());
         event.put(SEA_URCHIN.get(), SeaUrchinEntity.createAttributes().build());
+        event.put(STARFISH.get(), StarfishEntity.createAttributes().build());
         event.put(JELLYFISH.get(), JellyfishEntity.createAttributes().build());
     }
 }

@@ -4,6 +4,8 @@ import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.item.*;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -31,6 +33,7 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, SpawnEggItem> VULTURE_SPAWN_EGG = ITEMS.register("vulture_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.VULTURE.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> PENGUIN_SPAWN_EGG = ITEMS.register("penguin_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.PENGUIN.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> SEA_URCHIN_SPAWN_EGG = ITEMS.register("sea_urchin_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.SEA_URCHIN.get(), 0xffffff, 0xffffff, new Item.Properties()));
+    public static final DeferredHolder<Item, SpawnEggItem> STARFISH_SPAWN_EGG = ITEMS.register("starfish_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.STARFISH.get(), 0xffffff, 0xffffff, new Item.Properties()));
     public static final DeferredHolder<Item, SpawnEggItem> JELLYFISH_SPAWN_EGG = ITEMS.register("jellyfish_spawn_egg", () -> new SpawnEggItem(ReAnimalEntities.JELLYFISH.get(), 0xffffff, 0xffffff, new Item.Properties()));
 
     public static final DeferredHolder<Item, KiwiEgg> KIWI_EGG = ITEMS.register("kiwi_egg", () -> new KiwiEgg(new Item.Properties()));
@@ -80,5 +83,7 @@ public class ReAnimalItems {
     public static final DeferredHolder<Item, Item> RAW_GIRAFFE_MEAT = ITEMS.register("raw_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(3, 1.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> COOKED_GIRAFFE_MEAT = ITEMS.register("cooked_giraffe_meat", () -> new Item(new Item.Properties().food(new FoodProperties(8, 12.8F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> SEA_URCHIN_CAVIAR = ITEMS.register("sea_urchin_caviar", () -> new Item(new Item.Properties().food(new FoodProperties(3, 5F, false, 1.6F, Optional.empty(), List.of()))));
+    public static final DeferredHolder<Item, Item> RAW_STARFISH_CAVIAR = ITEMS.register("raw_starfish_caviar", () -> new Item(new Item.Properties().food(new FoodProperties(3, 5F, false, 1.6F, Optional.empty(), List.of(new FoodProperties.PossibleEffect(() -> new MobEffectInstance(MobEffects.POISON, 200), 1F))))));
+    public static final DeferredHolder<Item, Item> COOKED_STARFISH_CAVIAR = ITEMS.register("cooked_starfish_caviar", () -> new Item(new Item.Properties().food(new FoodProperties(3, 5F, false, 1.6F, Optional.empty(), List.of()))));
     public static final DeferredHolder<Item, Item> JELLYFISH_JELLY = ITEMS.register("jellyfish_jelly", () -> new Item(new Item.Properties().food(new FoodProperties(2, 0.6F, false, 1.6F, Optional.empty(), List.of()))));
 }
