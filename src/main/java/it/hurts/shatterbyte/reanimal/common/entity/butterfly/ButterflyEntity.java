@@ -58,6 +58,9 @@ public class ButterflyEntity extends Animal implements GeoEntity {
         this.navigation = new FlyingPathNavigation(this, this.level());
 
         this.getNavigation().setCanFloat(true);
+
+        if (!level.isClientSide())
+            this.setVariant(this.getRandom().nextInt(5));
     }
 
     @Override
@@ -89,7 +92,7 @@ public class ButterflyEntity extends Animal implements GeoEntity {
     protected void defineSynchedData(SynchedEntityData.Builder buidler) {
         super.defineSynchedData(buidler);
 
-        buidler.define(VARIANT, this.getRandom().nextInt(5));
+        buidler.define(VARIANT, 0);
     }
 
     @Override
@@ -233,6 +236,7 @@ public class ButterflyEntity extends Animal implements GeoEntity {
                 .add(Attributes.MAX_HEALTH, 2D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.FLYING_SPEED, 0.2D)
-                .add(Attributes.FOLLOW_RANGE, 8D);
+                .add(Attributes.FOLLOW_RANGE, 8D)
+                .add(Attributes.STEP_HEIGHT, 1.1D);
     }
 }

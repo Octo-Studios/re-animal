@@ -55,6 +55,9 @@ public class DragonflyEntity extends Animal implements GeoEntity {
         this.getNavigation().setCanFloat(true);
 
         this.setNoGravity(true);
+
+        if (!level.isClientSide())
+            this.setVariant(this.getRandom().nextInt(5));
     }
 
     @Override
@@ -86,7 +89,7 @@ public class DragonflyEntity extends Animal implements GeoEntity {
     protected void defineSynchedData(SynchedEntityData.Builder buidler) {
         super.defineSynchedData(buidler);
 
-        buidler.define(VARIANT, this.getRandom().nextInt(5));
+        buidler.define(VARIANT, 0);
     }
 
     @Override
