@@ -1,6 +1,6 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#minecraft:is_forest",
+  "biomes": "#reanimal:has_hedgehog",
   "spawners": [
     {
       "type": "reanimal:hedgehog",
