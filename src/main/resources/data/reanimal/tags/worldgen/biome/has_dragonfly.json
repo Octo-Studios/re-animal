@@ -1,0 +1,13 @@
+{
+  "values": [
+    "#c:is_swamp",
+    "#minecraft:is_river",
+    "biomesoplenty:tropic_beach",
+    "terralith:orchid_swamp",
+    "terralith:red_oasis",
+    "terralith:warm_river",
+    "terralith:amethyst_rainforest",
+    "terralith:tropical_jungle",
+    "terralith:skylands_summer"
+  ]
+}
