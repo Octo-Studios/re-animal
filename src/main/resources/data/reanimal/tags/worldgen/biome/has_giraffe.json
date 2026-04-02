@@ -1,0 +1,12 @@
+{
+  "values": [
+    "#minecraft:is_savanna"
+    "terralith:arid_highlands",
+    "terralith:brushland",
+    "terralith:fractured_savanna",
+    "terralith:savanna_badlands",
+    "terralith:savanna_slopes",
+    "terralith:shrubland",
+    "terralith:red_oasis"
+  ]
+}
