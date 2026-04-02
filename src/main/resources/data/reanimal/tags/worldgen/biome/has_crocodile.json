@@ -1,0 +1,9 @@
+{
+  "values": [
+    "#c:is_swamp"
+    "#minecraft:is_river"
+    "terralith:orchid_swamp",
+    "terralith:red_oasis",
+    "terralith:warm_river"
+  ]
+}
