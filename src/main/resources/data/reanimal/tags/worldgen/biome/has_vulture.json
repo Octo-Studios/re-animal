@@ -1,0 +1,10 @@
+{
+  "values": [
+    "#minecraft:is_badlands",
+    "terralith:arid_highlands",
+    "terralith:red_oasis",
+    "terralith:warped_mesa",
+    "terralith:white_mesa",
+    "biomesoplenty:lush_desert"
+  ]
+}
