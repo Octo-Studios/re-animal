@@ -1,6 +1,6 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#minecraft:is_savanna",
+  "biomes": "#reanimal:has_giraffe",
   "spawners": [
     {
       "type": "reanimal:giraffe",
