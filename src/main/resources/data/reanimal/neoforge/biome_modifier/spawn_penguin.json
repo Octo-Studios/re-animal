@@ -1,6 +1,6 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#c:is_cold/overworld",
+  "biomes": "#reanimal:has_penguin",
   "spawners": [
     {
       "type": "reanimal:penguin",
