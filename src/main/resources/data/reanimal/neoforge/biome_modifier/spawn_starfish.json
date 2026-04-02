@@ -1,6 +1,6 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#minecraft:is_ocean",
+  "biomes": "#reanimal:has_starfish",
   "spawners": [
     {
       "type": "reanimal:starfish",
