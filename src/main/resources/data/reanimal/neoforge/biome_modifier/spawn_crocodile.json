@@ -1,6 +1,6 @@
 {
   "type": "neoforge:add_spawns",
-  "biomes": "#c:is_swamp",
+  "biomes": "#reanimal:has_crocodile",
   "spawners": [
     {
       "type": "reanimal:crocodile",
