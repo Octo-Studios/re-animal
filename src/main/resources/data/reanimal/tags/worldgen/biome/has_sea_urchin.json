@@ -1,0 +1,9 @@
+{
+  "values": [
+    "#minecraft:is_beach",
+    "#minecraft:is_ocean",
+    "minecraft:stony_shore",
+    "terralith:gravel_beach",
+    "biomesoplenty:dune_beach"
+  ]
+}
