@@ -14,6 +14,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEnti
 import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.red_panda.RedPandaEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.starfish.StarfishEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
@@ -64,6 +65,11 @@ public class ReAnimalEntities {
             EntityType.Builder.of(CapybaraEntity::new, MobCategory.CREATURE)
                     .sized(1.1F, 1F)
                     .build(ReAnimal.MODID + ":capybara"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<RedPandaEntity>> RED_PANDA = ENTITY_TYPES.register("red_panda", () ->
+            EntityType.Builder.of(RedPandaEntity::new, MobCategory.CREATURE)
+                    .sized(0.8F, 0.65F)
+                    .build(ReAnimal.MODID + ":red_panda"));
 
     public static final DeferredHolder<EntityType<?>, EntityType<SealEntity>> SEAL = ENTITY_TYPES.register("seal", () ->
             EntityType.Builder.of(SealEntity::new, MobCategory.CREATURE)
@@ -179,6 +185,7 @@ public class ReAnimalEntities {
         event.put(PIGEON.get(), PigeonEntity.createAttributes().build());
         event.put(BUTTERFLY.get(), ButterflyEntity.createAttributes().build());
         event.put(CAPYBARA.get(), CapybaraEntity.createAttributes().build());
+        event.put(RED_PANDA.get(), RedPandaEntity.createAttributes().build());
         event.put(SEAL.get(), SealEntity.createAttributes().build());
         event.put(HIPPOPOTAMUS.get(), HippopotamusEntity.createAttributes().build());
         event.put(CROCODILE.get(), CrocodileEntity.createAttributes().build());

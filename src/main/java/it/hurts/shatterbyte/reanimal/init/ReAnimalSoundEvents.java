@@ -45,6 +45,9 @@ public class ReAnimalSoundEvents {
     public static final DeferredHolder<SoundEvent, SoundEvent> CAPYBARA_IDLE = register("entity.capybara.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> CAPYBARA_HURT = register("entity.capybara.hurt");
     public static final DeferredHolder<SoundEvent, SoundEvent> CAPYBARA_DEATH = register("entity.capybara.death");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RED_PANDA_IDLE = register("entity.red_panda.idle");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RED_PANDA_HURT = register("entity.red_panda.hurt");
+    public static final DeferredHolder<SoundEvent, SoundEvent> RED_PANDA_DEATH = register("entity.red_panda.death");
 
     public static final DeferredHolder<SoundEvent, SoundEvent> SEAL_IDLE = register("entity.seal.idle");
     public static final DeferredHolder<SoundEvent, SoundEvent> SEAL_HURT = register("entity.seal.hurt");

@@ -33,6 +33,9 @@
   "item.reanimal.raw_capybara_meat": "Raw Capybara Meat",
   "item.reanimal.cooked_capybara_meat": "Cooked Capybara Meat",
 
+  "entity.reanimal.red_panda": "Red Panda",
+  "item.reanimal.red_panda_spawn_egg": "Red Panda Spawn Egg",
+
   "entity.reanimal.seal": "Seal",
   "item.reanimal.seal_spawn_egg": "Seal Spawn Egg",
   "item.reanimal.raw_seal_meat": "Raw Seal Meat",
@@ -155,6 +158,10 @@
   "subtitles.reanimal.entity.capybara.idle": "Capybara grunts",
   "subtitles.reanimal.entity.capybara.hurt": "Capybara hurt",
   "subtitles.reanimal.entity.capybara.death": "Capybara dies",
+
+  "subtitles.reanimal.entity.red_panda.idle": "Red panda chitters",
+  "subtitles.reanimal.entity.red_panda.hurt": "Red panda hurt",
+  "subtitles.reanimal.entity.red_panda.death": "Red panda dies",
 
   "subtitles.reanimal.entity.giraffe.idle": "Giraffe snorts",
   "subtitles.reanimal.entity.giraffe.hurt": "Giraffe hurt",

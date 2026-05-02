@@ -59,6 +59,29 @@
       "reanimal:entity/capybara/idle3"
     ]
   },
+  "entity.red_panda.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.red_panda.death",
+    "sounds": [
+      "reanimal:entity/red_panda/death"
+    ]
+  },
+  "entity.red_panda.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.red_panda.hurt",
+    "sounds": [
+      "reanimal:entity/red_panda/hurt1",
+      "reanimal:entity/red_panda/hurt2"
+    ]
+  },
+  "entity.red_panda.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.red_panda.idle",
+    "sounds": [
+      "reanimal:entity/red_panda/idle1",
+      "reanimal:entity/red_panda/idle2"
+    ]
+  },
   "entity.dragonfly.death": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.dragonfly.death",

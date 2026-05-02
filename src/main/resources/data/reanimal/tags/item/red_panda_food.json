@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:bamboo",
+    "minecraft:sweet_berries",
+    "minecraft:glow_berries",
+    "minecraft:spider_eye",
+    "minecraft:fermented_spider_eye"
+  ]
+}

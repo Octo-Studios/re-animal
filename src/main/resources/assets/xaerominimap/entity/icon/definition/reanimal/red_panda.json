@@ -1,0 +1,7 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/red_panda_adult.png" : "outlined_sprite:reanimal/red_panda_adult.png",
+    "reanimal:textures/entity/red_panda_baby.png" : "outlined_sprite:reanimal/red_panda_baby.png",
+    "default" : "model"
+  }
+}

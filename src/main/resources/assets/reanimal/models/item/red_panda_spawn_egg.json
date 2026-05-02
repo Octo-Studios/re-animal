@@ -1,0 +1,6 @@
+{
+  "parent": "item/generated",
+  "textures": {
+    "layer0": "reanimal:item/red_panda_spawn_egg"
+  }
+}
