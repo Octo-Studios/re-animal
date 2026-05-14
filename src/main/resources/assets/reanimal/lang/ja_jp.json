@@ -33,6 +33,9 @@
   "item.reanimal.raw_capybara_meat": "生のカピバラ肉",
   "item.reanimal.cooked_capybara_meat": "焼きカピバラ肉",
 
+  "entity.reanimal.red_panda": "レッサーパンダ",
+  "item.reanimal.red_panda_spawn_egg": "レッサーパンダのスポーンエッグ",
+
   "entity.reanimal.seal": "アザラシ",
   "item.reanimal.seal_spawn_egg": "アザラシのスポーンエッグ",
   "item.reanimal.raw_seal_meat": "生のアザラシ肉",
@@ -42,6 +45,13 @@
   "item.reanimal.hippopotamus_spawn_egg": "カバのスポーンエッグ",
   "item.reanimal.raw_hippopotamus_meat": "生のカバ肉",
   "item.reanimal.cooked_hippopotamus_meat": "焼きカバ肉",
+
+  "entity.reanimal.crocodile": "ワニ",
+  "item.reanimal.crocodile_spawn_egg": "ワニのスポーンエッグ",
+  "item.reanimal.crocodile_egg": "ワニの卵",
+  "block.reanimal.crocodile_egg": "ワニの卵",
+  "item.reanimal.raw_crocodile_meat": "生のワニ肉",
+  "item.reanimal.cooked_crocodile_meat": "焼きワニ肉",
 
   "entity.reanimal.giraffe": "キリン",
   "item.reanimal.giraffe_spawn_egg": "キリンのスポーンエッグ",
@@ -63,14 +73,35 @@
   "item.reanimal.sea_urchin_spawn_egg": "ウニのスポーンエッグ",
   "item.reanimal.sea_urchin_caviar": "ウニの身",
 
-  "item.reanimal.raw_starfish_caviar": "生ヒトデの身",
+  "item.reanimal.raw_starfish_caviar": "生のヒトデの身",
   "item.reanimal.cooked_starfish_caviar": "焼きヒトデの身",
   "entity.reanimal.starfish": "ヒトデ",
   "item.reanimal.starfish_spawn_egg": "ヒトデのスポーンエッグ",
 
+  "item.reanimal.jellyfish_jelly": "クラゲゼリー",
+  "entity.reanimal.jellyfish": "クラゲ",
+  "item.reanimal.jellyfish_spawn_egg": "クラゲのスポーンエッグ",
+
   "item.reanimal.quill": "棘",
   "item.reanimal.quill_arrow": "棘の矢",
   "entity.reanimal.quill_arrow": "棘の矢",
+  "entity.reanimal.glow_stick": "グロウスティック",
+  "item.reanimal.glow_stick_white": "白色のグロウスティック",
+  "item.reanimal.glow_stick_orange": "橙色のグロウスティック",
+  "item.reanimal.glow_stick_magenta": "赤紫色のグロウスティック",
+  "item.reanimal.glow_stick_light_blue": "空色のグロウスティック",
+  "item.reanimal.glow_stick_yellow": "黄色のグロウスティック",
+  "item.reanimal.glow_stick_lime": "黄緑色のグロウスティック",
+  "item.reanimal.glow_stick_pink": "桃色のグロウスティック",
+  "item.reanimal.glow_stick_gray": "灰色のグロウスティック",
+  "item.reanimal.glow_stick_light_gray": "薄灰色のグロウスティック",
+  "item.reanimal.glow_stick_cyan": "青緑色のグロウスティック",
+  "item.reanimal.glow_stick_purple": "紫色のグロウスティック",
+  "item.reanimal.glow_stick_blue": "青色のグロウスティック",
+  "item.reanimal.glow_stick_brown": "茶色のグロウスティック",
+  "item.reanimal.glow_stick_green": "緑色のグロウスティック",
+  "item.reanimal.glow_stick_red": "赤色のグロウスティック",
+  "item.reanimal.glow_stick_black": "黒色のグロウスティック",
 
   "item.minecraft.potion.effect.quill": "棘々のポーション",
   "item.minecraft.potion.effect.long_quill": "棘々のポーション",
@@ -78,6 +109,9 @@
   "item.minecraft.potion.effect.cramps": "痙攣のポーション",
   "item.minecraft.potion.effect.long_cramps": "痙攣のポーション",
   "item.minecraft.potion.effect.strong_cramps": "痙攣のポーション",
+  "item.minecraft.potion.effect.glowing": "発光のポーション",
+  "item.minecraft.potion.effect.long_glowing": "発光のポーション",
+  "item.minecraft.potion.effect.strong_glowing": "発光のポーション",
 
   "item.minecraft.splash_potion.effect.quill": "棘々のスプラッシュポーション",
   "item.minecraft.splash_potion.effect.long_quill": "棘々のスプラッシュポーション",
@@ -85,6 +119,9 @@
   "item.minecraft.splash_potion.effect.cramps": "痙攣のスプラッシュポーション",
   "item.minecraft.splash_potion.effect.long_cramps": "痙攣のスプラッシュポーション",
   "item.minecraft.splash_potion.effect.strong_cramps": "痙攣のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.glowing": "発光のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.long_glowing": "発光のスプラッシュポーション",
+  "item.minecraft.splash_potion.effect.strong_glowing": "発光のスプラッシュポーション",
 
   "item.minecraft.lingering_potion.effect.quill": "棘々の残留ポーション",
   "item.minecraft.lingering_potion.effect.long_quill": "棘々の残留ポーション",
@@ -92,6 +129,9 @@
   "item.minecraft.lingering_potion.effect.cramps": "痙攣の残留ポーション",
   "item.minecraft.lingering_potion.effect.long_cramps": "痙攣の残留ポーション",
   "item.minecraft.lingering_potion.effect.strong_cramps": "痙攣の残留ポーション",
+  "item.minecraft.lingering_potion.effect.glowing": "発光の残留ポーション",
+  "item.minecraft.lingering_potion.effect.long_glowing": "発光の残留ポーション",
+  "item.minecraft.lingering_potion.effect.strong_glowing": "発光の残留ポーション",
 
   "item.minecraft.tipped_arrow.effect.quill": "棘々の矢",
   "item.minecraft.tipped_arrow.effect.long_quill": "棘々の矢",
@@ -99,15 +139,29 @@
   "item.minecraft.tipped_arrow.effect.cramps": "痙攣の矢",
   "item.minecraft.tipped_arrow.effect.long_cramps": "痙攣の矢",
   "item.minecraft.tipped_arrow.effect.strong_cramps": "痙攣の矢",
+  "item.minecraft.tipped_arrow.effect.glowing": "発光の矢",
+  "item.minecraft.tipped_arrow.effect.long_glowing": "発光の矢",
+  "item.minecraft.tipped_arrow.effect.strong_glowing": "発光の矢",
 
   "block.reanimal.quill_platform": "棘付き板",
 
   "effect.reanimal.quill": "棘々",
   "effect.reanimal.cramps": "痙攣",
 
+  "death.attack.reanimal.hedgehog_spikes": "%1$sはハリネズミの棘が刺さって死んだ",
+  "death.attack.reanimal.hedgehog_spikes.player": "%1$sは%2$sの棘が刺さって死んだ",
+  "death.attack.reanimal.sea_urchin_spikes": "%1$sはウニの棘が刺さって死んだ",
+  "death.attack.reanimal.sea_urchin_spikes.player": "%1$sは%2$sの棘が刺さって死んだ",
+  "death.attack.reanimal.jellyfish_sting": "%1$sはクラゲに刺されて死んだ",
+  "death.attack.reanimal.jellyfish_sting.player": "%1$sは%2$sに刺されて死んだ",
+
   "subtitles.reanimal.entity.capybara.idle": "カピバラが唸る",
   "subtitles.reanimal.entity.capybara.hurt": "カピバラがダメージを受ける",
   "subtitles.reanimal.entity.capybara.death": "カピバラが死ぬ",
+
+  "subtitles.reanimal.entity.red_panda.idle": "レッサーパンダが鳴く",
+  "subtitles.reanimal.entity.red_panda.hurt": "レッサーパンダがダメージを受ける",
+  "subtitles.reanimal.entity.red_panda.death": "レッサーパンダが死ぬ",
 
   "subtitles.reanimal.entity.giraffe.idle": "キリンが鼻を鳴らす",
   "subtitles.reanimal.entity.giraffe.hurt": "キリンがダメージを受ける",
@@ -123,6 +177,11 @@
   "subtitles.reanimal.entity.hippopotamus.idle": "カバが唸る",
   "subtitles.reanimal.entity.hippopotamus.hurt": "カバがダメージを受ける",
   "subtitles.reanimal.entity.hippopotamus.death": "カバが死ぬ",
+
+  "subtitles.reanimal.entity.crocodile.bite": "ワニが噛みつく",
+  "subtitles.reanimal.entity.crocodile.idle": "ワニが鳴く",
+  "subtitles.reanimal.entity.crocodile.hurt": "ワニがダメージを受ける",
+  "subtitles.reanimal.entity.crocodile.death": "ワニが死ぬ",
 
   "subtitles.reanimal.entity.kiwi.idle": "キーウィが鳴く",
   "subtitles.reanimal.entity.kiwi.hurt": "キーウィがダメージを受ける",
@@ -140,6 +199,23 @@
   "subtitles.reanimal.entity.pigeon.hurt": "ハトがダメージを受ける",
   "subtitles.reanimal.entity.pigeon.death": "ハトが死ぬ",
   "subtitles.reanimal.entity.pigeon.takeoff": "ハトが羽ばたく",
+
+  "subtitles.reanimal.entity.butterfly.idle": "チョウが羽ばたく",
+  "subtitles.reanimal.entity.butterfly.hurt": "チョウがダメージを受ける",
+  "subtitles.reanimal.entity.butterfly.death": "チョウが死ぬ",
+  "subtitles.reanimal.entity.butterfly.loop": "チョウが羽ばたく",
+
+  "subtitles.reanimal.entity.dragonfly.loop": "トンボが羽音を立てる",
+  "subtitles.reanimal.entity.dragonfly.hurt": "トンボがダメージを受ける",
+  "subtitles.reanimal.entity.dragonfly.death": "トンボが死ぬ",
+
+  "subtitles.reanimal.entity.jellyfish.idle": "クラゲが脈動する",
+  "subtitles.reanimal.entity.jellyfish.hurt": "クラゲがダメージを受ける",
+  "subtitles.reanimal.entity.jellyfish.death": "クラゲが死ぬ",
+
+  "subtitles.reanimal.entity.sea_urchin.idle": "ウニが音を立てる",
+  "subtitles.reanimal.entity.sea_urchin.hurt": "ウニがダメージを受ける",
+  "subtitles.reanimal.entity.sea_urchin.death": "ウニが死ぬ",
 
   "subtitles.reanimal.entity.seal.idle": "アザラシが鳴く",
   "subtitles.reanimal.entity.seal.hurt": "アザラシがダメージを受ける",
