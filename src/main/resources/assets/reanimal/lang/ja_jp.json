@@ -33,6 +33,9 @@
   "item.reanimal.raw_capybara_meat": "生のカピバラ肉",
   "item.reanimal.cooked_capybara_meat": "焼きカピバラ肉",
 
+  "entity.reanimal.red_panda": "レッサーパンダ",
+  "item.reanimal.red_panda_spawn_egg": "レッサーパンダのスポーンエッグ",
+
   "entity.reanimal.seal": "アザラシ",
   "item.reanimal.seal_spawn_egg": "アザラシのスポーンエッグ",
   "item.reanimal.raw_seal_meat": "生のアザラシ肉",
@@ -156,6 +159,10 @@
   "subtitles.reanimal.entity.capybara.hurt": "カピバラがダメージを受ける",
   "subtitles.reanimal.entity.capybara.death": "カピバラが死ぬ",
 
+  "subtitles.reanimal.entity.red_panda.idle": "レッサーパンダが鳴く",
+  "subtitles.reanimal.entity.red_panda.hurt": "レッサーパンダがダメージを受ける",
+  "subtitles.reanimal.entity.red_panda.death": "レッサーパンダが死ぬ",
+
   "subtitles.reanimal.entity.giraffe.idle": "キリンが鼻を鳴らす",
   "subtitles.reanimal.entity.giraffe.hurt": "キリンがダメージを受ける",
   "subtitles.reanimal.entity.giraffe.death": "キリンが死ぬ",
@@ -192,7 +199,7 @@
   "subtitles.reanimal.entity.pigeon.hurt": "ハトがダメージを受ける",
   "subtitles.reanimal.entity.pigeon.death": "ハトが死ぬ",
   "subtitles.reanimal.entity.pigeon.takeoff": "ハトが羽ばたく",
-  
+
   "subtitles.reanimal.entity.butterfly.idle": "チョウが羽ばたく",
   "subtitles.reanimal.entity.butterfly.hurt": "チョウがダメージを受ける",
   "subtitles.reanimal.entity.butterfly.death": "チョウが死ぬ",
