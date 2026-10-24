@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "Q",
+    "S"
+  ],
+  "key": {
+    "Q": "reanimal:quill",
+    "S": "minecraft:stick"
+  },
+  "result": {
+    "id": "reanimal:quill_arrow",
+    "count": 4
+  }
+}

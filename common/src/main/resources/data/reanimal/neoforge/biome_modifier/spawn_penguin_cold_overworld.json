@@ -1,0 +1,15 @@
+{
+  "type": "neoforge:add_spawns",
+  "biomes": "#c:is_cold/overworld",
+  "spawners": [
+    {
+      "type": "reanimal:penguin",
+      "count": {
+        "type": "minecraft:uniform",
+        "min_inclusive": 3,
+        "max_inclusive": 7
+      },
+      "weight": 10
+    }
+  ]
+}

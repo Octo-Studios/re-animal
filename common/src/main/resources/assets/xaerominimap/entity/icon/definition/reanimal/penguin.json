@@ -1,0 +1,8 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/penguin_adult.png" : "outlined_sprite:reanimal/penguin_adult.png",
+    "reanimal:textures/entity/penguin_baby.png" : "outlined_sprite:reanimal/penguin_baby.png",
+    "default" : "outlined_sprite:reanimal/penguin_adult.png"
+  },
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getAgeVariant"
+}

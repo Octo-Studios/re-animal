@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "QQQ",
+    "PPP"
+  ],
+  "key": {
+    "Q": "reanimal:quill",
+    "P": "#minecraft:planks"
+  },
+  "result": {
+    "id": "reanimal:quill_platform",
+    "count": 1
+  }
+}

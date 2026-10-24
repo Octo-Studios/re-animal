@@ -1,0 +1,8 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/pigeon_adult.png" : "outlined_sprite:reanimal/pigeon_adult.png",
+    "reanimal:textures/entity/pigeon_baby.png" : "outlined_sprite:reanimal/pigeon_baby.png",
+    "default" : "outlined_sprite:reanimal/pigeon_adult.png"
+  },
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getAgeVariant"
+}

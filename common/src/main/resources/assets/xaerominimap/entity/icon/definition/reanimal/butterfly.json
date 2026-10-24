@@ -1,0 +1,11 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/butterfly_0.png" : "outlined_sprite:reanimal/butterfly_0.png",
+    "reanimal:textures/entity/butterfly_1.png" : "outlined_sprite:reanimal/butterfly_1.png",
+    "reanimal:textures/entity/butterfly_2.png" : "outlined_sprite:reanimal/butterfly_2.png",
+    "reanimal:textures/entity/butterfly_3.png" : "outlined_sprite:reanimal/butterfly_3.png",
+    "reanimal:textures/entity/butterfly_4.png" : "outlined_sprite:reanimal/butterfly_4.png",
+    "default" : "outlined_sprite:reanimal/butterfly_0.png"
+  },
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getColorVariant"
+}

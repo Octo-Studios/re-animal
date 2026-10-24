@@ -1,0 +1,175 @@
+package it.hurts.shatterbyte.reanimal.init;
+
+import it.hurts.shatterbyte.reanimal.ReAnimal;
+import it.hurts.shatterbyte.reanimal.common.item.*;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.world.item.component.Consumable;
+import net.minecraft.world.item.consume_effects.ApplyStatusEffectsConsumeEffect;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.BoneMealItem;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
+public class ReAnimalItems {
+    public static final List<Item> ALL_ITEMS = new ArrayList<>();
+
+    public static SpawnEggItem HEDGEHOG_SPAWN_EGG;
+    public static SpawnEggItem OSTRICH_SPAWN_EGG;
+    public static SpawnEggItem KIWI_SPAWN_EGG;
+    public static SpawnEggItem PIGEON_SPAWN_EGG;
+    public static SpawnEggItem BUTTERFLY_SPAWN_EGG;
+    public static SpawnEggItem CAPYBARA_SPAWN_EGG;
+    public static SpawnEggItem RED_PANDA_SPAWN_EGG;
+    public static SpawnEggItem SEAL_SPAWN_EGG;
+    public static SpawnEggItem HIPPOPOTAMUS_SPAWN_EGG;
+    public static SpawnEggItem CROCODILE_SPAWN_EGG;
+    public static SpawnEggItem GIRAFFE_SPAWN_EGG;
+    public static SpawnEggItem DRAGONFLY_SPAWN_EGG;
+    public static SpawnEggItem VULTURE_SPAWN_EGG;
+    public static SpawnEggItem PENGUIN_SPAWN_EGG;
+    public static SpawnEggItem SEA_URCHIN_SPAWN_EGG;
+    public static SpawnEggItem STARFISH_SPAWN_EGG;
+    public static SpawnEggItem JELLYFISH_SPAWN_EGG;
+
+    public static KiwiEgg KIWI_EGG;
+    public static OstrichEgg OSTRICH_EGG;
+    public static PigeonEgg PIGEON_EGG;
+    public static VultureEgg VULTURE_EGG;
+    public static PenguinEgg PENGUIN_EGG;
+    public static CrocodileEgg CROCODILE_EGG;
+
+    public static Item BUTTERFLY_POLLEN;
+    public static Item QUILL;
+    public static QuillArrowItem QUILL_ARROW;
+    public static BlockItem QUILL_PLATFORM;
+    public static GlowStickItem GLOW_STICK_WHITE;
+    public static GlowStickItem GLOW_STICK_ORANGE;
+    public static GlowStickItem GLOW_STICK_MAGENTA;
+    public static GlowStickItem GLOW_STICK_LIGHT_BLUE;
+    public static GlowStickItem GLOW_STICK_YELLOW;
+    public static GlowStickItem GLOW_STICK_LIME;
+    public static GlowStickItem GLOW_STICK_PINK;
+    public static GlowStickItem GLOW_STICK_GRAY;
+    public static GlowStickItem GLOW_STICK_LIGHT_GRAY;
+    public static GlowStickItem GLOW_STICK_CYAN;
+    public static GlowStickItem GLOW_STICK_PURPLE;
+    public static GlowStickItem GLOW_STICK_BLUE;
+    public static GlowStickItem GLOW_STICK_BROWN;
+    public static GlowStickItem GLOW_STICK_GREEN;
+    public static GlowStickItem GLOW_STICK_RED;
+    public static GlowStickItem GLOW_STICK_BLACK;
+
+    public static Item RAW_HEDGEHOG_MEAT;
+    public static Item COOKED_HEDGEHOG_MEAT;
+    public static Item RAW_CAPYBARA_MEAT;
+    public static Item COOKED_CAPYBARA_MEAT;
+    public static Item RAW_SEAL_MEAT;
+    public static Item COOKED_SEAL_MEAT;
+    public static Item RAW_OSTRICH_MEAT;
+    public static Item COOKED_OSTRICH_MEAT;
+    public static Item RAW_KIWI_MEAT;
+    public static Item COOKED_KIWI_MEAT;
+    public static Item RAW_PIGEON_MEAT;
+    public static Item COOKED_PIGEON_MEAT;
+    public static Item RAW_HIPPOPOTAMUS_MEAT;
+    public static Item COOKED_HIPPOPOTAMUS_MEAT;
+    public static Item RAW_CROCODILE_MEAT;
+    public static Item COOKED_CROCODILE_MEAT;
+    public static Item RAW_GIRAFFE_MEAT;
+    public static Item COOKED_GIRAFFE_MEAT;
+    public static Item SEA_URCHIN_CAVIAR;
+    public static Item RAW_STARFISH_CAVIAR;
+    public static Item COOKED_STARFISH_CAVIAR;
+    public static Item JELLYFISH_JELLY;
+
+    public static void init() {
+        HEDGEHOG_SPAWN_EGG = register("hedgehog_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.HEDGEHOG)));
+        OSTRICH_SPAWN_EGG = register("ostrich_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.OSTRICH)));
+        KIWI_SPAWN_EGG = register("kiwi_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.KIWI)));
+        PIGEON_SPAWN_EGG = register("pigeon_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.PIGEON)));
+        BUTTERFLY_SPAWN_EGG = register("butterfly_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.BUTTERFLY)));
+        CAPYBARA_SPAWN_EGG = register("capybara_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.CAPYBARA)));
+        RED_PANDA_SPAWN_EGG = register("red_panda_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.RED_PANDA)));
+        SEAL_SPAWN_EGG = register("seal_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.SEAL)));
+        HIPPOPOTAMUS_SPAWN_EGG = register("hippopotamus_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.HIPPOPOTAMUS)));
+        CROCODILE_SPAWN_EGG = register("crocodile_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.CROCODILE)));
+        GIRAFFE_SPAWN_EGG = register("giraffe_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.GIRAFFE)));
+        DRAGONFLY_SPAWN_EGG = register("dragonfly_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.DRAGONFLY)));
+        VULTURE_SPAWN_EGG = register("vulture_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.VULTURE)));
+        PENGUIN_SPAWN_EGG = register("penguin_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.PENGUIN)));
+        SEA_URCHIN_SPAWN_EGG = register("sea_urchin_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.SEA_URCHIN)));
+        STARFISH_SPAWN_EGG = register("starfish_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.STARFISH)));
+        JELLYFISH_SPAWN_EGG = register("jellyfish_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.JELLYFISH)));
+
+        KIWI_EGG = register("kiwi_egg", props -> new KiwiEgg(props));
+        OSTRICH_EGG = register("ostrich_egg", props -> new OstrichEgg(props));
+        PIGEON_EGG = register("pigeon_egg", props -> new PigeonEgg(props));
+        VULTURE_EGG = register("vulture_egg", props -> new VultureEgg(props));
+        PENGUIN_EGG = register("penguin_egg", props -> new PenguinEgg(props));
+        CROCODILE_EGG = register("crocodile_egg", props -> new CrocodileEgg(ReAnimalBlocks.CROCODILE_EGG, props.useBlockDescriptionPrefix()));
+
+        BUTTERFLY_POLLEN = register("butterfly_pollen", props -> new BoneMealItem(props));
+        QUILL = register("quill", props -> new Item(props));
+        QUILL_ARROW = register("quill_arrow", props -> new QuillArrowItem(props));
+        QUILL_PLATFORM = register("quill_platform", props -> new BlockItem(ReAnimalBlocks.QUILL_PLATFORM, props.useBlockDescriptionPrefix()));
+        GLOW_STICK_WHITE = register("glow_stick_white", props -> new GlowStickItem(props));
+        GLOW_STICK_ORANGE = register("glow_stick_orange", props -> new GlowStickItem(props));
+        GLOW_STICK_MAGENTA = register("glow_stick_magenta", props -> new GlowStickItem(props));
+        GLOW_STICK_LIGHT_BLUE = register("glow_stick_light_blue", props -> new GlowStickItem(props));
+        GLOW_STICK_YELLOW = register("glow_stick_yellow", props -> new GlowStickItem(props));
+        GLOW_STICK_LIME = register("glow_stick_lime", props -> new GlowStickItem(props));
+        GLOW_STICK_PINK = register("glow_stick_pink", props -> new GlowStickItem(props));
+        GLOW_STICK_GRAY = register("glow_stick_gray", props -> new GlowStickItem(props));
+        GLOW_STICK_LIGHT_GRAY = register("glow_stick_light_gray", props -> new GlowStickItem(props));
+        GLOW_STICK_CYAN = register("glow_stick_cyan", props -> new GlowStickItem(props));
+        GLOW_STICK_PURPLE = register("glow_stick_purple", props -> new GlowStickItem(props));
+        GLOW_STICK_BLUE = register("glow_stick_blue", props -> new GlowStickItem(props));
+        GLOW_STICK_BROWN = register("glow_stick_brown", props -> new GlowStickItem(props));
+        GLOW_STICK_GREEN = register("glow_stick_green", props -> new GlowStickItem(props));
+        GLOW_STICK_RED = register("glow_stick_red", props -> new GlowStickItem(props));
+        GLOW_STICK_BLACK = register("glow_stick_black", props -> new GlowStickItem(props));
+
+        RAW_HEDGEHOG_MEAT = register("raw_hedgehog_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        COOKED_HEDGEHOG_MEAT = register("cooked_hedgehog_meat", props -> new Item(props.food(new FoodProperties(5, 6F, false))));
+        RAW_CAPYBARA_MEAT = register("raw_capybara_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        COOKED_CAPYBARA_MEAT = register("cooked_capybara_meat", props -> new Item(props.food(new FoodProperties(8, 12.8F, false))));
+        RAW_SEAL_MEAT = register("raw_seal_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        COOKED_SEAL_MEAT = register("cooked_seal_meat", props -> new Item(props.food(new FoodProperties(8, 12.8F, false))));
+        RAW_OSTRICH_MEAT = register("raw_ostrich_meat", props -> new Item(props.food(new FoodProperties(2, 1.2F, false))));
+        COOKED_OSTRICH_MEAT = register("cooked_ostrich_meat", props -> new Item(props.food(new FoodProperties(6, 7.2F, false))));
+        RAW_KIWI_MEAT = register("raw_kiwi_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        COOKED_KIWI_MEAT = register("cooked_kiwi_meat", props -> new Item(props.food(new FoodProperties(5, 6F, false))));
+        RAW_PIGEON_MEAT = register("raw_pigeon_meat", props -> new Item(props.food(new FoodProperties(3, 1F, false))));
+        COOKED_PIGEON_MEAT = register("cooked_pigeon_meat", props -> new Item(props.food(new FoodProperties(5, 5F, false))));
+        RAW_HIPPOPOTAMUS_MEAT = register("raw_hippopotamus_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        COOKED_HIPPOPOTAMUS_MEAT = register("cooked_hippopotamus_meat", props -> new Item(props.food(new FoodProperties(10, 14.8F, false))));
+        RAW_CROCODILE_MEAT = register("raw_crocodile_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        COOKED_CROCODILE_MEAT = register("cooked_crocodile_meat", props -> new Item(props.food(new FoodProperties(9, 12.8F, false))));
+        RAW_GIRAFFE_MEAT = register("raw_giraffe_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        COOKED_GIRAFFE_MEAT = register("cooked_giraffe_meat", props -> new Item(props.food(new FoodProperties(8, 12.8F, false))));
+        SEA_URCHIN_CAVIAR = register("sea_urchin_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false))));
+        RAW_STARFISH_CAVIAR = register("raw_starfish_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false), Consumable.builder().onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.POISON, 200), 1F)).build())));
+        COOKED_STARFISH_CAVIAR = register("cooked_starfish_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false))));
+        JELLYFISH_JELLY = register("jellyfish_jelly", props -> new Item(props.food(new FoodProperties(2, 0.6F, false))));
+    }
+
+    private static <T extends Item> T register(String id, Function<Item.Properties, T> factory) {
+        var key = ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(ReAnimal.MODID, id));
+        var item = factory.apply(new Item.Properties().setId(key));
+
+        Registry.register(BuiltInRegistries.ITEM, key, item);
+        ALL_ITEMS.add(item);
+        return item;
+    }
+}

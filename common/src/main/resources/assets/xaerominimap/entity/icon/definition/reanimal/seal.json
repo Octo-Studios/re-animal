@@ -1,0 +1,8 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/seal_adult.png" : "outlined_sprite:reanimal/seal_adult.png",
+    "reanimal:textures/entity/seal_baby.png" : "outlined_sprite:reanimal/seal_baby.png",
+    "default" : "outlined_sprite:reanimal/seal_adult.png"
+  },
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getAgeVariant"
+}

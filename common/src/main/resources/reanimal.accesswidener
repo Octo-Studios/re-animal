@@ -1,0 +1,5 @@
+accessWidener	v2	official
+
+accessible field net/minecraft/world/level/pathfinder/Path debugData Lnet/minecraft/world/level/pathfinder/Path$DebugData;
+accessible method net/minecraft/world/entity/ai/sensing/SensorType <init> (Ljava/util/function/Supplier;)V
+accessible class net/minecraft/world/item/CreativeModeTab$Output
