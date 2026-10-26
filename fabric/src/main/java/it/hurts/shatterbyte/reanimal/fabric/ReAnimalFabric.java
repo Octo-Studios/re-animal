@@ -5,6 +5,7 @@ import it.hurts.shatterbyte.reanimal.common.effect.QuillMobEffect;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntityDataSerializers;
 import net.fabricmc.api.ModInitializer;
@@ -62,7 +63,7 @@ public class ReAnimalFabric implements ModInitializer {
         SpawnPlacements.register(ReAnimalEntities.CAPYBARA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.RED_PANDA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.MEERKAT, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
-        SpawnPlacements.register(ReAnimalEntities.SEAL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
+        SpawnPlacements.register(ReAnimalEntities.SEAL, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, SealEntity::checkSealSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.HIPPOPOTAMUS, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.CROCODILE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.GIRAFFE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
@@ -90,7 +91,7 @@ public class ReAnimalFabric implements ModInitializer {
         addSpawn("minecraft:is_jungle", ReAnimalEntities.RED_PANDA, 8, 1, 3);
         addSpawn("minecraft:is_beach", ReAnimalEntities.SEA_URCHIN, 25, 5, 10);
         addSpawn("minecraft:is_ocean", ReAnimalEntities.SEA_URCHIN, 25, 5, 15);
-        addSpawn("minecraft:is_beach", ReAnimalEntities.SEAL, 10, 3, 6);
+        addSpawn("reanimal:spawns_seal", ReAnimalEntities.SEAL, 20, 3, 6);
         addSpawn("minecraft:is_beach", ReAnimalEntities.STARFISH, 25, 5, 10);
         addSpawn("minecraft:is_ocean", ReAnimalEntities.STARFISH, 25, 5, 15);
         addSpawn("c:is_desert", ReAnimalEntities.VULTURE, 10, 1, 5);

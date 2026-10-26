@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:is_beach",
+    "#c:is_aquatic_icy",
+    {
+      "id": "#c:is_stony_shores",
+      "required": false
+    }
+  ]
+}
