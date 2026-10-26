@@ -1,0 +1,10 @@
+{
+  "replace": false,
+  "values": [
+    "reanimal:kiwi_egg",
+    "reanimal:ostrich_egg",
+    "reanimal:pigeon_egg",
+    "reanimal:vulture_egg",
+    "reanimal:penguin_egg"
+  ]
+}
