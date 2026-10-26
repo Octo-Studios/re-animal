@@ -6,6 +6,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.crocodile.CrocodileRenderer
 import it.hurts.shatterbyte.reanimal.client.renderer.dragonfly.DragonflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.giraffe.GiraffeRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.glow_stick.GlowStickRenderer;
+import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailRegistry;
 import it.hurts.shatterbyte.reanimal.client.renderer.hedgehog.HedgehogRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.hippopotamus.HippopotamusRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.jellyfish.JellyfishRenderer;
@@ -66,6 +67,8 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.CROCODILE_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.GLOW_STICK, GlowStickRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW, QuillArrowRenderer::new);
+
+        EntityTrailRegistry.registerProvider(ReAnimalEntities.GLOW_STICK, GlowStickEntity.TrailProvider::new);
     }
 
     private void onEntityJoin(EntityJoinLevelEvent event) {

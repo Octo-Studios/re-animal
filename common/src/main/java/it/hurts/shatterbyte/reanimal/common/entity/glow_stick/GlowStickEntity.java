@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.phys.Vec3;
@@ -43,23 +44,21 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.glow_stick.idle");
     private static final double BOUNCE_DAMPING = 0.7D;
     private static final double BOUNCE_Y_CUTOFF = 0.18D;
-    private static final double STOP_SPEED_SQR = 0.03D;
     private static final int MAX_LIFETIME = 6000;
 
     private static final EntityDataAccessor<Float> RENDER_YAW = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
-    private static final EntityDataAccessor<Float> RENDER_PITCH = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
-    private static final EntityDataAccessor<Float> RENDER_ROLL = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> RENDER_TUMBLE = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> SETTLED = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private float renderYaw;
     private float renderYawO;
-    private float renderPitch;
-    private float renderPitchO;
-    private Vec3 renderMotion = Vec3.ZERO;
-    private Vec3 renderMotionO = Vec3.ZERO;
-    private float renderRoll;
-    private float renderRollO;
-    private float rollSpeed;
+    private float renderTumble;
+    private float renderTumbleO;
+    private float renderHeight = 0.07F;
+    private float renderHeightO = 0.07F;
+    private float tumbleSpeed;
+    private int restTicks;
 
     public GlowStickEntity(EntityType<? extends GlowStickEntity> entityType, Level level) {
         super(entityType, level);
@@ -70,8 +69,8 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         super.defineSynchedData(builder);
 
         builder.define(RENDER_YAW, 0.0F);
-        builder.define(RENDER_PITCH, 0.0F);
-        builder.define(RENDER_ROLL, 0.0F);
+        builder.define(RENDER_TUMBLE, 90.0F);
+        builder.define(SETTLED, false);
     }
 
     @Override
@@ -136,49 +135,83 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
                 this.setDeltaMovement(this.position().subtract(entity.position()).normalize().multiply(0.35F, 0F, 0.35F).add(0F, 0.2F, 0F));
 
         this.renderYawO = this.renderYaw;
-        this.renderPitchO = this.renderPitch;
-        this.renderMotionO = this.renderMotion;
-        this.renderRollO = this.renderRoll;
+        this.renderTumbleO = this.renderTumble;
+        this.renderHeightO = this.renderHeight;
 
         var motion = this.getDeltaMovement();
 
         if (this.tickCount > 1)
             tryPlaceGlowLight(this.level(), BlockPos.containing(this.position()));
 
-        var speedSqr = motion.lengthSqr();
-        var lerp = speedSqr > 0.0025D ? 0.25D : 0.12D;
+        var horSqr = motion.x * motion.x + motion.z * motion.z;
+        var grounded = this.isGrounded();
 
-        var targetMotion = speedSqr > STOP_SPEED_SQR * STOP_SPEED_SQR ? motion : Vec3.ZERO;
+        var tumbleRad = this.renderTumble * Mth.DEG_TO_RAD;
+        var targetHeight = grounded
+                ? 0.3125F * Math.abs(Mth.cos(tumbleRad)) + 0.07F * Math.abs(Mth.sin(tumbleRad))
+                : 0.25F;
 
-        this.renderMotion = new Vec3(
-                Mth.lerp(lerp, this.renderMotion.x, targetMotion.x),
-                Mth.lerp(lerp, this.renderMotion.y, targetMotion.y),
-                Mth.lerp(lerp, this.renderMotion.z, targetMotion.z)
-        );
+        this.renderHeight = Mth.lerp(0.3F, this.renderHeight, targetHeight);
 
-        var horSqr = this.renderMotion.x * this.renderMotion.x + this.renderMotion.z * this.renderMotion.z;
-
-        if (horSqr > 1.0E-4D) {
-            var dir = new Vec3(this.renderMotion.x, 0.0D, this.renderMotion.z).normalize();
-            var targetYaw = (float) (Mth.atan2(dir.x, dir.z) * (180.0F / (float) Math.PI));
-
-            this.renderYaw = Mth.rotLerp(0.18F, this.renderYaw, targetYaw);
-            this.renderPitch = Mth.lerp(0.12F, this.renderPitch, 0.0F);
+        if (this.getEntityData().get(SETTLED)) {
+            if (!this.level().isClientSide() && (horSqr > 0.0025D || !grounded || motion.y > 0.05D)) {
+                this.getEntityData().set(SETTLED, false);
+                this.restTicks = 0;
+            } else {
+                this.renderYaw = Mth.rotLerp(0.3F, this.renderYaw, this.getEntityData().get(RENDER_YAW));
+                this.renderTumble = Mth.lerp(0.3F, this.renderTumble, this.getEntityData().get(RENDER_TUMBLE));
+                this.tumbleSpeed = 0.0F;
+            }
         }
 
-        var speed = (float) this.renderMotion.length();
-        var speedFactor = Mth.clamp(speed / 0.2F, 0.0F, 1.0F);
+        if (!this.getEntityData().get(SETTLED)) {
+            if (horSqr > 4.0E-4D) {
+                var targetYaw = (float) (Mth.atan2(motion.x, motion.z) * (180.0F / (float) Math.PI));
 
-        speedFactor *= speedFactor;
+                this.renderYaw = Mth.rotLerp(grounded ? 0.15F : 0.3F, this.renderYaw, targetYaw);
+            }
 
-        var targetSpin = Mth.clamp(speed * 140.0F, speed > 0.02F ? 3.0F : 0.0F, 36.0F);
+            if (!grounded) {
+                var targetSpin = Mth.clamp((float) motion.length() * 130.0F, 10.0F, 40.0F);
 
-        this.rollSpeed = Mth.lerp(0.2F, this.rollSpeed, targetSpin);
-        this.rollSpeed *= this.onGround() ? 0.95F : 0.99F;
-        this.renderRoll += this.rollSpeed * speedFactor;
+                this.tumbleSpeed = Mth.lerp(0.25F, this.tumbleSpeed, targetSpin);
+                this.renderTumble += this.tumbleSpeed;
+            } else {
+                this.tumbleSpeed *= 0.7F;
+                this.renderTumble += this.tumbleSpeed;
+
+                var flat = Math.round((this.renderTumble - 90.0F) / 180.0F) * 180.0F + 90.0F;
+
+                this.renderTumble = Mth.lerp(this.tumbleSpeed < 3.0F ? 0.3F : 0.08F, this.renderTumble, flat);
+
+                if (horSqr < 4.0E-4D && Math.abs(this.renderTumble - flat) < 1.5F)
+                    this.restTicks++;
+                else
+                    this.restTicks = 0;
+
+                if (!this.level().isClientSide() && this.restTicks > 5) {
+                    this.renderTumble = flat;
+                    this.getEntityData().set(RENDER_YAW, this.renderYaw);
+                    this.getEntityData().set(RENDER_TUMBLE, flat);
+                    this.getEntityData().set(SETTLED, true);
+                }
+            }
+
+            if (this.renderTumble > 1800.0F) {
+                this.renderTumble -= 1800.0F;
+                this.renderTumbleO -= 1800.0F;
+            }
+        }
 
         if (!this.level().isClientSide() && this.tickCount > MAX_LIFETIME)
             this.expireToItem();
+    }
+
+    private boolean isGrounded() {
+        var pos = this.position();
+        var box = new AABB(pos.x - 0.05D, pos.y - 0.06D, pos.z - 0.05D, pos.x + 0.05D, pos.y + 0.01D, pos.z + 0.05D);
+
+        return !this.level().noBlockCollision(this, box);
     }
 
     @Override
@@ -186,44 +219,35 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         super.addAdditionalSaveData(tag);
 
         tag.putFloat("renderYaw", this.renderYaw);
-        tag.putFloat("renderPitch", this.renderPitch);
-        tag.putFloat("renderRoll", this.renderRoll);
+        tag.putFloat("renderTumble", this.renderTumble);
+        tag.putBoolean("settled", this.getEntityData().get(SETTLED));
     }
 
     @Override
     public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
 
-        var yaw = tag.getFloatOr("renderYaw", 0F);
-        this.renderYaw = yaw;
-        this.getEntityData().set(RENDER_YAW, yaw);
-
-        var pitch = tag.getFloatOr("renderPitch", 0F);
-        this.renderPitch = pitch;
-        this.getEntityData().set(RENDER_PITCH, pitch);
-
-        var roll = tag.getFloatOr("renderRoll", 0F);
-        this.renderRoll = roll;
-        this.getEntityData().set(RENDER_ROLL, roll);
-
+        this.renderYaw = tag.getFloatOr("renderYaw", 0F);
+        this.renderTumble = tag.getFloatOr("renderTumble", 90F);
         this.renderYawO = this.renderYaw;
-        this.renderPitchO = this.renderPitch;
-        this.renderRollO = this.renderRoll;
+        this.renderTumbleO = this.renderTumble;
+
+        var flat = Math.round((this.renderTumble - 90.0F) / 180.0F) * 180.0F + 90.0F;
+
+        this.getEntityData().set(RENDER_YAW, this.renderYaw);
+        this.getEntityData().set(RENDER_TUMBLE, flat);
+        this.getEntityData().set(SETTLED, tag.getBooleanOr("settled", false));
     }
 
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
         super.onSyncedDataUpdated(key);
 
-        if (key == RENDER_YAW) {
+        if (this.tickCount == 0 && this.level().isClientSide() && this.getEntityData().get(SETTLED)) {
             this.renderYaw = this.getEntityData().get(RENDER_YAW);
+            this.renderTumble = this.getEntityData().get(RENDER_TUMBLE);
             this.renderYawO = this.renderYaw;
-        } else if (key == RENDER_PITCH) {
-            this.renderPitch = this.getEntityData().get(RENDER_PITCH);
-            this.renderPitchO = this.renderPitch;
-        } else if (key == RENDER_ROLL) {
-            this.renderRoll = this.getEntityData().get(RENDER_ROLL);
-            this.renderRollO = this.renderRoll;
+            this.renderTumbleO = this.renderTumble;
         }
     }
 
@@ -329,20 +353,12 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         return Mth.rotLerp(partialTick, this.renderYawO, this.renderYaw);
     }
 
-    public float getRenderPitch(float partialTick) {
-        return Mth.lerp(partialTick, this.renderPitchO, this.renderPitch);
+    public float getRenderHeight(float partialTick) {
+        return Mth.lerp(partialTick, this.renderHeightO, this.renderHeight);
     }
 
-    public Vec3 getRenderMotion(float partialTick) {
-        return new Vec3(
-                Mth.lerp(partialTick, this.renderMotionO.x, this.renderMotion.x),
-                Mth.lerp(partialTick, this.renderMotionO.y, this.renderMotion.y),
-                Mth.lerp(partialTick, this.renderMotionO.z, this.renderMotion.z)
-        );
-    }
-
-    public float getRenderRoll(float partialTick) {
-        return Mth.lerp(partialTick, this.renderRollO, this.renderRoll);
+    public float getRenderTumble(float partialTick) {
+        return Mth.lerp(partialTick, this.renderTumbleO, this.renderTumble);
     }
 
     public static class TrailProvider extends EntityTrailProvider<GlowStickEntity> {
