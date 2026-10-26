@@ -40,7 +40,7 @@ public class RedPandaAI {
     private static final ImmutableList<SensorType<? extends Sensor<? super RedPandaEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
-            ReAnimalSensorTypes.CAPYBARA_TEMPTATIONS,
+            ReAnimalSensorTypes.RED_PANDA_TEMPTATIONS,
             SensorType.NEAREST_ADULT
     );
 
