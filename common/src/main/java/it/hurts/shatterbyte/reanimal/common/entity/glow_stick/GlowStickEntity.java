@@ -149,7 +149,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         var tumbleRad = this.renderTumble * Mth.DEG_TO_RAD;
         var targetHeight = grounded
                 ? 0.3125F * Math.abs(Mth.cos(tumbleRad)) + 0.07F * Math.abs(Mth.sin(tumbleRad))
-                : 0.25F;
+                : 0.15F;
 
         this.renderHeight = Mth.lerp(0.3F, this.renderHeight, targetHeight);
 
@@ -326,6 +326,11 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         return true;
     }
 
+    @Override
+    public float getPickRadius() {
+        return 0.0F;
+    }
+
     private void expireToItem() {
         if (!this.level().isClientSide())
             this.spawnAtLocation((ServerLevel) this.level(), this.getItem().copy());
@@ -461,7 +466,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
         @Override
         public Vec3 getTrailPosition(float partialTicks) {
-            return this.entity.getPosition(partialTicks).add(0F, 0.35F, 0F);
+            return this.entity.getPosition(partialTicks).add(0F, 0.15F, 0F);
         }
 
         @Override
