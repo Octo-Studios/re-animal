@@ -14,6 +14,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.red_panda.RedPandaRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.meerkat.MeerkatRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.starfish.StarfishRenderer;
@@ -40,6 +41,7 @@ public class ReAnimalFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ReAnimalEntities.BUTTERFLY, ButterflyRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.CAPYBARA, CapybaraRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.RED_PANDA, RedPandaRenderer::new);
+        EntityRendererRegistry.register(ReAnimalEntities.MEERKAT, MeerkatRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.SEAL, SealRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.HIPPOPOTAMUS, HippopotamusRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.CROCODILE, CrocodileRenderer::new);

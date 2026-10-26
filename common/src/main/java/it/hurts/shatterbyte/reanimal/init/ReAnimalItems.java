@@ -31,6 +31,7 @@ public class ReAnimalItems {
     public static SpawnEggItem BUTTERFLY_SPAWN_EGG;
     public static SpawnEggItem CAPYBARA_SPAWN_EGG;
     public static SpawnEggItem RED_PANDA_SPAWN_EGG;
+    public static SpawnEggItem MEERKAT_SPAWN_EGG;
     public static SpawnEggItem SEAL_SPAWN_EGG;
     public static SpawnEggItem HIPPOPOTAMUS_SPAWN_EGG;
     public static SpawnEggItem CROCODILE_SPAWN_EGG;
@@ -101,6 +102,7 @@ public class ReAnimalItems {
         BUTTERFLY_SPAWN_EGG = register("butterfly_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.BUTTERFLY)));
         CAPYBARA_SPAWN_EGG = register("capybara_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.CAPYBARA)));
         RED_PANDA_SPAWN_EGG = register("red_panda_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.RED_PANDA)));
+        MEERKAT_SPAWN_EGG = register("meerkat_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.MEERKAT)));
         SEAL_SPAWN_EGG = register("seal_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.SEAL)));
         HIPPOPOTAMUS_SPAWN_EGG = register("hippopotamus_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.HIPPOPOTAMUS)));
         CROCODILE_SPAWN_EGG = register("crocodile_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.CROCODILE)));

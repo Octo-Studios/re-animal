@@ -1,0 +1,8 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/meerkat_adult.png" : "outlined_sprite:reanimal/meerkat_adult.png",
+    "reanimal:textures/entity/meerkat_baby.png" : "outlined_sprite:reanimal/meerkat_baby.png",
+    "default" : "outlined_sprite:reanimal/meerkat_adult.png"
+  },
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getAgeVariant"
+}

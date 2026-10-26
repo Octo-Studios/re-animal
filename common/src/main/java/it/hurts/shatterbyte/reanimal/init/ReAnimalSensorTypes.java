@@ -9,6 +9,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogAI;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusAI;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiAI;
+import it.hurts.shatterbyte.reanimal.common.entity.meerkat.MeerkatAI;
 import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichAI;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonAI;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealAI;
@@ -28,6 +29,7 @@ public class ReAnimalSensorTypes {
     public static SensorType<TemptingSensor> KIWI_TEMPTATIONS;
     public static SensorType<TemptingSensor> PIGEON_TEMPTATIONS;
     public static SensorType<TemptingSensor> CAPYBARA_TEMPTATIONS;
+    public static SensorType<TemptingSensor> MEERKAT_TEMPTATIONS;
     public static SensorType<TemptingSensor> SEAL_TEMPTATIONS;
     public static SensorType<TemptingSensor> HIPPOPOTAMUS_TEMPTATIONS;
     public static SensorType<TemptingSensor> CROCODILE_TEMPTATIONS;
@@ -42,6 +44,7 @@ public class ReAnimalSensorTypes {
         KIWI_TEMPTATIONS = register("kiwi_temptations", new SensorType<>(() -> new TemptingSensor(KiwiAI.getTemptations())));
         PIGEON_TEMPTATIONS = register("pigeon_temptations", new SensorType<>(() -> new TemptingSensor(PigeonAI.getTemptations())));
         CAPYBARA_TEMPTATIONS = register("capybara_temptations", new SensorType<>(() -> new TemptingSensor(CapybaraAI.getTemptations())));
+        MEERKAT_TEMPTATIONS = register("meerkat_temptations", new SensorType<>(() -> new TemptingSensor(MeerkatAI.getTemptations())));
         SEAL_TEMPTATIONS = register("seal_temptations", new SensorType<>(() -> new TemptingSensor(SealAI.getTemptations())));
         HIPPOPOTAMUS_TEMPTATIONS = register("hippopotamus_temptations", new SensorType<>(() -> new TemptingSensor(HippopotamusAI.getTemptations())));
         CROCODILE_TEMPTATIONS = register("crocodile_temptations", new SensorType<>(() -> new TemptingSensor(CrocodileAI.getTemptations())));

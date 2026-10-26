@@ -14,6 +14,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.red_panda.RedPandaRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.meerkat.MeerkatRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.seal.SealRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.starfish.StarfishRenderer;
@@ -46,6 +47,7 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.BUTTERFLY, ButterflyRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.CAPYBARA, CapybaraRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.RED_PANDA, RedPandaRenderer::new);
+        event.registerEntityRenderer(ReAnimalEntities.MEERKAT, MeerkatRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.SEAL, SealRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.HIPPOPOTAMUS, HippopotamusRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.CROCODILE, CrocodileRenderer::new);

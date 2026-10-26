@@ -21,6 +21,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.red_panda.RedPandaEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.meerkat.MeerkatEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.starfish.StarfishEntity;
@@ -44,6 +45,7 @@ public class ReAnimalEntities {
     public static EntityType<ButterflyEntity> BUTTERFLY;
     public static EntityType<CapybaraEntity> CAPYBARA;
     public static EntityType<RedPandaEntity> RED_PANDA;
+    public static EntityType<MeerkatEntity> MEERKAT;
     public static EntityType<SealEntity> SEAL;
     public static EntityType<HippopotamusEntity> HIPPOPOTAMUS;
     public static EntityType<CrocodileEntity> CROCODILE;
@@ -71,6 +73,7 @@ public class ReAnimalEntities {
         BUTTERFLY = register("butterfly", EntityType.Builder.of(ButterflyEntity::new, MobCategory.CREATURE).sized(0.5F, 0.45F));
         CAPYBARA = register("capybara", EntityType.Builder.of(CapybaraEntity::new, MobCategory.CREATURE).sized(1.1F, 1F));
         RED_PANDA = register("red_panda", EntityType.Builder.of(RedPandaEntity::new, MobCategory.CREATURE).sized(0.8F, 0.65F));
+        MEERKAT = register("meerkat", EntityType.Builder.of(MeerkatEntity::new, MobCategory.CREATURE).sized(0.6F, 0.55F));
         SEAL = register("seal", EntityType.Builder.of(SealEntity::new, MobCategory.CREATURE).sized(1.1F, 0.9F));
         HIPPOPOTAMUS = register("hippopotamus", EntityType.Builder.of(HippopotamusEntity::new, MobCategory.CREATURE).sized(1.5F, 1.75F));
         CROCODILE = register("crocodile", EntityType.Builder.of(CrocodileEntity::new, MobCategory.CREATURE).sized(1.5F, 0.6F));
@@ -99,6 +102,7 @@ public class ReAnimalEntities {
         register.accept(BUTTERFLY, ButterflyEntity.createAttributes().build());
         register.accept(CAPYBARA, CapybaraEntity.createAttributes().build());
         register.accept(RED_PANDA, RedPandaEntity.createAttributes().build());
+        register.accept(MEERKAT, MeerkatEntity.createAttributes().build());
         register.accept(SEAL, SealEntity.createAttributes().build());
         register.accept(HIPPOPOTAMUS, HippopotamusEntity.createAttributes().build());
         register.accept(CROCODILE, CrocodileEntity.createAttributes().build());

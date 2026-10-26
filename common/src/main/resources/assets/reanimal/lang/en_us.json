@@ -36,6 +36,9 @@
   "entity.reanimal.red_panda": "Red Panda",
   "item.reanimal.red_panda_spawn_egg": "Red Panda Spawn Egg",
 
+  "entity.reanimal.meerkat": "Meerkat",
+  "item.reanimal.meerkat_spawn_egg": "Meerkat Spawn Egg",
+
   "entity.reanimal.seal": "Seal",
   "item.reanimal.seal_spawn_egg": "Seal Spawn Egg",
   "item.reanimal.raw_seal_meat": "Raw Seal Meat",

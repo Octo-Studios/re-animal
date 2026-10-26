@@ -13,6 +13,7 @@ public class ReAnimalTags {
         public static final TagKey<Item> OSTRICH_FOOD = Items.create("ostrich_food");
         public static final TagKey<Item> CAPYBARA_FOOD = Items.create("capybara_food");
         public static final TagKey<Item> RED_PANDA_FOOD = Items.create("red_panda_food");
+        public static final TagKey<Item> MEERKAT_FOOD = Items.create("meerkat_food");
         public static final TagKey<Item> SEAL_FOOD = Items.create("seal_food");
         public static final TagKey<Item> HEDGEHOG_FOOD = Items.create("hedgehog_food");
         public static final TagKey<Item> HIPPOPOTAMUS_FOOD = Items.create("hippopotamus_food");
