@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "reanimal:cooked_hedgehog_meat",
+    "reanimal:cooked_capybara_meat",
+    "reanimal:cooked_seal_meat",
+    "reanimal:cooked_ostrich_meat",
+    "reanimal:cooked_kiwi_meat",
+    "reanimal:cooked_pigeon_meat",
+    "reanimal:cooked_hippopotamus_meat",
+    "reanimal:cooked_giraffe_meat",
+    "reanimal:cooked_crocodile_meat"
+  ]
+}

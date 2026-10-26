@@ -1,0 +1,14 @@
+{
+  "replace": false,
+  "values": [
+    "reanimal:raw_hedgehog_meat",
+    "reanimal:raw_capybara_meat",
+    "reanimal:raw_seal_meat",
+    "reanimal:raw_ostrich_meat",
+    "reanimal:raw_kiwi_meat",
+    "reanimal:raw_pigeon_meat",
+    "reanimal:raw_hippopotamus_meat",
+    "reanimal:raw_giraffe_meat",
+    "reanimal:raw_crocodile_meat"
+  ]
+}
