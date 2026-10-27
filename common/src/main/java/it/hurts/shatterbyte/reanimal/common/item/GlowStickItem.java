@@ -16,8 +16,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class GlowStickItem extends Item {
+    private final GlowStickItem base;
+
     public GlowStickItem(Properties properties) {
+        this(properties, null);
+    }
+
+    public GlowStickItem(Properties properties, GlowStickItem base) {
         super(properties);
+
+        this.base = base;
+    }
+
+    public boolean isSticky() {
+        return this.base != null;
+    }
+
+    public GlowStickItem getBase() {
+        return this.base == null ? this : this.base;
     }
 
     @Override

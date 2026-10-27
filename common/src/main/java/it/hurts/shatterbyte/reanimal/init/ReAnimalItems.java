@@ -70,6 +70,22 @@ public class ReAnimalItems {
     public static GlowStickItem GLOW_STICK_GREEN;
     public static GlowStickItem GLOW_STICK_RED;
     public static GlowStickItem GLOW_STICK_BLACK;
+    public static GlowStickItem STICKY_GLOW_STICK_WHITE;
+    public static GlowStickItem STICKY_GLOW_STICK_ORANGE;
+    public static GlowStickItem STICKY_GLOW_STICK_MAGENTA;
+    public static GlowStickItem STICKY_GLOW_STICK_LIGHT_BLUE;
+    public static GlowStickItem STICKY_GLOW_STICK_YELLOW;
+    public static GlowStickItem STICKY_GLOW_STICK_LIME;
+    public static GlowStickItem STICKY_GLOW_STICK_PINK;
+    public static GlowStickItem STICKY_GLOW_STICK_GRAY;
+    public static GlowStickItem STICKY_GLOW_STICK_LIGHT_GRAY;
+    public static GlowStickItem STICKY_GLOW_STICK_CYAN;
+    public static GlowStickItem STICKY_GLOW_STICK_PURPLE;
+    public static GlowStickItem STICKY_GLOW_STICK_BLUE;
+    public static GlowStickItem STICKY_GLOW_STICK_BROWN;
+    public static GlowStickItem STICKY_GLOW_STICK_GREEN;
+    public static GlowStickItem STICKY_GLOW_STICK_RED;
+    public static GlowStickItem STICKY_GLOW_STICK_BLACK;
 
     public static Item RAW_HEDGEHOG_MEAT;
     public static Item COOKED_HEDGEHOG_MEAT;
@@ -141,6 +157,23 @@ public class ReAnimalItems {
         GLOW_STICK_GREEN = register("glow_stick_green", props -> new GlowStickItem(props));
         GLOW_STICK_RED = register("glow_stick_red", props -> new GlowStickItem(props));
         GLOW_STICK_BLACK = register("glow_stick_black", props -> new GlowStickItem(props));
+
+        STICKY_GLOW_STICK_WHITE = register("sticky_glow_stick_white", props -> new GlowStickItem(props, GLOW_STICK_WHITE));
+        STICKY_GLOW_STICK_ORANGE = register("sticky_glow_stick_orange", props -> new GlowStickItem(props, GLOW_STICK_ORANGE));
+        STICKY_GLOW_STICK_MAGENTA = register("sticky_glow_stick_magenta", props -> new GlowStickItem(props, GLOW_STICK_MAGENTA));
+        STICKY_GLOW_STICK_LIGHT_BLUE = register("sticky_glow_stick_light_blue", props -> new GlowStickItem(props, GLOW_STICK_LIGHT_BLUE));
+        STICKY_GLOW_STICK_YELLOW = register("sticky_glow_stick_yellow", props -> new GlowStickItem(props, GLOW_STICK_YELLOW));
+        STICKY_GLOW_STICK_LIME = register("sticky_glow_stick_lime", props -> new GlowStickItem(props, GLOW_STICK_LIME));
+        STICKY_GLOW_STICK_PINK = register("sticky_glow_stick_pink", props -> new GlowStickItem(props, GLOW_STICK_PINK));
+        STICKY_GLOW_STICK_GRAY = register("sticky_glow_stick_gray", props -> new GlowStickItem(props, GLOW_STICK_GRAY));
+        STICKY_GLOW_STICK_LIGHT_GRAY = register("sticky_glow_stick_light_gray", props -> new GlowStickItem(props, GLOW_STICK_LIGHT_GRAY));
+        STICKY_GLOW_STICK_CYAN = register("sticky_glow_stick_cyan", props -> new GlowStickItem(props, GLOW_STICK_CYAN));
+        STICKY_GLOW_STICK_PURPLE = register("sticky_glow_stick_purple", props -> new GlowStickItem(props, GLOW_STICK_PURPLE));
+        STICKY_GLOW_STICK_BLUE = register("sticky_glow_stick_blue", props -> new GlowStickItem(props, GLOW_STICK_BLUE));
+        STICKY_GLOW_STICK_BROWN = register("sticky_glow_stick_brown", props -> new GlowStickItem(props, GLOW_STICK_BROWN));
+        STICKY_GLOW_STICK_GREEN = register("sticky_glow_stick_green", props -> new GlowStickItem(props, GLOW_STICK_GREEN));
+        STICKY_GLOW_STICK_RED = register("sticky_glow_stick_red", props -> new GlowStickItem(props, GLOW_STICK_RED));
+        STICKY_GLOW_STICK_BLACK = register("sticky_glow_stick_black", props -> new GlowStickItem(props, GLOW_STICK_BLACK));
 
         RAW_HEDGEHOG_MEAT = register("raw_hedgehog_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
         COOKED_HEDGEHOG_MEAT = register("cooked_hedgehog_meat", props -> new Item(props.food(new FoodProperties(5, 6F, false))));

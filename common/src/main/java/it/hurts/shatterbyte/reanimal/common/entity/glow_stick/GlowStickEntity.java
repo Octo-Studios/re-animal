@@ -6,6 +6,7 @@ import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailProvider
 import it.hurts.shatterbyte.reanimal.common.block.GlowLightBlock;
 import it.hurts.shatterbyte.reanimal.common.blockentity.GlowLightBlockEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
+import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -44,11 +45,15 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.glow_stick.idle");
     private static final double BOUNCE_DAMPING = 0.7D;
     private static final double BOUNCE_Y_CUTOFF = 0.18D;
+    public static final float SIZE = 0.4F;
+
     private static final int MAX_LIFETIME = 6000;
+    private static final float STUCK_RENDER_HEIGHT = 0.085F;
 
     private static final EntityDataAccessor<Float> RENDER_YAW = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> RENDER_TUMBLE = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> SETTLED = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> STUCK_FACE = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private float renderYaw;
@@ -59,6 +64,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     private float renderHeightO = 0.07F;
     private float tumbleSpeed;
     private int restTicks;
+    private boolean stuckRendered;
 
     public GlowStickEntity(EntityType<? extends GlowStickEntity> entityType, Level level) {
         super(entityType, level);
@@ -71,6 +77,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         builder.define(RENDER_YAW, 0.0F);
         builder.define(RENDER_TUMBLE, 90.0F);
         builder.define(SETTLED, false);
+        builder.define(STUCK_FACE, -1);
     }
 
     @Override
@@ -87,6 +94,12 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
     @Override
     protected void onHitBlock(BlockHitResult result) {
+        if (this.isSticky()) {
+            this.stickTo(result);
+
+            return;
+        }
+
         var motion = this.getDeltaMovement();
         var hitPos = result.getLocation();
         var normal = Vec3.atLowerCornerOf(result.getDirection().getUnitVec3i());
@@ -126,9 +139,100 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         this.setDeltaMovement(bounce);
     }
 
+    private boolean isSticky() {
+        return this.getItem().getItem() instanceof GlowStickItem glowStick && glowStick.isSticky();
+    }
+
+    public Direction getStuckFace() {
+        var face = this.getEntityData().get(STUCK_FACE);
+
+        return face < 0 ? null : Direction.from3DDataValue(face);
+    }
+
+    private void stickTo(BlockHitResult result) {
+        var face = result.getDirection();
+        var normal = Vec3.atLowerCornerOf(face.getUnitVec3i());
+        var hitPos = result.getLocation();
+
+        var y = face == Direction.DOWN ? hitPos.y - this.getBbHeight() - 0.01D : hitPos.y + normal.y * 0.01D;
+
+        this.setPos(hitPos.x + normal.x * 0.01D, y, hitPos.z + normal.z * 0.01D);
+        this.setDeltaMovement(Vec3.ZERO);
+        this.setNoGravity(true);
+
+        if (!this.level().isClientSide()) {
+            this.getEntityData().set(RENDER_YAW, this.random.nextFloat() * 360.0F);
+            this.getEntityData().set(STUCK_FACE, face.get3DDataValue());
+        }
+    }
+
+    @Override
+    public Vec3 getLightProbePosition(float partialTickTime) {
+        var face = this.getStuckFace();
+
+        if (face == null)
+            return super.getLightProbePosition(partialTickTime);
+
+        var normal = Vec3.atLowerCornerOf(face.getUnitVec3i());
+        var base = face == Direction.DOWN ? this.position().add(0.0D, this.getBbHeight(), 0.0D) : this.position();
+
+        return base.add(normal.scale(STUCK_RENDER_HEIGHT));
+    }
+
+    private boolean isSupported(Direction face) {
+        var pos = face == Direction.DOWN ? this.position().add(0.0D, this.getBbHeight(), 0.0D) : this.position();
+        var normal = Vec3.atLowerCornerOf(face.getUnitVec3i());
+        var box = new AABB(pos.x - 0.03D, pos.y - 0.03D, pos.z - 0.03D, pos.x + 0.03D, pos.y + 0.03D, pos.z + 0.03D).expandTowards(-normal.x * 0.05D, -normal.y * 0.05D, -normal.z * 0.05D);
+
+        return !this.level().noBlockCollision(this, box);
+    }
+
+    private void tickStuck(Direction face) {
+        this.renderYawO = this.renderYaw;
+        this.renderTumbleO = this.renderTumble;
+        this.renderHeightO = this.renderHeight;
+
+        this.renderTumble = 90.0F;
+        this.renderTumbleO = 90.0F;
+
+        if (!this.stuckRendered) {
+            this.renderYaw = this.getEntityData().get(RENDER_YAW);
+            this.renderYawO = this.renderYaw;
+            this.renderHeight = STUCK_RENDER_HEIGHT;
+            this.renderHeightO = STUCK_RENDER_HEIGHT;
+            this.stuckRendered = true;
+        }
+
+        if (this.tickCount > 1)
+            tryPlaceGlowLight(this.level(), BlockPos.containing(this.position()));
+
+        if (this.level().isClientSide())
+            return;
+
+        if (this.tickCount % 5 == 0 && !this.isSupported(face)) {
+            this.getEntityData().set(STUCK_FACE, -1);
+            this.getEntityData().set(SETTLED, false);
+            this.setNoGravity(false);
+            this.restTicks = 0;
+        }
+
+        if (this.tickCount > MAX_LIFETIME)
+            this.expireToItem();
+    }
+
     @Override
     public void tick() {
         super.tick();
+
+        var stuckFace = this.getStuckFace();
+
+        if (stuckFace != null) {
+            this.tickStuck(stuckFace);
+
+            return;
+        }
+
+        this.stuckRendered = false;
 
         if (this.tickCount > 20)
             for (var entity : this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox()))
@@ -221,6 +325,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         tag.putFloat("renderYaw", this.renderYaw);
         tag.putFloat("renderTumble", this.renderTumble);
         tag.putBoolean("settled", this.getEntityData().get(SETTLED));
+        tag.putInt("stuckFace", this.getEntityData().get(STUCK_FACE));
     }
 
     @Override
@@ -237,6 +342,10 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         this.getEntityData().set(RENDER_YAW, this.renderYaw);
         this.getEntityData().set(RENDER_TUMBLE, flat);
         this.getEntityData().set(SETTLED, tag.getBooleanOr("settled", false));
+        this.getEntityData().set(STUCK_FACE, tag.getIntOr("stuckFace", -1));
+
+        if (this.getStuckFace() != null)
+            this.setNoGravity(true);
     }
 
     @Override
@@ -373,6 +482,9 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         }
 
         private static int getBaseColor(Item item) {
+            if (item instanceof GlowStickItem glowStick)
+                item = glowStick.getBase();
+
             return getGlowStickBaseColor(item);
         }
 
@@ -414,6 +526,9 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         }
 
         private static int getTailColor(Item item) {
+            if (item instanceof GlowStickItem glowStick)
+                item = glowStick.getBase();
+
             if (item == ReAnimalItems.GLOW_STICK_WHITE)
                 return 0x66E0FF;
             if (item == ReAnimalItems.GLOW_STICK_ORANGE)

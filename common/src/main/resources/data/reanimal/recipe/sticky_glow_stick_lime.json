@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SSS",
+    "SJS",
+    "SSS"
+  ],
+  "key": {
+    "S": "reanimal:glow_stick_lime",
+    "J": "minecraft:slime_ball"
+  },
+  "result": {
+    "id": "reanimal:sticky_glow_stick_lime",
+    "count": 8
+  }
+}

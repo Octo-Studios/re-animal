@@ -90,7 +90,7 @@ public class ReAnimalEntities {
         VULTURE_EGG = register("vulture_egg", EntityType.Builder.of(VultureEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PENGUIN_EGG = register("penguin_egg", EntityType.Builder.of(PenguinEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         CROCODILE_EGG = register("crocodile_egg", EntityType.Builder.of(CrocodileEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
-        GLOW_STICK = register("glow_stick", EntityType.Builder.<GlowStickEntity>of(GlowStickEntity::new, MobCategory.MISC).sized(0.3F, 0.3F).clientTrackingRange(4).updateInterval(10));
+        GLOW_STICK = register("glow_stick", EntityType.Builder.<GlowStickEntity>of(GlowStickEntity::new, MobCategory.MISC).sized(GlowStickEntity.SIZE, GlowStickEntity.SIZE).clientTrackingRange(4).updateInterval(10));
         QUILL_ARROW = register("quill_arrow", EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20));
     }
 

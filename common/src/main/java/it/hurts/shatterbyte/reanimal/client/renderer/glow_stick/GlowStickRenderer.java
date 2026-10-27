@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.glow_stick;
 
 import com.mojang.math.Axis;
+import net.minecraft.core.Direction;
 import it.hurts.shatterbyte.reanimal.client.model.glow_stick.GlowStickModel;
 import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
 import net.minecraft.client.renderer.rendertype.RenderType;
@@ -18,6 +19,7 @@ public class GlowStickRenderer extends GeoEntityRenderer<GlowStickEntity, Entity
     private static final DataTicket<Float> GLOW_YAW = DataTicket.create("reanimal_glow_yaw", Float.class);
     private static final DataTicket<Float> GLOW_HEIGHT = DataTicket.create("reanimal_glow_height", Float.class);
     private static final DataTicket<Float> GLOW_TUMBLE = DataTicket.create("reanimal_glow_tumble", Float.class);
+    private static final DataTicket<Integer> GLOW_FACE = DataTicket.create("reanimal_glow_face", Integer.class);
 
     public GlowStickRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new GlowStickModel());
@@ -31,6 +33,7 @@ public class GlowStickRenderer extends GeoEntityRenderer<GlowStickEntity, Entity
         geoState.addGeckolibData(GLOW_YAW, entity.getRenderYaw(partialTick));
         geoState.addGeckolibData(GLOW_HEIGHT, entity.getRenderHeight(partialTick));
         geoState.addGeckolibData(GLOW_TUMBLE, entity.getRenderTumble(partialTick));
+        geoState.addGeckolibData(GLOW_FACE, entity.getStuckFace() == null ? -1 : entity.getStuckFace().get3DDataValue());
         geoState.addGeckolibData(GlowStickModel.ITEM_NAME, BuiltInRegistries.ITEM.getKey(entity.getItem().getItem()).getPath());
     }
 
@@ -46,7 +49,29 @@ public class GlowStickRenderer extends GeoEntityRenderer<GlowStickEntity, Entity
         var tumble = geoState.getOrDefaultGeckolibData(GLOW_TUMBLE, 90F);
         var height = geoState.getOrDefaultGeckolibData(GLOW_HEIGHT, 0.07F);
 
-        renderPassInfo.poseStack().translate(0.0F, height, 0.0F);
+        var face = geoState.getOrDefaultGeckolibData(GLOW_FACE, -1);
+
+        if (face >= 0) {
+            var direction = Direction.from3DDataValue(face);
+            var normal = direction.getUnitVec3i();
+
+            if (direction == Direction.DOWN)
+                renderPassInfo.poseStack().translate(0.0F, GlowStickEntity.SIZE + 0.01F - height, 0.0F);
+            else
+                renderPassInfo.poseStack().translate(normal.getX() * height, normal.getY() * height, normal.getZ() * height);
+
+            switch (direction) {
+                case DOWN -> renderPassInfo.poseStack().rotateDegrees(Axis.XP, 180.0F);
+                case SOUTH -> renderPassInfo.poseStack().rotateDegrees(Axis.XP, 90.0F);
+                case NORTH -> renderPassInfo.poseStack().rotateDegrees(Axis.XP, -90.0F);
+                case EAST -> renderPassInfo.poseStack().rotateDegrees(Axis.ZP, -90.0F);
+                case WEST -> renderPassInfo.poseStack().rotateDegrees(Axis.ZP, 90.0F);
+                default -> {
+                }
+            }
+        } else
+            renderPassInfo.poseStack().translate(0.0F, height, 0.0F);
+
         renderPassInfo.poseStack().rotateDegrees(Axis.YP, yaw);
         renderPassInfo.poseStack().rotateDegrees(Axis.XP, tumble);
         renderPassInfo.poseStack().translate(0.0F, -0.3125F, 0.0F);

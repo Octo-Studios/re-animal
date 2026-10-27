@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    [
+      "reanimal:sticky_glow_stick_white",
+      "reanimal:sticky_glow_stick_orange",
+      "reanimal:sticky_glow_stick_magenta",
+      "reanimal:sticky_glow_stick_light_blue",
+      "reanimal:sticky_glow_stick_yellow",
+      "reanimal:sticky_glow_stick_lime",
+      "reanimal:sticky_glow_stick_pink",
+      "reanimal:sticky_glow_stick_gray",
+      "reanimal:sticky_glow_stick_light_gray",
+      "reanimal:sticky_glow_stick_purple",
+      "reanimal:sticky_glow_stick_blue",
+      "reanimal:sticky_glow_stick_brown",
+      "reanimal:sticky_glow_stick_green",
+      "reanimal:sticky_glow_stick_red",
+      "reanimal:sticky_glow_stick_black"
+    ],
+    "minecraft:cyan_dye"
+  ],
+  "result": {
+    "id": "reanimal:sticky_glow_stick_cyan"
+  }
+}
