@@ -189,7 +189,12 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
         return super.isInvulnerableTo(source);
     }
-
+    
+    @Override
+    public boolean canBreatheUnderwater() {
+        return true;
+    }
+    
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder buidler) {
         super.defineSynchedData(buidler);
