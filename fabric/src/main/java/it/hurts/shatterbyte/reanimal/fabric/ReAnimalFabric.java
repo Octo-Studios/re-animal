@@ -86,7 +86,7 @@ public class ReAnimalFabric implements ModInitializer {
         addSpawn("minecraft:is_jungle", ReAnimalEntities.KIWI, 10, 3, 5);
         addSpawn("minecraft:is_savanna", ReAnimalEntities.OSTRICH, 10, 1, 3);
         addSpawn("minecraft:is_savanna", ReAnimalEntities.MEERKAT, 8, 1, 3);
-        addSpawn("c:is_cold/overworld", ReAnimalEntities.PENGUIN, 10, 3, 7);
+        addSpawn("c:is_aquatic_icy", ReAnimalEntities.PENGUIN, 10, 3, 7);
         addSpawn("minecraft:is_overworld", ReAnimalEntities.PIGEON, 10, 5, 15);
         addSpawn("minecraft:is_jungle", ReAnimalEntities.RED_PANDA, 8, 1, 3);
         addSpawn("minecraft:is_beach", ReAnimalEntities.SEA_URCHIN, 25, 5, 10);
