@@ -4,9 +4,11 @@ import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.effect.QuillMobEffect;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
@@ -18,6 +20,12 @@ public class ReAnimalNeoForgeGameEvents {
             event.setCanceled(true);
             event.setCancellationResult((event.getEntity().level().isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME));
         }
+    }
+
+    @SubscribeEvent
+    public static void onLivingDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof Player player)
+            HedgehogEntity.dropFromHead(player);
     }
 
     @SubscribeEvent

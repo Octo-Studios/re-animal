@@ -8,11 +8,11 @@ import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.model.GeoModel;
 
 public class HedgehogModel extends GeoModel<HedgehogEntity> {
-    private static final Identifier MODEL = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog");
-    private static final Identifier TEXTURE_ADULT = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/hedgehog_adult.png");
-    private static final Identifier TEXTURE_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/hedgehog_baby.png");
-    private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog");
-    private static final DataTicket<Boolean> IS_BABY = DataTicket.create("hedgehog_is_baby", Boolean.class);
+    public static final Identifier MODEL = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog");
+    public static final Identifier TEXTURE_ADULT = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/hedgehog_adult.png");
+    public static final Identifier TEXTURE_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/hedgehog_baby.png");
+    public static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog");
+    public static final DataTicket<Boolean> IS_BABY = DataTicket.create("hedgehog_is_baby", Boolean.class);
 
     @Override
     public void addAdditionalStateData(HedgehogEntity entity, Object extraData, GeoRenderState renderState) {

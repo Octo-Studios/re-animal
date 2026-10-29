@@ -3,12 +3,16 @@ package it.hurts.shatterbyte.reanimal.fabric;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.effect.QuillMobEffect;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HeadHedgehogData;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HeadHedgehogs;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntityDataSerializers;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentSyncPredicate;
 import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
@@ -24,6 +28,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.SpawnPlacementTypes;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class ReAnimalFabric implements ModInitializer {
@@ -32,6 +37,30 @@ public class ReAnimalFabric implements ModInitializer {
         ReAnimal.init();
 
         FabricEntityDataRegistry.register(Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog_state"), ReAnimalEntityDataSerializers.HEDGEHOG_STATE);
+
+        var headHedgehog = AttachmentRegistry.<HeadHedgehogData>create(Identifier.fromNamespaceAndPath(ReAnimal.MODID, "head_hedgehog"), builder -> builder
+                .persistent(HeadHedgehogData.CODEC)
+                .syncWith(HeadHedgehogData.STREAM_CODEC, AttachmentSyncPredicate.all()));
+
+        HeadHedgehogs.init(new HeadHedgehogs.Accessor() {
+            @Override
+            public HeadHedgehogData get(Player player) {
+                return player.getAttached(headHedgehog);
+            }
+
+            @Override
+            public void set(Player player, HeadHedgehogData data) {
+                if (data == null)
+                    player.removeAttached(headHedgehog);
+                else
+                    player.setAttached(headHedgehog, data);
+            }
+        });
+
+        ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+            if (entity instanceof Player player)
+                HedgehogEntity.dropFromHead(player);
+        });
 
         ReAnimalEntities.registerAttributes(FabricDefaultAttributeRegistry::register);
 

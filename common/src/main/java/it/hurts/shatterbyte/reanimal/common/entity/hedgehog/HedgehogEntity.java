@@ -50,7 +50,6 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 
-import org.jspecify.annotations.Nullable;
 import java.util.function.IntFunction;
 
 public class HedgehogEntity extends TamableAnimal implements GeoEntity {
@@ -101,12 +100,17 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
         var owner = this.getOwner();
         var back = this.getStack();
 
-        if (this.isTame() && this.isOwnedBy(player) && player.isShiftKeyDown() && held.isEmpty() && !this.isPassenger()) {
-            if (this.isScared())
-                this.rollOut();
+        if (this.isTame() && this.isOwnedBy(player) && player.isShiftKeyDown() && held.isEmpty() && !HeadHedgehogs.has(player)) {
+            if (!level.isClientSide()) {
+                if (this.isScared())
+                    this.rollOut();
 
-            this.getNavigation().stop();
-            this.startRiding(player, true, true);
+                this.getNavigation().stop();
+
+                HeadHedgehogs.set(player, HeadHedgehogData.of(this));
+
+                this.discard();
+            }
 
             return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
         }
@@ -191,7 +195,7 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
             var damagedSomeone = false;
 
             for (var target : targets) {
-                if (target == owner || target == this.getVehicle())
+                if (target == owner)
                     continue;
 
                 var damaged = target.hurtOrSimulate(ReAnimalDamageTypes.source(this, ReAnimalDamageTypes.HEDGEHOG_SPIKES), this.getState() == HedgehogState.SCARED ? 5 : 1);
@@ -416,14 +420,6 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
             return false;
     }
 
-    @Override
-    public Vec3 getVehicleAttachmentPoint(Entity vehicle) {
-        if (vehicle instanceof Player)
-            return new Vec3(0,-0.1,0);
-
-        return super.getVehicleAttachmentPoint(vehicle);
-    }
-
     public void rollUp() {
         if (this.isScared())
             return;
@@ -445,20 +441,6 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
         this.setState(HedgehogState.IDLE);
     }
 
-    public boolean isOnHeadOf(Player player) {
-        return this.isPassenger() && this.getVehicle() == player;
-    }
-
-    @Nullable
-    public static HedgehogEntity getHeadPassenger(Player player) {
-        for (var passenger : player.getPassengers()) {
-            if (passenger instanceof HedgehogEntity hedgehog && hedgehog.isOnHeadOf(player))
-                return hedgehog;
-        }
-
-        return null;
-    }
-
     public static boolean tryDropFromBlock(Player player, InteractionHand hand, BlockPos pos) {
         if (!player.isShiftKeyDown())
             return false;
@@ -469,20 +451,27 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
         if (!player.getItemInHand(hand).isEmpty())
             return false;
 
-        var hedgehog = HedgehogEntity.getHeadPassenger(player);
+        var data = HeadHedgehogs.get(player);
 
-        if (hedgehog == null)
+        if (data == null)
             return false;
 
-        var level = player.level();
+        if (!(player.level() instanceof ServerLevel level))
+            return true;
+
+        var hedgehog = data.create(level);
+
+        HeadHedgehogs.set(player, null);
+
+        if (hedgehog == null)
+            return true;
+
         var state = level.getBlockState(pos);
         var topY = pos.getY() + state.getCollisionShape(level, pos).max(Direction.Axis.Y);
 
         if (topY <= pos.getY())
             topY = pos.getY() + 1D;
 
-        hedgehog.stopRiding();
-        hedgehog.getNavigation().stop();
         hedgehog.absSnapTo(pos.getX() + 0.5D, topY, pos.getZ() + 0.5D, player.getYRot(), hedgehog.getXRot());
         hedgehog.setDeltaMovement(Vec3.ZERO);
 
@@ -491,7 +480,27 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
             hedgehog.absSnapTo(fallback.getX() + 0.5D, fallback.getY(), fallback.getZ() + 0.5D, player.getYRot(), hedgehog.getXRot());
         }
 
+        level.addFreshEntity(hedgehog);
+
         return true;
+    }
+
+    public static void dropFromHead(Player player) {
+        var data = HeadHedgehogs.get(player);
+
+        if (data == null || !(player.level() instanceof ServerLevel level))
+            return;
+
+        HeadHedgehogs.set(player, null);
+
+        var hedgehog = data.create(level);
+
+        if (hedgehog == null)
+            return;
+
+        hedgehog.absSnapTo(player.getX(), player.getY(), player.getZ(), player.getYRot(), 0F);
+
+        level.addFreshEntity(hedgehog);
     }
 
     public static void onEntityJoin(Entity entity) {
@@ -516,12 +525,10 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
         if (!phantom.isAlive())
             return false;
 
-        var hedgehog = HedgehogEntity.getHeadPassenger(player);
-
-        if (hedgehog == null)
+        if (!HeadHedgehogs.has(player))
             return false;
 
-        phantom.hurt(player.damageSources().thorns(hedgehog), 5F);
+        phantom.hurt(player.damageSources().thorns(player), 5F);
 
         return true;
     }

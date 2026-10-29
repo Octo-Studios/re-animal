@@ -21,6 +21,6 @@ public abstract class AvatarRendererMixin<AvatarlikeEntity extends Avatar & Clie
 
     @Inject(method = "<init>", at = @At("TAIL"))
     private void reanimal$addHedgehogHeadLayer(EntityRendererProvider.Context context, boolean slim, CallbackInfo ci) {
-        this.addLayer(new HedgehogHeadLayer(this));
+        this.addLayer(new HedgehogHeadLayer(this, context));
     }
 }
