@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.init;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.item.*;
 import net.minecraft.core.Registry;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -15,7 +16,11 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BoneMealItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.MobBucketItem;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.sounds.SoundEvents;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -109,6 +114,7 @@ public class ReAnimalItems {
     public static Item RAW_STARFISH_CAVIAR;
     public static Item COOKED_STARFISH_CAVIAR;
     public static Item JELLYFISH_JELLY;
+    public static MobBucketItem JELLYFISH_BUCKET;
 
     public static void init() {
         HEDGEHOG_SPAWN_EGG = register("hedgehog_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.HEDGEHOG)));
@@ -196,6 +202,7 @@ public class ReAnimalItems {
         SEA_URCHIN_CAVIAR = register("sea_urchin_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false))));
         RAW_STARFISH_CAVIAR = register("raw_starfish_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false), Consumable.builder().onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.POISON, 200), 1F)).build())));
         COOKED_STARFISH_CAVIAR = register("cooked_starfish_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false))));
+        JELLYFISH_BUCKET = register("jellyfish_bucket", props -> new MobBucketItem(ReAnimalEntities.JELLYFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, props.stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY)));
         JELLYFISH_JELLY = register("jellyfish_jelly", props -> new Item(props.food(new FoodProperties(2, 0.6F, false))));
     }
 

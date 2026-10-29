@@ -3,20 +3,26 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -25,6 +31,9 @@ import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.fish.WaterAnimal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
@@ -35,11 +44,12 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 
-public class JellyfishEntity extends WaterAnimal implements GeoEntity {
+public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketable {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.jellyfish.idle");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.jellyfish.swim");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final float SWIM_PHASE_SPEED = (float) Math.PI / 40F;
     private static final float THRUST_START = 0.75F;
@@ -83,6 +93,7 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity {
         super.defineSynchedData(buidler);
 
         buidler.define(VARIANT, this.getRandom().nextInt(5));
+        buidler.define(FROM_BUCKET, false);
     }
 
     @Override
@@ -90,6 +101,7 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity {
         super.addAdditionalSaveData(tag);
 
         tag.putInt("variant", this.getVariant());
+        tag.putBoolean("FromBucket", this.fromBucket());
     }
 
     @Override
@@ -97,7 +109,58 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity {
         super.readAdditionalSaveData(tag);
 
         this.setVariant(tag.getIntOr("variant", 0));
+        this.setFromBucket(tag.getBooleanOr("FromBucket", false));
     }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        return Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
+    }
+
+    @Override
+    public boolean fromBucket() {
+        return this.getEntityData().get(FROM_BUCKET);
+    }
+
+    @Override
+    public void setFromBucket(boolean fromBucket) {
+        this.getEntityData().set(FROM_BUCKET, fromBucket);
+    }
+
+    @Override
+    public void saveToBucketTag(ItemStack bucket) {
+        Bucketable.saveDefaultDataToBucketTag(this, bucket);
+
+        CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, tag -> tag.putInt("variant", this.getVariant()));
+    }
+
+    @Override
+    public void loadFromBucketTag(CompoundTag tag) {
+        Bucketable.loadDefaultDataFromBucketTag(this, tag);
+
+        this.setVariant(tag.getIntOr("variant", 0));
+    }
+
+    @Override
+    public ItemStack getBucketItemStack() {
+        return new ItemStack(ReAnimalItems.JELLYFISH_BUCKET);
+    }
+
+    @Override
+    public SoundEvent getPickupSound() {
+        return SoundEvents.BUCKET_FILL_FISH;
+    }
+
+    @Override
+    public boolean requiresCustomPersistence() {
+        return super.requiresCustomPersistence() || this.fromBucket();
+    }
+
+    @Override
+    public boolean removeWhenFarAway(double distSqr) {
+        return !this.fromBucket() && !this.hasCustomName();
+    }
+
     protected Brain.Provider<JellyfishEntity> brainProvider() {
         return JellyfishAI.brainProvider();
     }
