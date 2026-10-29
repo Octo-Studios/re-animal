@@ -9,7 +9,6 @@ import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,14 +22,13 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
 import java.util.Set;
 import java.util.function.Predicate;
 
 public class VultureAI {
+    private static final double MAX_PREY_DISTANCE_SQR = 64D * 64D;
+
     private static final ImmutableList<SensorType<? extends Sensor<? super VultureEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
@@ -100,14 +98,12 @@ public class VultureAI {
                                 )
                         ),
                         Pair.of(3, new VultureRetaliateTask()),
-                        Pair.of(4, new VultureStartCirclingTask()),
-                        Pair.of(5, new VultureAttackFromCircleTask()),
-                        Pair.of(6, new VultureChaseAndAttackTask()),
-                        Pair.of(7, new VultureStopCirclingTask()),
-                        Pair.of(8, new VultureEatGroundMeatTask()),
-                        Pair.of(9, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(4, new VultureHuntWoundedTask()),
+                        Pair.of(5, new VultureChaseAndAttackTask()),
+                        Pair.of(6, new VultureEatGroundMeatTask()),
+                        Pair.of(7, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                10,
+                                8,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
@@ -129,6 +125,15 @@ public class VultureAI {
         return stack -> stack.is(ReAnimalTags.Items.VULTURE_FOOD);
     }
 
+    private static boolean isValidPrey(VultureEntity vulture, LivingEntity prey) {
+        return prey.isAlive()
+                && !prey.isInvulnerable()
+                && !prey.isInWater()
+                && !(prey instanceof VultureEntity)
+                && !(prey instanceof Player player && (player.isCreative() || player.isSpectator()))
+                && vulture.distanceToSqr(prey) <= MAX_PREY_DISTANCE_SQR;
+    }
+
     static class VultureRetaliateTask extends Behavior<VultureEntity> {
         VultureRetaliateTask() {
             super(ImmutableMap.of(
@@ -138,56 +143,27 @@ public class VultureAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
-            var optional = entity.getBrain().getMemory(MemoryModuleType.HURT_BY_ENTITY);
-
-            if (optional.isEmpty())
-                return false;
-
-            var attacker = optional.get();
-
-            if (!(attacker instanceof LivingEntity living))
-                return false;
-
-            if (!living.isAlive())
-                return false;
-
-            if (living.isInvulnerable())
-                return false;
-
-            if (living instanceof Player player && (player.isCreative() || player.isSpectator()))
-                return false;
-
-            return entity.distanceToSqr(living) <= 64D * 64D;
+            return entity.getBrain().getMemory(MemoryModuleType.HURT_BY_ENTITY)
+                    .filter(attacker -> isValidPrey(entity, attacker))
+                    .isPresent();
         }
 
         @Override
         protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
-            var optional = entity.getBrain().getMemory(MemoryModuleType.HURT_BY_ENTITY);
+            entity.getBrain().getMemory(MemoryModuleType.HURT_BY_ENTITY)
+                    .filter(attacker -> isValidPrey(entity, attacker))
+                    .ifPresent(entity::setTarget);
 
-            if (optional.isEmpty())
-                return;
-
-            var attacker = optional.get();
-
-            if (!attacker.isAlive())
-                return;
-
-            if (attacker.isInvulnerable())
-                return;
-
-            if (attacker instanceof Player player && (player.isCreative() || player.isSpectator()))
-                return;
-
-            entity.setCirclingTarget(null);
-            entity.setNextCirclingStartTick(level.getGameTime(), 500);
-            entity.setTarget(attacker);
             entity.getBrain().eraseMemory(MemoryModuleType.HURT_BY_ENTITY);
             entity.getBrain().eraseMemory(MemoryModuleType.HURT_BY);
         }
     }
 
-    static class VultureStartCirclingTask extends Behavior<VultureEntity> {
-        VultureStartCirclingTask() {
+    static class VultureHuntWoundedTask extends Behavior<VultureEntity> {
+        private static final double SEARCH_RADIUS_SQR = 16D * 16D;
+        private static final float HEALTH_RATIO_THRESHOLD = 0.25F;
+
+        VultureHuntWoundedTask() {
             super(ImmutableMap.of(
                     MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
             ));
@@ -195,238 +171,20 @@ public class VultureAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
-            if (entity.getCirclingTarget() != null)
-                return false;
-
-            if (entity.getTarget() != null)
-                return false;
-
-            if (!entity.getNavigation().isDone())
-                return false;
-
-            if (entity.getBrain().getMemory(MemoryModuleType.HURT_BY_ENTITY).isPresent())
-                return false;
-
-            var optional = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-
-            if (optional.isEmpty())
-                return false;
-
-            var gameTime = level.getGameTime();
-
-            if (!entity.canStartCircling(gameTime))
-                return false;
-
-            if (gameTime % 20L != 0L)
-                return false;
-
-            var visible = optional.get();
-            var list = visible.findAll(e -> true);
-            var candidates = new ArrayList<LivingEntity>();
-            var radiusSq = 16D * 16D;
-
-            for (var candidate : list) {
-                if (candidate instanceof LivingEntity living
-                        && living.isAlive()
-                        && !living.isInvulnerable()
-                        && !living.isInWater()
-                        && !(living instanceof VultureEntity)
-                        && !(living instanceof Player player && (player.isCreative() || player.isSpectator()))
-                        && living.getHealth() < living.getMaxHealth()
-                        && entity.distanceToSqr(living) <= radiusSq)
-                    candidates.add(living);
-            }
-
-            return !candidates.isEmpty();
+            return !entity.isBaby() && entity.getTarget() == null && level.getGameTime() % 20L == 0L;
         }
 
         @Override
         protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
-            var optional = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-
-            if (optional.isEmpty())
-                return;
-
-            var visible = optional.get();
-            var list = visible.findAll(e -> true);
-            var candidates = new ArrayList<LivingEntity>();
-            var radiusSq = 16D * 16D;
-
-            for (var candidate : list) {
-                if (candidate instanceof LivingEntity living
-                        && living.isAlive()
-                        && !living.isInvulnerable()
-                        && !(living instanceof VultureEntity)
-                        && !(living instanceof Player player && (player.isCreative() || player.isSpectator()))
-                        && living.getHealth() < living.getMaxHealth()
-                        && entity.distanceToSqr(living) <= radiusSq)
-                    candidates.add(living);
-            }
-
-            if (candidates.isEmpty())
-                return;
-
-            candidates.sort((a, b) -> {
-                var da = entity.distanceToSqr(a);
-                var db = entity.distanceToSqr(b);
-                return Double.compare(da, db);
-            });
-
-            var random = entity.getRandom();
-
-            for (var living : candidates) {
-                var maxHealth = living.getMaxHealth();
-
-                if (maxHealth <= 0F)
-                    continue;
-
-                var healthRatio = living.getHealth() / maxHealth;
-
-                if (healthRatio >= 1.0F)
-                    continue;
-
-                var attachChance = 1.0F - healthRatio;
-                attachChance = Mth.clamp(attachChance, 0F, 1F);
-
-                if (random.nextFloat() < attachChance) {
-                    entity.setCirclingTarget(living);
-                    entity.setCirclingAngle(random.nextFloat() * Mth.TWO_PI);
-                    entity.setCirclingStartTick(level.getGameTime());
-                    return;
-                }
-            }
-        }
-    }
-
-    static class VultureStopCirclingTask extends Behavior<VultureEntity> {
-        private static final long MAX_NON_PLAYER_CIRCLING_TICKS = 600L;
-
-        VultureStopCirclingTask() {
-            super(ImmutableMap.of());
+            entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+                    .flatMap(visible -> visible.findClosest(candidate -> isWounded(entity, candidate)))
+                    .ifPresent(entity::setTarget);
         }
 
-        @Override
-        protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
-            var target = entity.getCirclingTarget();
-
-            if (target == null)
-                return false;
-
-            if (!target.isAlive())
-                return true;
-
-            var optional = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-            var visible = optional.map(list -> list.contains(target)).orElse(false);
-
-            if (!visible)
-                return true;
-
-            if (!(target instanceof Player)) {
-                var elapsed = level.getGameTime() - entity.getCirclingStartTick();
-
-                if (elapsed >= MAX_NON_PLAYER_CIRCLING_TICKS)
-                    return true;
-            }
-
-            return target.getHealth() >= target.getMaxHealth();
-        }
-
-        @Override
-        protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
-            entity.setCirclingTarget(null);
-            entity.setNextCirclingStartTick(level.getGameTime(), 500);
-
-            var pos = entity.blockPosition();
-            var groundPos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, pos);
-
-            entity.getNavigation().moveTo(
-                    groundPos.getX() + 0.5D,
-                    groundPos.getY(),
-                    groundPos.getZ() + 0.5D,
-                    1.0D
-            );
-
-            entity.setDeltaMovement(Vec3.ZERO);
-        }
-    }
-
-    static class VultureAttackFromCircleTask extends Behavior<VultureEntity> {
-        private static final long MIN_CIRCLING_TICKS = 200L;
-        private static final long MAX_NON_PLAYER_CIRCLING_TICKS = 600L;
-
-        VultureAttackFromCircleTask() {
-            super(ImmutableMap.of());
-        }
-
-        @Override
-        protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
-            var circlingTarget = entity.getCirclingTarget();
-
-            if (circlingTarget == null)
-                return false;
-
-            if (!circlingTarget.isAlive())
-                return false;
-
-            if (circlingTarget.isInvulnerable())
-                return false;
-
-            if (circlingTarget.isInWater())
-                return false;
-
-            if (circlingTarget instanceof VultureEntity)
-                return false;
-
-            if (circlingTarget instanceof Player player && (player.isCreative() || player.isSpectator()))
-                return false;
-
-            var currentTime = level.getGameTime();
-            var startTime = entity.getCirclingStartTick();
-            var elapsed = currentTime - startTime;
-
-            if (elapsed < MIN_CIRCLING_TICKS)
-                return false;
-
-            if ((elapsed - MIN_CIRCLING_TICKS) % 20L != 0L)
-                return false;
-
-            var optional = entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES);
-            var visible = optional.map(list -> list.contains(circlingTarget)).orElse(false);
-
-            if (!visible)
-                return false;
-
-            if (!(circlingTarget instanceof Player) && elapsed >= MAX_NON_PLAYER_CIRCLING_TICKS)
-                return false;
-
-            var maxHealth = circlingTarget.getMaxHealth();
-
-            if (maxHealth <= 0F)
-                return false;
-
-            var healthRatio = circlingTarget.getHealth() / maxHealth;
-
-            if (healthRatio >= 1.0F)
-                return false;
-
-            if (healthRatio > 0.5F)
-                return false;
-
-            var attackChance = 0.5F - healthRatio;
-
-            return entity.getRandom().nextFloat() < attackChance;
-        }
-
-        @Override
-        protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
-            var circlingTarget = entity.getCirclingTarget();
-
-            if (circlingTarget == null)
-                return;
-
-            entity.setCirclingTarget(null);
-            entity.setNextCirclingStartTick(level.getGameTime(), 500);
-            entity.setTarget(circlingTarget);
+        private static boolean isWounded(VultureEntity entity, LivingEntity candidate) {
+            return entity.distanceToSqr(candidate) <= SEARCH_RADIUS_SQR
+                    && isValidPrey(entity, candidate)
+                    && candidate.getHealth() / candidate.getMaxHealth() < HEALTH_RATIO_THRESHOLD;
         }
     }
 
@@ -439,96 +197,38 @@ public class VultureAI {
         protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
             var target = entity.getTarget();
 
-            if (!(target instanceof LivingEntity living))
-                return false;
-
-            if (!living.isAlive())
-                return false;
-
-            if (living.isInvulnerable())
-                return false;
-
-            if (living.isInWater())
-                return false;
-
-            if (living instanceof VultureEntity)
-                return false;
-
-            if (living instanceof Player player && (player.isCreative() || player.isSpectator()))
-                return false;
-
-            return entity.distanceToSqr(living) <= 64D * 64D;
+            return target != null && isValidPrey(entity, target);
         }
 
         @Override
         protected boolean canStillUse(ServerLevel level, VultureEntity entity, long gameTime) {
             var target = entity.getTarget();
 
-            if (!(target instanceof LivingEntity living))
-                return false;
-
-            if (!living.isAlive())
-                return false;
-
-            if (living.isInvulnerable())
-                return false;
-
-            if (living.isInWater())
-                return false;
-
-            if (living instanceof VultureEntity)
-                return false;
-
-            if (living instanceof Player player && (player.isCreative() || player.isSpectator()))
-                return false;
-
-            return entity.distanceToSqr(living) <= 64D * 64D;
+            return target != null && isValidPrey(entity, target);
         }
 
         @Override
         protected void tick(ServerLevel level, VultureEntity entity, long gameTime) {
             var target = entity.getTarget();
 
-            if (!(target instanceof LivingEntity living)) {
+            if (target == null || !isValidPrey(entity, target)) {
                 entity.setTarget(null);
                 entity.getNavigation().stop();
                 return;
             }
 
-            if (!living.isAlive()
-                    || living.isInvulnerable()
-                    || living.isInWater()
-                    || living instanceof VultureEntity
-                    || (living instanceof Player player && (player.isCreative() || player.isSpectator()))
-                    || entity.distanceToSqr(living) > 64D * 64D) {
-                entity.setTarget(null);
-                entity.getNavigation().stop();
-                return;
-            }
+            entity.getNavigation().moveTo(target, 1.4D);
 
-            entity.getNavigation().moveTo(living, 1.4D);
-
-            var distanceSqr = entity.distanceToSqr(living);
-
-            if (distanceSqr <= 4.0D && gameTime % 20L == 0L)
-                entity.doHurtTarget((net.minecraft.server.level.ServerLevel) entity.level(), living);
+            if (entity.distanceToSqr(target) <= 4.0D && gameTime % 20L == 0L)
+                entity.doHurtTarget(level, target);
         }
 
         @Override
         protected void stop(ServerLevel level, VultureEntity entity, long gameTime) {
             var target = entity.getTarget();
 
-            if (target instanceof LivingEntity living) {
-                if (!living.isAlive()
-                        || living.isInvulnerable()
-                        || living.isInWater()
-                        || living instanceof VultureEntity
-                        || (living instanceof Player player && (player.isCreative() || player.isSpectator()))
-                        || entity.distanceToSqr(living) > 64D * 64D)
-                    entity.setTarget(null);
-            } else {
+            if (target == null || !isValidPrey(entity, target))
                 entity.setTarget(null);
-            }
 
             entity.getNavigation().stop();
         }
@@ -545,9 +245,6 @@ public class VultureAI {
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
             if (entity.getTarget() != null)
-                return false;
-
-            if (entity.getCirclingTarget() != null)
                 return false;
 
             if (!entity.getNavigation().isDone())
@@ -579,9 +276,6 @@ public class VultureAI {
                 return false;
 
             if (entity.getTarget() != null)
-                return false;
-
-            if (entity.getCirclingTarget() != null)
                 return false;
 
             var maxDistSqr = SEARCH_RADIUS * SEARCH_RADIUS;
