@@ -14,6 +14,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.jellyfish.JellyfishRenderer
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonDroppingRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.red_panda.RedPandaRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.meerkat.MeerkatRenderer;
@@ -25,9 +26,12 @@ import it.hurts.shatterbyte.reanimal.client.sound.ButterflySoundInstance;
 import it.hurts.shatterbyte.reanimal.client.sound.DragonflySoundInstance;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
+import it.hurts.shatterbyte.reanimal.client.particle.PigeonSplatParticle;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientEntityEvents;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import it.hurts.shatterbyte.reanimal.client.renderer.quill_arrow.QuillArrowRenderer;
 import net.minecraft.client.Minecraft;
@@ -57,11 +61,14 @@ public class ReAnimalFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ReAnimalEntities.KIWI_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.OSTRICH_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PIGEON_EGG, ThrownItemRenderer::new);
+        EntityRendererRegistry.register(ReAnimalEntities.PIGEON_DROPPING, PigeonDroppingRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.VULTURE_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PENGUIN_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.CROCODILE_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.GLOW_STICK, GlowStickRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.QUILL_ARROW, QuillArrowRenderer::new);
+
+        ParticleProviderRegistry.getInstance().register(ReAnimalParticleTypes.PIGEON_SPLAT, PigeonSplatParticle.Provider::new);
 
         EntityTrailRegistry.registerProvider(ReAnimalEntities.GLOW_STICK, GlowStickEntity.TrailProvider::new);
 

@@ -13,6 +13,7 @@ public class ReAnimal {
         ReAnimalEntities.init();
         ReAnimalItems.init();
         ReAnimalSoundEvents.init();
+        ReAnimalParticleTypes.init();
         ReAnimalSensorTypes.init();
         ReAnimalEntityDataSerializers.init();
         ReAnimalCreativeTabs.init();

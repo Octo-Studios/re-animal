@@ -18,6 +18,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonDroppingEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.red_panda.RedPandaEntity;
@@ -59,6 +60,7 @@ public class ReAnimalEntities {
     public static EntityType<KiwiEggEntity> KIWI_EGG;
     public static EntityType<OstrichEggEntity> OSTRICH_EGG;
     public static EntityType<PigeonEggEntity> PIGEON_EGG;
+    public static EntityType<PigeonDroppingEntity> PIGEON_DROPPING;
     public static EntityType<VultureEggEntity> VULTURE_EGG;
     public static EntityType<PenguinEggEntity> PENGUIN_EGG;
     public static EntityType<CrocodileEggEntity> CROCODILE_EGG;
@@ -87,6 +89,7 @@ public class ReAnimalEntities {
         KIWI_EGG = register("kiwi_egg", EntityType.Builder.of(KiwiEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         OSTRICH_EGG = register("ostrich_egg", EntityType.Builder.of(OstrichEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PIGEON_EGG = register("pigeon_egg", EntityType.Builder.of(PigeonEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
+        PIGEON_DROPPING = register("pigeon_dropping", EntityType.Builder.<PigeonDroppingEntity>of(PigeonDroppingEntity::new, MobCategory.MISC).sized(0.2F, 0.2F).clientTrackingRange(4).updateInterval(10));
         VULTURE_EGG = register("vulture_egg", EntityType.Builder.of(VultureEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PENGUIN_EGG = register("penguin_egg", EntityType.Builder.of(PenguinEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         CROCODILE_EGG = register("crocodile_egg", EntityType.Builder.of(CrocodileEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));

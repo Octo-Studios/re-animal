@@ -13,6 +13,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.jellyfish.JellyfishRenderer
 import it.hurts.shatterbyte.reanimal.client.renderer.kiwi.KiwiRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonDroppingRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.red_panda.RedPandaRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.meerkat.MeerkatRenderer;
@@ -25,18 +26,22 @@ import it.hurts.shatterbyte.reanimal.client.sound.DragonflySoundInstance;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
+import it.hurts.shatterbyte.reanimal.client.particle.PigeonSplatParticle;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
 import it.hurts.shatterbyte.reanimal.client.renderer.quill_arrow.QuillArrowRenderer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 public class ReAnimalNeoForgeClient {
     public ReAnimalNeoForgeClient(IEventBus modBus) {
         modBus.addListener(this::registerRenderers);
+        modBus.addListener(this::registerParticleProviders);
         NeoForge.EVENT_BUS.addListener(this::onEntityJoin);
     }
 
@@ -62,6 +67,7 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG, ThrownItemRenderer::new);
+        event.registerEntityRenderer(ReAnimalEntities.PIGEON_DROPPING, PigeonDroppingRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.VULTURE_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PENGUIN_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.CROCODILE_EGG, ThrownItemRenderer::new);
@@ -69,6 +75,10 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW, QuillArrowRenderer::new);
 
         EntityTrailRegistry.registerProvider(ReAnimalEntities.GLOW_STICK, GlowStickEntity.TrailProvider::new);
+    }
+
+    private void registerParticleProviders(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ReAnimalParticleTypes.PIGEON_SPLAT, PigeonSplatParticle.Provider::new);
     }
 
     private void onEntityJoin(EntityJoinLevelEvent event) {

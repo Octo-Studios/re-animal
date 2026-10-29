@@ -45,6 +45,8 @@ public class PigeonEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.pigeon.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.pigeon.walk");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.pigeon.fly");
+    private static final int DROPPING_INTERVAL_MIN = 400;
+    private static final int DROPPING_INTERVAL_MAX = 800;
     private static final RawAnimation PECK = RawAnimation.begin().thenLoop("animation.pigeon.peck");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -54,6 +56,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
     private int peckTicks;
     private int peckCooldown;
     private int eggTime = this.random.nextInt(6000) + 6000;
+    private int droppingTicks = DROPPING_INTERVAL_MIN + this.random.nextInt(DROPPING_INTERVAL_MAX - DROPPING_INTERVAL_MIN);
 
     public PigeonEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
@@ -104,6 +107,23 @@ public class PigeonEntity extends Animal implements GeoEntity {
 
             if (motion.y < -0.1D)
                 this.setDeltaMovement(motion.x, -0.1D, motion.z);
+        }
+
+        if (!this.level().isClientSide() && !this.onGround() && !this.isInWater() && --this.droppingTicks <= 0) {
+            this.droppingTicks = DROPPING_INTERVAL_MIN + this.random.nextInt(DROPPING_INTERVAL_MAX - DROPPING_INTERVAL_MIN);
+
+            var dropping = ReAnimalEntities.PIGEON_DROPPING.create(this.level(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+
+            if (dropping == null)
+                return;
+
+            var behind = Vec3.directionFromRotation(0F, this.yBodyRot).scale(-0.3D);
+
+            dropping.setPos(this.getX() + behind.x, this.getY() + 0.1D, this.getZ() + behind.z);
+            dropping.setDeltaMovement(Vec3.ZERO);
+            dropping.setOwner(this);
+
+            this.level().addFreshEntity(dropping);
         }
 
         if (this.isPecking()) {
