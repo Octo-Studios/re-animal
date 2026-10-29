@@ -81,11 +81,12 @@ public class PigeonAI {
     private static void initIdleActivity(Brain<PigeonEntity> brain) {
         BrainUtil.<PigeonEntity>addActivity(brain,
                 Activity.IDLE,
-                ImmutableList.of(
-                        Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
+                ImmutableList.main(
+                        Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
                         Pair.of(1, new AnimalMakeLove(ReAnimalEntities.PIGEON, 1F, 1)),
+                        Pair.of(2, new PerchOnIronGolemBehavior()),
                         Pair.of(
-                                2,
+                                3,
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
@@ -93,9 +94,9 @@ public class PigeonAI {
                                         )
                                 )
                         ),
-                        Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(4, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                4,
+                                5,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
