@@ -7,6 +7,7 @@
     "PolarBearMixin"
   ],
   "client": [
+    "client.AvatarRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

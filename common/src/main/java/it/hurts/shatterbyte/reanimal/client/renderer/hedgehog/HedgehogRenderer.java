@@ -1,7 +1,10 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.hedgehog;
 
+import com.geckolib.constant.DataTickets;
+import com.geckolib.renderer.base.GeoRenderState;
 import it.hurts.shatterbyte.reanimal.client.model.hedgehog.HedgehogModel;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
@@ -9,12 +12,38 @@ import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.RenderPassInfo;
 import it.hurts.shatterbyte.reanimal.client.renderer.HeadTracking;
+import net.minecraft.world.entity.player.Player;
+
+import java.util.List;
 
 public class HedgehogRenderer extends GeoEntityRenderer<HedgehogEntity, EntityRenderState> {
     public HedgehogRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new HedgehogModel());
 
         this.withRenderLayer(new HedgehogItemLayer(renderManager, this));
+    }
+
+    @Override
+    public boolean shouldRender(HedgehogEntity entity, Frustum frustum, double x, double y, double z, float partialTick) {
+        if (entity.getVehicle() instanceof Player)
+            return false;
+
+        return super.shouldRender(entity, frustum, x, y, z, partialTick);
+    }
+
+    public EntityRenderState createHeadRenderState(HedgehogEntity entity, float partialTick, int packedLight) {
+        var renderState = this.createRenderState(entity, partialTick);
+
+        renderState.lightCoords = packedLight;
+        renderState.nameTag = null;
+        renderState.scoreText = null;
+        renderState.leashStates = List.of();
+        renderState.shadowPieces.clear();
+        renderState.shadowRadius = 0F;
+
+        ((GeoRenderState) renderState).addGeckolibData(DataTickets.ENTITY_BODY_YAW, 180F);
+
+        return renderState;
     }
 
     @Override
@@ -37,7 +66,7 @@ public class HedgehogRenderer extends GeoEntityRenderer<HedgehogEntity, EntityRe
     public void extractRenderState(HedgehogEntity entity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(entity, renderState, partialTick);
 
-        HeadTracking.setMode(renderState, entity.getVehicle() instanceof net.minecraft.world.entity.player.Player ? HeadTracking.RESET : HeadTracking.FOLLOW);
+        HeadTracking.setMode(renderState, entity.getVehicle() instanceof Player ? HeadTracking.RESET : HeadTracking.FOLLOW);
     }
 
     @Override
