@@ -229,7 +229,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
 
             this.getNavigation().moveTo(target.x, target.y, target.z, 1D);
 
-            if (this.onGround())
+            if (this.onGround() && !this.isBaby())
                 this.playSound(ReAnimalSoundEvents.PIGEON_TAKEOFF, 1F, 1F);
         }
     }
