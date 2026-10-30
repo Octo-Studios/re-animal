@@ -9,6 +9,9 @@ dependencies {
     implementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${fabric_version}"
 
+    compileOnly("net.caffeinemc:sodium-fabric:${sodium_version}") { transitive = false }
+    runtimeOnly "net.caffeinemc:sodium-fabric:${sodium_version}"
+
     implementation "com.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_version}"
     implementation "it.hurts.shatterbyte.shatterlib:shatterlib-fabric:${shatterlib_version}"
 }

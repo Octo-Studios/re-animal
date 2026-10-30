@@ -35,6 +35,17 @@ repositories {
             includeGroupAndSubgroups('org.spongepowered')
         }
     }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'CaffeineMC'
+                url = 'https://maven.caffeinemc.net/releases'
+            }
+        }
+        filter {
+            includeGroup 'net.caffeinemc'
+        }
+    }
     maven {
         name = 'Shatterbyte'
         url = 'https://maven.shatterbyte.com/releases'

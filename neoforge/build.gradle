@@ -4,6 +4,9 @@ plugins {
 }
 
 dependencies {
+    compileOnly("net.caffeinemc:sodium-neoforge-mod:${sodium_version}") { transitive = false }
+    runtimeOnly "net.caffeinemc:sodium-neoforge:${sodium_version}"
+
     implementation "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
     implementation "it.hurts.shatterbyte.shatterlib:shatterlib-neoforge:${shatterlib_version}"
 }

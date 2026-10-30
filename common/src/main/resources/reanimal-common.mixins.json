@@ -7,7 +7,17 @@
     "PolarBearMixin"
   ],
   "client": [
-    "client.AvatarRendererMixin"
+    "client.AvatarRendererMixin",
+    "client.BlockModelSubmitMixin",
+    "client.ClientLevelMixin",
+    "client.FluidRendererMixin",
+    "client.ItemFeatureRendererMixin",
+    "client.ModelBlockRendererMixin",
+    "client.QuadParticleRenderStateMixin",
+    "client.RenderPassInfoMixin",
+    "client.SubmitNodeCollectionMixin",
+    "sodium.SodiumBlockRendererMixin",
+    "sodium.SodiumFluidRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
