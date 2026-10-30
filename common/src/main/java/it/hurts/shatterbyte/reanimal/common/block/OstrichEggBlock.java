@@ -29,7 +29,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class OstrichEggBlock extends Block {
     private static final VoxelShape SHAPE = Block.box(4.5D, 0.0D, 4.5D, 11.5D, 10.0D, 11.5D);
-    private static final float HATCH_CHANCE = 0.5F;
     private static final int HATCH_TICK_CHANCE = 3;
     private static final int STEP_BREAK_CHANCE = 100;
     private static final int FALL_BREAK_CHANCE = 3;
@@ -96,12 +95,6 @@ public class OstrichEggBlock extends Block {
         level.removeBlock(pos, false);
         level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));
         level.levelEvent(2001, pos, Block.getId(state));
-
-        if (random.nextFloat() >= HATCH_CHANCE) {
-            level.playSound(null, pos, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + random.nextFloat() * 0.2F);
-
-            return;
-        }
 
         level.playSound(null, pos, SoundEvents.TURTLE_EGG_HATCH, SoundSource.BLOCKS, 0.7F, 0.9F + random.nextFloat() * 0.2F);
 

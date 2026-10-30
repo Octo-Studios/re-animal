@@ -49,8 +49,11 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     private float jumpPower;
 
     private static final int EGG_RETRY_TICKS = 100;
+    private static final int EGG_DELAY_MIN = 100;
+    private static final int EGG_DELAY_MAX = 200;
 
-    private int eggTime = this.random.nextInt(6000) + 6000;
+    private boolean hasEgg;
+    private int eggTime;
 
     public boolean isSaddled() {
         return this.entityData.get(SADDLED);
@@ -228,6 +231,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         super.addAdditionalSaveData(tag);
 
         tag.putBoolean("saddled", this.isSaddled());
+        tag.putBoolean("hasEgg", this.hasEgg);
         tag.putInt("eggTime", this.eggTime);
     }
 
@@ -236,7 +240,8 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         super.readAdditionalSaveData(tag);
 
         this.setSaddled(tag.getBooleanOr("saddled", false));
-        this.eggTime = tag.getIntOr("eggTime", this.random.nextInt(6000) + 6000);
+        this.hasEgg = tag.getBooleanOr("hasEgg", false);
+        this.eggTime = tag.getIntOr("eggTime", 0);
     }
 
     @Override
@@ -290,6 +295,31 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     }
 
     @Override
+    public void spawnChildFromBreeding(ServerLevel level, Animal mate) {
+        if (!(mate instanceof OstrichEntity ostrichMate)) {
+            super.spawnChildFromBreeding(level, mate);
+
+            return;
+        }
+
+        if (this.hasEgg || ostrichMate.hasEgg)
+            return;
+
+        this.hasEgg = true;
+        this.eggTime = EGG_DELAY_MIN + this.random.nextInt(EGG_DELAY_MAX - EGG_DELAY_MIN);
+
+        this.finalizeSpawnChildFromBreeding(level, mate, null);
+    }
+
+    @Override
+    public boolean canMate(Animal other) {
+        if (this.hasEgg || other instanceof OstrichEntity ostrich && ostrich.hasEgg)
+            return false;
+
+        return super.canMate(other);
+    }
+
+    @Override
     public AnimatableInstanceCache getAnimatableInstanceCache() {
         return cache;
     }
@@ -315,7 +345,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     }
 
     private void tickEggLaying() {
-        if (this.level().isClientSide() || this.isBaby())
+        if (this.level().isClientSide() || this.isBaby() || !this.hasEgg)
             return;
 
         if (--this.eggTime > 0)
@@ -336,7 +366,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
         this.playSound(SoundEvents.CHICKEN_EGG, 1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1F);
 
-        this.eggTime = this.random.nextInt(6000) + 6000;
+        this.hasEgg = false;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
