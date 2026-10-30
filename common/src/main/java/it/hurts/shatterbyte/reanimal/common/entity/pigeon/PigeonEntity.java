@@ -253,6 +253,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
     protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
         this.resetFallDistance();
     }
+    
     protected Brain.Provider<PigeonEntity> brainProvider() {
         return PigeonAI.brainProvider();
     }
@@ -306,7 +307,18 @@ public class PigeonEntity extends Animal implements GeoEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
     }
+    
+    @Override
+    public Vector3f getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+        if (this.getVehicle() instanceof IronGolem golem) {
+            boolean leftShoulder = (this.getId() % 2 == 0);
+            float xOffset = leftShoulder ? -0.85F : 0.85F;
 
+            return new Vector3f(xOffset, 2.15F, 0.05F);
+            }
+        return super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+        }
+    
     public boolean isScaredBy(LivingEntity entity) {
         if (!this.getBoundingBox().inflate(7F, 3F, 7F).intersects(entity.getBoundingBox()))
             return false;
