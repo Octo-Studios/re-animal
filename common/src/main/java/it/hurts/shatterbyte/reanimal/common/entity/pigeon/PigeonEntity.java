@@ -245,6 +245,16 @@ public class PigeonEntity extends Animal implements GeoEntity {
     }
 
     @Override
+    public void setAge(int age) {
+        var wasBaby = this.isBaby();
+
+        super.setAge(age);
+
+        if (wasBaby != this.isBaby())
+            this.updateMoveControl();
+    }
+
+    @Override
     public boolean causeFallDamage(double distance, float damageMultiplier, DamageSource damageSource) {
         return false;
     }
