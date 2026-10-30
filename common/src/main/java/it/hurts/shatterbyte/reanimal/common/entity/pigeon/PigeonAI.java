@@ -8,18 +8,21 @@ import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
+import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -70,6 +73,7 @@ public class PigeonAI {
                 0,
                 ImmutableList.of(
                         new Swim<>(0.8F),
+                        new PigeonPerchThreatTask(), // Handles Golem damage & non-sneaking player proximity flee
                         new LookAtTargetSink(45, 90),
                         new MoveToTargetSink(),
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
@@ -82,7 +86,7 @@ public class PigeonAI {
         BrainUtil.<PigeonEntity>addActivity(brain,
                 Activity.IDLE,
                 ImmutableList.of(
-                        Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
+                        Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityType.PLAYER, 6F, UniformInt.of(30, 60))),
                         Pair.of(1, new AnimalMakeLove(ReAnimalEntities.PIGEON, 1F, 1)),
                         Pair.of(
                                 2,
@@ -112,7 +116,7 @@ public class PigeonAI {
         BrainUtil.<PigeonEntity>addActivityAndRemoveMemoryWhenStopped(brain,
                 Activity.PANIC,
                 10,
-                ImmutableList.of(
+        		ImmutableList.of(
                         new AnimalPanic<>(
                                 2.5F,
                                 mob -> DamageTypeTags.PANIC_CAUSES
@@ -128,5 +132,37 @@ public class PigeonAI {
 
     public static Predicate<ItemStack> getTemptations() {
         return stack -> stack.is(ReAnimalTags.Items.PIGEON_FOOD);
+    }
+
+    public static class PigeonPerchThreatTask extends Behavior<PigeonEntity> {
+        public PigeonPerchThreatTask() {
+            super(ImmutableMap.of(
+                    MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT
+            ));
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, PigeonEntity pigeon) {
+            if (pigeon.getVehicle() instanceof IronGolem golem) {
+                if (golem.hurtTime > 0 || golem.getLastHurtByMob() != null) {
+                    return true;
+                }
+            }
+
+            return BrainUtil.getMemory(pigeon, MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+                    .map(entities -> entities.any(entity -> entity instanceof Player player
+                            && !player.isShiftKeyDown()
+                            && pigeon.distanceToSqr(player) <= 36.0D))
+                    .orElse(false);
+        }
+
+        @Override
+        protected void start(ServerLevel level, PigeonEntity pigeon, long gameTime) {
+            if (pigeon.isPassenger()) {
+                pigeon.stopRiding();
+            }
+            pigeon.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+        }
     }
 }
