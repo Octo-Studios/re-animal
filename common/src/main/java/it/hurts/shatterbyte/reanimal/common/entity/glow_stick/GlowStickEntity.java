@@ -414,7 +414,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
             return true;
 
         if (state.is(Blocks.WATER))
-            return true;
+            return state.getFluidState().isSource();
 
         return false;
     }
