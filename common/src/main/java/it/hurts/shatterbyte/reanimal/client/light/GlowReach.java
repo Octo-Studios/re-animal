@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
 public final class GlowReach {
-    public static final int MAX_LEVEL = 15;
+    public static final int RANGE = 17;
 
     private GlowReach() {
     }
@@ -17,7 +17,7 @@ public final class GlowReach {
         var queue = new LongArrayFIFOQueue();
         var cursor = new BlockPos.MutableBlockPos();
 
-        levels.put(origin.asLong(), (byte) MAX_LEVEL);
+        levels.put(origin.asLong(), (byte) RANGE);
         queue.enqueue(origin.asLong());
 
         while (!queue.isEmpty()) {

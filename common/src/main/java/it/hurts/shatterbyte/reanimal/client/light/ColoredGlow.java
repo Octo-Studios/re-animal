@@ -22,7 +22,7 @@ import java.util.ArrayList;
 public final class ColoredGlow {
     public static final int WHITE = 0xFFFFFFFF;
 
-    private static final int REACH = GlowReach.MAX_LEVEL;
+    private static final int REACH = GlowReach.RANGE;
     private static final double NEAR_RADIUS_SQR = (REACH + 1.5D) * (REACH + 1.5D);
     private static final double SCAN_RADIUS = 48.0D;
     private static final int REDIRTY_DELAY = 4;
@@ -31,7 +31,8 @@ public final class ColoredGlow {
     private static final float SMOOTH_MAX = 240.0F;
     private static final float MAX_SKY_DARKEN = 11.0F;
     private static final float NIGHT_SURFACE_FADE = 0.45F;
-    private static final float EDGE_FADE = 0.3F;
+    private static final float EDGE_FADE = 0.1F;
+    private static final float LIT_FADE = 0.1F;
     private static final GlowSource[] NONE = new GlowSource[0];
 
     private static final Int2ObjectOpenHashMap<Tracked> TRACKED = new Int2ObjectOpenHashMap<>();
@@ -150,8 +151,7 @@ public final class ColoredGlow {
 
         var peak = Math.max(red, Math.max(green, blue));
         var sky = LightCoordsUtil.smoothSky(lightCoords) / SMOOTH_MAX;
-        var edge = Math.min(1.0F, total / EDGE_FADE);
-        var amount = Math.min(1.0F, total / local) * edge * edge * (3.0F - 2.0F * edge) * (1.0F - skySuppression * sky);
+        var amount = Math.min(1.0F, total / local) * smoothstep(total / EDGE_FADE) * smoothstep(local / LIT_FADE) * (1.0F - skySuppression * sky);
 
         return 0xFF000000
                 | channel(red / peak, amount) << 16
@@ -199,6 +199,12 @@ public final class ColoredGlow {
                 | ((color >> 16 & 0xFF) * (tint >> 16 & 0xFF) / 255) << 16
                 | ((color >> 8 & 0xFF) * (tint >> 8 & 0xFF) / 255) << 8
                 | (color & 0xFF) * (tint & 0xFF) / 255;
+    }
+
+    private static float smoothstep(float x) {
+        var t = Math.clamp(x, 0.0F, 1.0F);
+
+        return t * t * (3.0F - 2.0F * t);
     }
 
     private static int channel(float mix, float amount) {
