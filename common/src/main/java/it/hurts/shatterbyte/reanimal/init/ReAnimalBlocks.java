@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.init;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.block.CrocodileEggBlock;
 import it.hurts.shatterbyte.reanimal.common.block.GlowLightBlock;
+import it.hurts.shatterbyte.reanimal.common.block.OstrichEggBlock;
 import it.hurts.shatterbyte.reanimal.common.block.QuillPlatformBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -12,11 +13,15 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
+import java.util.function.Function;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.core.registries.Registries;
 
 public class ReAnimalBlocks {
     public static QuillPlatformBlock QUILL_PLATFORM;
     public static GlowLightBlock GLOW_LIGHT;
     public static CrocodileEggBlock CROCODILE_EGG;
+    public static OstrichEggBlock OSTRICH_EGG;
 
     public static void init() {
         QUILL_PLATFORM = register("quill_platform", props -> new QuillPlatformBlock(
@@ -43,10 +48,19 @@ public class ReAnimalBlocks {
                         .randomTicks()
                         .noOcclusion()
                         .pushReaction(PushReaction.POPPED)));
+
+        OSTRICH_EGG = register("ostrich_egg", props -> new OstrichEggBlock(
+                props
+                        .mapColor(MapColor.SAND)
+                        .strength(0.5F)
+                        .sound(SoundType.METAL)
+                        .randomTicks()
+                        .noOcclusion()
+                        .pushReaction(PushReaction.POPPED)));
     }
 
-    private static <T extends Block> T register(String id, java.util.function.Function<BlockBehaviour.Properties, T> factory) {
-        var key = net.minecraft.resources.ResourceKey.create(net.minecraft.core.registries.Registries.BLOCK, Identifier.fromNamespaceAndPath(ReAnimal.MODID, id));
+    private static <T extends Block> T register(String id, Function<BlockBehaviour.Properties, T> factory) {
+        var key = ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(ReAnimal.MODID, id));
         var block = factory.apply(BlockBehaviour.Properties.of().setId(key));
 
         Registry.register(BuiltInRegistries.BLOCK, key, block);

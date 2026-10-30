@@ -59,7 +59,6 @@ public class ReAnimalFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ReAnimalEntities.STARFISH, StarfishRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.JELLYFISH, JellyfishRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.KIWI_EGG, ThrownItemRenderer::new);
-        EntityRendererRegistry.register(ReAnimalEntities.OSTRICH_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PIGEON_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PIGEON_DROPPING, PigeonDroppingRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.VULTURE_EGG, ThrownItemRenderer::new);

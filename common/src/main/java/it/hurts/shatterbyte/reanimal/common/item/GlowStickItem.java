@@ -14,6 +14,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.EquipmentSlot;
 
 public class GlowStickItem extends Item {
     private final GlowStickItem base;
@@ -43,7 +45,7 @@ public class GlowStickItem extends Item {
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SNOWBALL_THROW, SoundSource.PLAYERS, 0.5F, 0.9F + level.getRandom().nextFloat() * 0.2F);
 
         if (!level.isClientSide()) {
-            var projectile = ReAnimalEntities.GLOW_STICK.create(level, net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+            var projectile = ReAnimalEntities.GLOW_STICK.create(level, EntitySpawnReason.TRIGGERED);
 
             if (projectile instanceof GlowStickEntity glowStick) {
                 glowStick.setItem(stack.copyWithCount(1));
@@ -64,7 +66,7 @@ public class GlowStickItem extends Item {
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, net.minecraft.server.level.ServerLevel level, Entity entity, net.minecraft.world.entity.EquipmentSlot slot) {
+    public void inventoryTick(ItemStack stack, ServerLevel level, Entity entity, EquipmentSlot slot) {
         super.inventoryTick(stack, level, entity, slot);
 
         if (!(entity instanceof Player player))

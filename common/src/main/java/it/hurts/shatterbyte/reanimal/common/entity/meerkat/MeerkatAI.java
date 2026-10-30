@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 
 import java.util.Set;
 import java.util.function.Predicate;
+import net.minecraft.world.entity.EntityTypes;
 
 public class MeerkatAI {
     private static final ImmutableList<SensorType<? extends Sensor<? super MeerkatEntity>>> SENSOR_TYPES = ImmutableList.of(
@@ -80,7 +81,7 @@ public class MeerkatAI {
         BrainUtil.<MeerkatEntity>addActivity(brain,
                 Activity.IDLE,
                 ImmutableList.of(
-                        Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
+                        Pair.of(0, SetEntityLookTargetSometimes.create(EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
                         Pair.of(1, new AnimalMakeLove(ReAnimalEntities.MEERKAT, 1F, 1)),
                         Pair.of(
                                 2,

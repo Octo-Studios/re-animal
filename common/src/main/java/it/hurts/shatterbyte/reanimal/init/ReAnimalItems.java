@@ -137,7 +137,7 @@ public class ReAnimalItems {
         JELLYFISH_SPAWN_EGG = register("jellyfish_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.JELLYFISH)));
 
         KIWI_EGG = register("kiwi_egg", props -> new KiwiEgg(props));
-        OSTRICH_EGG = register("ostrich_egg", props -> new OstrichEgg(props));
+        OSTRICH_EGG = register("ostrich_egg", props -> new OstrichEgg(ReAnimalBlocks.OSTRICH_EGG, props.useBlockDescriptionPrefix()));
         PIGEON_EGG = register("pigeon_egg", props -> new PigeonEgg(props));
         VULTURE_EGG = register("vulture_egg", props -> new VultureEgg(props));
         PENGUIN_EGG = register("penguin_egg", props -> new PenguinEgg(props));

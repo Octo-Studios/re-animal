@@ -14,7 +14,6 @@ import it.hurts.shatterbyte.reanimal.common.entity.hippopotamus.HippopotamusEnti
 import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiEntity;
-import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
@@ -58,7 +57,6 @@ public class ReAnimalEntities {
     public static EntityType<StarfishEntity> STARFISH;
     public static EntityType<JellyfishEntity> JELLYFISH;
     public static EntityType<KiwiEggEntity> KIWI_EGG;
-    public static EntityType<OstrichEggEntity> OSTRICH_EGG;
     public static EntityType<PigeonEggEntity> PIGEON_EGG;
     public static EntityType<PigeonDroppingEntity> PIGEON_DROPPING;
     public static EntityType<VultureEggEntity> VULTURE_EGG;
@@ -87,7 +85,6 @@ public class ReAnimalEntities {
         STARFISH = register("starfish", EntityType.Builder.of(StarfishEntity::new, MobCategory.CREATURE).sized(0.75F, 0.35F));
         JELLYFISH = register("jellyfish", EntityType.Builder.<JellyfishEntity>of(JellyfishEntity::new, MobCategory.WATER_CREATURE).sized(1F, 1F).eyeHeight(0.5F));
         KIWI_EGG = register("kiwi_egg", EntityType.Builder.of(KiwiEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
-        OSTRICH_EGG = register("ostrich_egg", EntityType.Builder.of(OstrichEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PIGEON_EGG = register("pigeon_egg", EntityType.Builder.of(PigeonEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PIGEON_DROPPING = register("pigeon_dropping", EntityType.Builder.<PigeonDroppingEntity>of(PigeonDroppingEntity::new, MobCategory.MISC).sized(0.2F, 0.2F).clientTrackingRange(4).updateInterval(10));
         VULTURE_EGG = register("vulture_egg", EntityType.Builder.of(VultureEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));

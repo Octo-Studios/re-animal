@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.ostrich;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+ import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -46,6 +47,8 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
 
     private float jumpPower;
+
+    private static final int EGG_RETRY_TICKS = 100;
 
     private int eggTime = this.random.nextInt(6000) + 6000;
 
@@ -278,7 +281,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        var baby = ReAnimalEntities.OSTRICH.create(level, net.minecraft.world.entity.EntitySpawnReason.BREEDING);
+        var baby = ReAnimalEntities.OSTRICH.create(level, EntitySpawnReason.BREEDING);
 
         if (baby != null)
             baby.setBaby(true);
@@ -318,9 +321,20 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         if (--this.eggTime > 0)
             return;
 
+        var level = (ServerLevel) this.level();
+        var pos = this.blockPosition();
+        var state = ReAnimalBlocks.OSTRICH_EGG.defaultBlockState();
+
+        if (!level.getBlockState(pos).canBeReplaced() || !level.getFluidState(pos).isEmpty() || !state.canSurvive(level, pos)) {
+            this.eggTime = EGG_RETRY_TICKS;
+
+            return;
+        }
+
+        level.setBlock(pos, state, 3);
+        level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(this, state));
+
         this.playSound(SoundEvents.CHICKEN_EGG, 1F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1F);
-        this.spawnAtLocation((ServerLevel) this.level(), ReAnimalItems.OSTRICH_EGG);
-        this.gameEvent(GameEvent.ENTITY_PLACE, this);
 
         this.eggTime = this.random.nextInt(6000) + 6000;
     }

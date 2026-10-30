@@ -65,7 +65,6 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.STARFISH, StarfishRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.JELLYFISH, JellyfishRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG, ThrownItemRenderer::new);
-        event.registerEntityRenderer(ReAnimalEntities.OSTRICH_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PIGEON_DROPPING, PigeonDroppingRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.VULTURE_EGG, ThrownItemRenderer::new);

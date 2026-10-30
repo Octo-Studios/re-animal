@@ -40,6 +40,7 @@ import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
+import net.minecraft.world.entity.EntitySpawnReason;
 
 public class PigeonEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.pigeon.idle");
@@ -112,7 +113,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
         if (!this.level().isClientSide() && !this.onGround() && !this.isInWater() && --this.droppingTicks <= 0) {
             this.droppingTicks = DROPPING_INTERVAL_MIN + this.random.nextInt(DROPPING_INTERVAL_MAX - DROPPING_INTERVAL_MIN);
 
-            var dropping = ReAnimalEntities.PIGEON_DROPPING.create(this.level(), net.minecraft.world.entity.EntitySpawnReason.TRIGGERED);
+            var dropping = ReAnimalEntities.PIGEON_DROPPING.create(this.level(), EntitySpawnReason.TRIGGERED);
 
             if (dropping == null)
                 return;
@@ -297,7 +298,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
 
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        var baby = ReAnimalEntities.PIGEON.create(level, net.minecraft.world.entity.EntitySpawnReason.BREEDING);
+        var baby = ReAnimalEntities.PIGEON.create(level, EntitySpawnReason.BREEDING);
 
         if (baby != null) {
             baby.setBaby(true);

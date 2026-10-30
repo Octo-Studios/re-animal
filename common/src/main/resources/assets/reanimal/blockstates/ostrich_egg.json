@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "": [
+      { "model": "reanimal:block/ostrich_egg" },
+      { "model": "reanimal:block/ostrich_egg", "y": 90 },
+      { "model": "reanimal:block/ostrich_egg", "y": 180 },
+      { "model": "reanimal:block/ostrich_egg", "y": 270 }
+    ]
+  }
+}

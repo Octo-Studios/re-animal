@@ -31,6 +31,7 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.LoopType;
 import com.geckolib.util.GeckoLibUtil;
+import net.minecraft.world.entity.EntitySpawnReason;
 
 public class MeerkatEntity extends Animal implements GeoEntity {
     private static final RawAnimation ADULT_IDLE = RawAnimation.begin().thenLoop("animation.meerkat.idle");
@@ -121,7 +122,7 @@ public class MeerkatEntity extends Animal implements GeoEntity {
 
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        var baby = ReAnimalEntities.MEERKAT.create(level, net.minecraft.world.entity.EntitySpawnReason.BREEDING);
+        var baby = ReAnimalEntities.MEERKAT.create(level, EntitySpawnReason.BREEDING);
 
         if (baby != null)
             baby.setBaby(true);

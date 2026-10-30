@@ -1,10 +1,10 @@
 package it.hurts.shatterbyte.reanimal.common.item;
 
-import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichEggEntity;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.Block;
 
-public class OstrichEgg extends EggItem<OstrichEggEntity> {
-    public OstrichEgg(Properties properties) {
-        super(properties, () -> ReAnimalEntities.OSTRICH_EGG);
+public class OstrichEgg extends BlockItem {
+    public OstrichEgg(Block block, Properties properties) {
+        super(block, properties);
     }
 }
