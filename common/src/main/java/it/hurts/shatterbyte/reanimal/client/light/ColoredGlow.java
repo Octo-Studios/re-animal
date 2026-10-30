@@ -31,7 +31,7 @@ public final class ColoredGlow {
     private static final float SMOOTH_MAX = 240.0F;
     private static final float MAX_SKY_DARKEN = 11.0F;
     private static final float NIGHT_SURFACE_FADE = 0.45F;
-    private static final float EDGE_FADE = 0.15F;
+    private static final float EDGE_FADE = 0.3F;
     private static final GlowSource[] NONE = new GlowSource[0];
 
     private static final Int2ObjectOpenHashMap<Tracked> TRACKED = new Int2ObjectOpenHashMap<>();
@@ -111,10 +111,14 @@ public final class ColoredGlow {
     }
 
     public static int tint(double x, double y, double z, int lightCoords) {
+        return tint(x, y, z, lightCoords, null);
+    }
+
+    public static int tint(double x, double y, double z, int lightCoords, BlockPos anchor) {
         var snapshot = sources;
         var local = LightCoordsUtil.smoothBlock(lightCoords) / SMOOTH_MAX;
 
-        if (snapshot.length == 0 || local <= 0.0F)
+        if (snapshot.length == 0)
             return WHITE;
 
         var total = 0.0F;
@@ -128,7 +132,7 @@ public final class ColoredGlow {
             if (share <= 0.0F)
                 continue;
 
-            var reach = source.reachAt(x, y, z);
+            var reach = anchor == null ? source.reachAt(x, y, z) : Math.max(source.reachAt(x, y, z), source.reachAt(anchor));
 
             if (reach <= 0)
                 continue;
@@ -146,7 +150,7 @@ public final class ColoredGlow {
 
         var peak = Math.max(red, Math.max(green, blue));
         var sky = LightCoordsUtil.smoothSky(lightCoords) / SMOOTH_MAX;
-        var edge = Math.min(1.0F, local / EDGE_FADE);
+        var edge = Math.min(1.0F, total / EDGE_FADE);
         var amount = Math.min(1.0F, total / local) * edge * edge * (3.0F - 2.0F * edge) * (1.0F - skySuppression * sky);
 
         return 0xFF000000

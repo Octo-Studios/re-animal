@@ -35,6 +35,10 @@ public record GlowSource(double x, double y, double z, float red, float green, f
         return dx * dx + dy * dy + dz * dz;
     }
 
+    public int reachAt(BlockPos pos) {
+        return this.reach.get(pos.asLong());
+    }
+
     public int reachAt(double px, double py, double pz) {
         var best = 0;
 

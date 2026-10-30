@@ -16,15 +16,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(value = BlockRenderer.class, remap = false)
 public abstract class SodiumBlockRendererMixin {
     @Unique
-    private BlockPos reanimal$section;
+    private SodiumGlow.Cell reanimal$cell;
 
     @Inject(method = "renderModel", at = @At("HEAD"))
     private void reanimal$rememberOrigin(BlockStateModel model, BlockState state, BlockPos pos, BlockPos origin, CallbackInfo ci) {
-        this.reanimal$section = SodiumGlow.sectionOf(pos, origin);
+        this.reanimal$cell = SodiumGlow.cellOf(pos, origin);
     }
 
     @ModifyArg(method = "bufferQuad", at = @At(value = "INVOKE", target = "Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/builder/ChunkMeshBufferBuilder;push([Lnet/caffeinemc/mods/sodium/client/render/chunk/vertex/format/ChunkVertexEncoder$Vertex;I)V"), index = 0)
     private ChunkVertexEncoder.Vertex[] reanimal$tintGlowLight(ChunkVertexEncoder.Vertex[] vertices) {
-        return SodiumGlow.tint(vertices, this.reanimal$section);
+        return SodiumGlow.tint(vertices, this.reanimal$cell);
     }
 }
