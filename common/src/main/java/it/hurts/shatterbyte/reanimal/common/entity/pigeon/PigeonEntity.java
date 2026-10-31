@@ -1,20 +1,29 @@
 package it.hurts.shatterbyte.reanimal.common.entity.pigeon;
-import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -33,21 +42,22 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
-import com.geckolib.animatable.GeoEntity;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animation.*;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.animation.object.PlayState;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.util.GeckoLibUtil;
-import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
 public class PigeonEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.pigeon.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.pigeon.walk");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.pigeon.fly");
+
+    public static final int VARIANTS = 4;
+
+    private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(PigeonEntity.class, EntityDataSerializers.INT);
+
     private static final int DROPPING_INTERVAL_MIN = 400;
     private static final int DROPPING_INTERVAL_MAX = 800;
+
     private static final RawAnimation PECK = RawAnimation.begin().thenLoop("animation.pigeon.peck");
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
@@ -65,6 +75,24 @@ public class PigeonEntity extends Animal implements GeoEntity {
         this.updateMoveControl();
 
         this.getNavigation().setCanFloat(true);
+
+        if (!level.isClientSide())
+            this.setVariant(this.getRandom().nextInt(VARIANTS));
+    }
+
+    public int getVariant() {
+        return this.getEntityData().get(VARIANT);
+    }
+
+    public void setVariant(int variant) {
+        this.getEntityData().set(VARIANT, variant);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+
+        builder.define(VARIANT, 0);
     }
 
     public boolean isPecking() {
@@ -158,6 +186,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
         super.addAdditionalSaveData(tag);
 
         tag.putInt("eggTime", this.eggTime);
+        tag.putInt("variant", this.getVariant());
     }
 
     @Override
@@ -165,6 +194,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
         super.readAdditionalSaveData(tag);
 
         this.eggTime = tag.getIntOr("eggTime", this.random.nextInt(6000) + 6000);
+        this.setVariant(Mth.clamp(tag.getIntOr("variant", 0), 0, VARIANTS - 1));
 
         this.updateMoveControl();
     }
@@ -264,6 +294,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
     protected void checkFallDamage(double y, boolean onGround, BlockState state, BlockPos pos) {
         this.resetFallDistance();
     }
+
     protected Brain.Provider<PigeonEntity> brainProvider() {
         return PigeonAI.brainProvider();
     }

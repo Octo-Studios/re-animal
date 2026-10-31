@@ -1,8 +1,11 @@
 {
   "variants" : {
-    "reanimal:textures/entity/pigeon_adult.png" : "outlined_sprite:reanimal/pigeon_adult.png",
+    "reanimal:textures/entity/pigeon_adult_gray.png" : "outlined_sprite:reanimal/pigeon_adult_gray.png",
+    "reanimal:textures/entity/pigeon_adult_black.png" : "outlined_sprite:reanimal/pigeon_adult_black.png",
+    "reanimal:textures/entity/pigeon_adult_brown.png" : "outlined_sprite:reanimal/pigeon_adult_brown.png",
+    "reanimal:textures/entity/pigeon_adult_white.png" : "outlined_sprite:reanimal/pigeon_adult_white.png",
     "reanimal:textures/entity/pigeon_baby.png" : "outlined_sprite:reanimal/pigeon_baby.png",
-    "default" : "outlined_sprite:reanimal/pigeon_adult.png"
+    "default" : "outlined_sprite:reanimal/pigeon_adult_gray.png"
   },
-  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getAgeVariant"
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getPigeonVariant"
 }

@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.client.compat;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.starfish.StarfishEntity;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.resources.Identifier;
@@ -11,6 +12,8 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 
 public final class XaeroMinimapCompat {
+    private static final String[] PIGEON_COLORS = {"gray", "black", "brown", "white"};
+
     private XaeroMinimapCompat() {
     }
 
@@ -18,6 +21,13 @@ public final class XaeroMinimapCompat {
         var baby = entity instanceof LivingEntity living && living.isBaby();
 
         return getTexture(entity, baby ? "baby" : "adult");
+    }
+
+    public static Object getPigeonVariant(Identifier texture, EntityRenderer<?, ?> renderer, Entity entity) {
+        if (!(entity instanceof PigeonEntity pigeon) || pigeon.isBaby())
+            return getTexture(entity, "baby");
+
+        return getTexture(entity, "adult_" + PIGEON_COLORS[Math.floorMod(pigeon.getVariant(), PIGEON_COLORS.length)]);
     }
 
     public static Object getColorVariant(Identifier texture, EntityRenderer<?, ?> renderer, Entity entity) {
