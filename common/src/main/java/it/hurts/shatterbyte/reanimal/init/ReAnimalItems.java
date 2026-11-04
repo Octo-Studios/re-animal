@@ -195,11 +195,11 @@ public class ReAnimalItems {
         COOKED_SEAL_MEAT = register("cooked_seal_meat", props -> new Item(props.food(new FoodProperties(8, 12.8F, false))));
         RAW_OSTRICH_MEAT = register("raw_ostrich_meat", props -> new Item(props.food(new FoodProperties(2, 1.2F, false))));
         COOKED_OSTRICH_MEAT = register("cooked_ostrich_meat", props -> new Item(props.food(new FoodProperties(6, 7.2F, false))));
-        RAW_KIWI_MEAT = register("raw_kiwi_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
+        RAW_KIWI_MEAT = register("raw_kiwi_meat", props -> new Item(props.food(new FoodProperties(2, 1.8F, false))));
         COOKED_KIWI_MEAT = register("cooked_kiwi_meat", props -> new Item(props.food(new FoodProperties(5, 6F, false))));
-        RAW_PIGEON_MEAT = register("raw_pigeon_meat", props -> new Item(props.food(new FoodProperties(3, 1F, false))));
+        RAW_PIGEON_MEAT = register("raw_pigeon_meat", props -> new Item(props.food(new FoodProperties(2, 1F, false))));
         COOKED_PIGEON_MEAT = register("cooked_pigeon_meat", props -> new Item(props.food(new FoodProperties(5, 5F, false))));
-        RAW_TOUCAN_MEAT = register("raw_toucan_meat", props -> new Item(props.food(new FoodProperties(3, 1F, false))));
+        RAW_TOUCAN_MEAT = register("raw_toucan_meat", props -> new Item(props.food(new FoodProperties(2, 1F, false))));
         COOKED_TOUCAN_MEAT = register("cooked_toucan_meat", props -> new Item(props.food(new FoodProperties(5, 5F, false))));
         RAW_HIPPOPOTAMUS_MEAT = register("raw_hippopotamus_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
         COOKED_HIPPOPOTAMUS_MEAT = register("cooked_hippopotamus_meat", props -> new Item(props.food(new FoodProperties(10, 14.8F, false))));
