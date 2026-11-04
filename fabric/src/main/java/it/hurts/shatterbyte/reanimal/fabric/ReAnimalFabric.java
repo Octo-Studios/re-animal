@@ -87,6 +87,7 @@ public class ReAnimalFabric implements ModInitializer {
         SpawnPlacements.register(ReAnimalEntities.OSTRICH, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.KIWI, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.PIGEON, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
+        SpawnPlacements.register(ReAnimalEntities.TOUCAN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.BUTTERFLY, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, ButterflyEntity::checkButterflySpawnRules);
         SpawnPlacements.register(ReAnimalEntities.VULTURE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, VultureEntity::checkVultureSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.CAPYBARA, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
@@ -113,6 +114,7 @@ public class ReAnimalFabric implements ModInitializer {
         addSpawn("c:is_swamp", ReAnimalEntities.HIPPOPOTAMUS, 10, 2, 5);
         addSpawn("minecraft:is_ocean", ReAnimalEntities.JELLYFISH, 25, 2, 10);
         addSpawn("minecraft:is_jungle", ReAnimalEntities.KIWI, 10, 3, 5);
+        addSpawn("minecraft:is_jungle", ReAnimalEntities.TOUCAN, 10, 2, 4);
         addSpawn("minecraft:is_savanna", ReAnimalEntities.OSTRICH, 10, 1, 3);
         addSpawn("minecraft:is_savanna", ReAnimalEntities.MEERKAT, 8, 1, 3);
         addSpawn("c:is_cold/overworld", ReAnimalEntities.PENGUIN, 10, 3, 7);

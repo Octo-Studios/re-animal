@@ -15,6 +15,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonDroppingRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.toucan.ToucanRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.red_panda.RedPandaRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.meerkat.MeerkatRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
@@ -50,6 +51,7 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.OSTRICH, OstrichRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.KIWI, KiwiRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PIGEON, PigeonRenderer::new);
+        event.registerEntityRenderer(ReAnimalEntities.TOUCAN, ToucanRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.BUTTERFLY, ButterflyRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.CAPYBARA, CapybaraRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.RED_PANDA, RedPandaRenderer::new);
@@ -66,6 +68,7 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.JELLYFISH, JellyfishRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.KIWI_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PIGEON_EGG, ThrownItemRenderer::new);
+        event.registerEntityRenderer(ReAnimalEntities.TOUCAN_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PIGEON_DROPPING, PigeonDroppingRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.VULTURE_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.PENGUIN_EGG, ThrownItemRenderer::new);

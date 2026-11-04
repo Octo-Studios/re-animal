@@ -9,6 +9,7 @@ import net.minecraft.world.item.Item;
 public class ReAnimalTags {
     public static final class Items {
         public static final TagKey<Item> PIGEON_FOOD = Items.create("pigeon_food");
+        public static final TagKey<Item> TOUCAN_FOOD = Items.create("toucan_food");
         public static final TagKey<Item> KIWI_FOOD = Items.create("kiwi_food");
         public static final TagKey<Item> OSTRICH_FOOD = Items.create("ostrich_food");
         public static final TagKey<Item> CAPYBARA_FOOD = Items.create("capybara_food");

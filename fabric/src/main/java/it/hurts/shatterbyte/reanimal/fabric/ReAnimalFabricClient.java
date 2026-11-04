@@ -16,6 +16,7 @@ import it.hurts.shatterbyte.reanimal.client.renderer.ostrich.OstrichRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.penguin.PenguinRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonDroppingRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.pigeon.PigeonRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.toucan.ToucanRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.red_panda.RedPandaRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.meerkat.MeerkatRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.sea_urchin.SeaUrchinRenderer;
@@ -44,6 +45,7 @@ public class ReAnimalFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ReAnimalEntities.OSTRICH, OstrichRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.KIWI, KiwiRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PIGEON, PigeonRenderer::new);
+        EntityRendererRegistry.register(ReAnimalEntities.TOUCAN, ToucanRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.BUTTERFLY, ButterflyRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.CAPYBARA, CapybaraRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.RED_PANDA, RedPandaRenderer::new);
@@ -60,6 +62,7 @@ public class ReAnimalFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ReAnimalEntities.JELLYFISH, JellyfishRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.KIWI_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PIGEON_EGG, ThrownItemRenderer::new);
+        EntityRendererRegistry.register(ReAnimalEntities.TOUCAN_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PIGEON_DROPPING, PigeonDroppingRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.VULTURE_EGG, ThrownItemRenderer::new);
         EntityRendererRegistry.register(ReAnimalEntities.PENGUIN_EGG, ThrownItemRenderer::new);

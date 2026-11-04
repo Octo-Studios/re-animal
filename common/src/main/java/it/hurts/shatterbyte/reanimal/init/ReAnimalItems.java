@@ -33,6 +33,7 @@ public class ReAnimalItems {
     public static SpawnEggItem OSTRICH_SPAWN_EGG;
     public static SpawnEggItem KIWI_SPAWN_EGG;
     public static SpawnEggItem PIGEON_SPAWN_EGG;
+    public static SpawnEggItem TOUCAN_SPAWN_EGG;
     public static SpawnEggItem BUTTERFLY_SPAWN_EGG;
     public static SpawnEggItem CAPYBARA_SPAWN_EGG;
     public static SpawnEggItem RED_PANDA_SPAWN_EGG;
@@ -51,6 +52,7 @@ public class ReAnimalItems {
     public static KiwiEgg KIWI_EGG;
     public static OstrichEgg OSTRICH_EGG;
     public static PigeonEgg PIGEON_EGG;
+    public static ToucanEgg TOUCAN_EGG;
     public static VultureEgg VULTURE_EGG;
     public static PenguinEgg PENGUIN_EGG;
     public static CrocodileEgg CROCODILE_EGG;
@@ -104,6 +106,8 @@ public class ReAnimalItems {
     public static Item COOKED_KIWI_MEAT;
     public static Item RAW_PIGEON_MEAT;
     public static Item COOKED_PIGEON_MEAT;
+    public static Item RAW_TOUCAN_MEAT;
+    public static Item COOKED_TOUCAN_MEAT;
     public static Item RAW_HIPPOPOTAMUS_MEAT;
     public static Item COOKED_HIPPOPOTAMUS_MEAT;
     public static Item RAW_CROCODILE_MEAT;
@@ -121,6 +125,7 @@ public class ReAnimalItems {
         OSTRICH_SPAWN_EGG = register("ostrich_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.OSTRICH)));
         KIWI_SPAWN_EGG = register("kiwi_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.KIWI)));
         PIGEON_SPAWN_EGG = register("pigeon_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.PIGEON)));
+        TOUCAN_SPAWN_EGG = register("toucan_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.TOUCAN)));
         BUTTERFLY_SPAWN_EGG = register("butterfly_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.BUTTERFLY)));
         CAPYBARA_SPAWN_EGG = register("capybara_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.CAPYBARA)));
         RED_PANDA_SPAWN_EGG = register("red_panda_spawn_egg", props -> new SpawnEggItem(props.spawnEgg(ReAnimalEntities.RED_PANDA)));
@@ -139,6 +144,7 @@ public class ReAnimalItems {
         KIWI_EGG = register("kiwi_egg", props -> new KiwiEgg(props));
         OSTRICH_EGG = register("ostrich_egg", props -> new OstrichEgg(ReAnimalBlocks.OSTRICH_EGG, props.useBlockDescriptionPrefix()));
         PIGEON_EGG = register("pigeon_egg", props -> new PigeonEgg(props));
+        TOUCAN_EGG = register("toucan_egg", props -> new ToucanEgg(props));
         VULTURE_EGG = register("vulture_egg", props -> new VultureEgg(props));
         PENGUIN_EGG = register("penguin_egg", props -> new PenguinEgg(props));
         CROCODILE_EGG = register("crocodile_egg", props -> new CrocodileEgg(ReAnimalBlocks.CROCODILE_EGG, props.useBlockDescriptionPrefix()));
@@ -193,6 +199,8 @@ public class ReAnimalItems {
         COOKED_KIWI_MEAT = register("cooked_kiwi_meat", props -> new Item(props.food(new FoodProperties(5, 6F, false))));
         RAW_PIGEON_MEAT = register("raw_pigeon_meat", props -> new Item(props.food(new FoodProperties(3, 1F, false))));
         COOKED_PIGEON_MEAT = register("cooked_pigeon_meat", props -> new Item(props.food(new FoodProperties(5, 5F, false))));
+        RAW_TOUCAN_MEAT = register("raw_toucan_meat", props -> new Item(props.food(new FoodProperties(3, 1F, false))));
+        COOKED_TOUCAN_MEAT = register("cooked_toucan_meat", props -> new Item(props.food(new FoodProperties(5, 5F, false))));
         RAW_HIPPOPOTAMUS_MEAT = register("raw_hippopotamus_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));
         COOKED_HIPPOPOTAMUS_MEAT = register("cooked_hippopotamus_meat", props -> new Item(props.food(new FoodProperties(10, 14.8F, false))));
         RAW_CROCODILE_MEAT = register("raw_crocodile_meat", props -> new Item(props.food(new FoodProperties(3, 1.8F, false))));

@@ -19,6 +19,12 @@
   "item.reanimal.raw_kiwi_meat": "Raw Kiwi Meat",
   "item.reanimal.cooked_kiwi_meat": "Cooked Kiwi Meat",
 
+  "entity.reanimal.toucan": "Toucan",
+  "item.reanimal.toucan_spawn_egg": "Toucan Spawn Egg",
+  "item.reanimal.toucan_egg": "Toucan Egg",
+  "item.reanimal.raw_toucan_meat": "Raw Toucan Meat",
+  "item.reanimal.cooked_toucan_meat": "Cooked Toucan Meat",
+
   "entity.reanimal.pigeon": "Pigeon",
   "item.reanimal.pigeon_spawn_egg": "Pigeon Spawn Egg",
   "item.reanimal.pigeon_egg": "Pigeon Egg",

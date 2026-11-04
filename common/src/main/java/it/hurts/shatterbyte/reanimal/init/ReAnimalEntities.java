@@ -25,6 +25,8 @@ import it.hurts.shatterbyte.reanimal.common.entity.meerkat.MeerkatEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.starfish.StarfishEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.toucan.ToucanEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.toucan.ToucanEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEggEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
 import net.minecraft.core.Registry;
@@ -42,6 +44,7 @@ public class ReAnimalEntities {
     public static EntityType<OstrichEntity> OSTRICH;
     public static EntityType<KiwiEntity> KIWI;
     public static EntityType<PigeonEntity> PIGEON;
+    public static EntityType<ToucanEntity> TOUCAN;
     public static EntityType<ButterflyEntity> BUTTERFLY;
     public static EntityType<CapybaraEntity> CAPYBARA;
     public static EntityType<RedPandaEntity> RED_PANDA;
@@ -58,6 +61,7 @@ public class ReAnimalEntities {
     public static EntityType<JellyfishEntity> JELLYFISH;
     public static EntityType<KiwiEggEntity> KIWI_EGG;
     public static EntityType<PigeonEggEntity> PIGEON_EGG;
+    public static EntityType<ToucanEggEntity> TOUCAN_EGG;
     public static EntityType<PigeonDroppingEntity> PIGEON_DROPPING;
     public static EntityType<VultureEggEntity> VULTURE_EGG;
     public static EntityType<PenguinEggEntity> PENGUIN_EGG;
@@ -70,6 +74,7 @@ public class ReAnimalEntities {
         OSTRICH = register("ostrich", EntityType.Builder.of(OstrichEntity::new, MobCategory.CREATURE).sized(1.25F, 2.75F));
         KIWI = register("kiwi", EntityType.Builder.of(KiwiEntity::new, MobCategory.CREATURE).sized(0.5F, 0.6F));
         PIGEON = register("pigeon", EntityType.Builder.of(PigeonEntity::new, MobCategory.CREATURE).sized(0.5F, 0.65F));
+        TOUCAN = register("toucan", EntityType.Builder.of(ToucanEntity::new, MobCategory.CREATURE).sized(0.5F, 0.9F));
         BUTTERFLY = register("butterfly", EntityType.Builder.of(ButterflyEntity::new, MobCategory.CREATURE).sized(0.5F, 0.45F));
         CAPYBARA = register("capybara", EntityType.Builder.of(CapybaraEntity::new, MobCategory.CREATURE).sized(1.1F, 1F));
         RED_PANDA = register("red_panda", EntityType.Builder.of(RedPandaEntity::new, MobCategory.CREATURE).sized(0.8F, 0.65F));
@@ -86,6 +91,7 @@ public class ReAnimalEntities {
         JELLYFISH = register("jellyfish", EntityType.Builder.<JellyfishEntity>of(JellyfishEntity::new, MobCategory.WATER_CREATURE).sized(1F, 1F).eyeHeight(0.5F));
         KIWI_EGG = register("kiwi_egg", EntityType.Builder.of(KiwiEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PIGEON_EGG = register("pigeon_egg", EntityType.Builder.of(PigeonEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
+        TOUCAN_EGG = register("toucan_egg", EntityType.Builder.of(ToucanEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PIGEON_DROPPING = register("pigeon_dropping", EntityType.Builder.<PigeonDroppingEntity>of(PigeonDroppingEntity::new, MobCategory.MISC).sized(0.2F, 0.2F).clientTrackingRange(4).updateInterval(10));
         VULTURE_EGG = register("vulture_egg", EntityType.Builder.of(VultureEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         PENGUIN_EGG = register("penguin_egg", EntityType.Builder.of(PenguinEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
@@ -99,6 +105,7 @@ public class ReAnimalEntities {
         register.accept(OSTRICH, OstrichEntity.createAttributes().build());
         register.accept(KIWI, KiwiEntity.createAttributes().build());
         register.accept(PIGEON, PigeonEntity.createAttributes().build());
+        register.accept(TOUCAN, ToucanEntity.createAttributes().build());
         register.accept(BUTTERFLY, ButterflyEntity.createAttributes().build());
         register.accept(CAPYBARA, CapybaraEntity.createAttributes().build());
         register.accept(RED_PANDA, RedPandaEntity.createAttributes().build());

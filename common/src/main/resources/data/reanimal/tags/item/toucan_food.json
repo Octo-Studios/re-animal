@@ -1,0 +1,22 @@
+{
+  "replace": false,
+  "values": [
+    "minecraft:apple",
+    "minecraft:melon_slice",
+    "minecraft:sweet_berries",
+    "minecraft:glow_berries",
+    "minecraft:carrot",
+    "minecraft:beetroot",
+    "minecraft:wheat_seeds",
+    "minecraft:melon_seeds",
+    "minecraft:pumpkin_seeds",
+    "minecraft:beetroot_seeds",
+    "minecraft:egg",
+    "minecraft:brown_egg",
+    "minecraft:blue_egg",
+    "minecraft:chicken",
+    "minecraft:cod",
+    "minecraft:salmon",
+    "minecraft:tropical_fish"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "variants" : {
+    "reanimal:textures/entity/toucan_adult.png" : "outlined_sprite:reanimal/toucan_adult.png",
+    "reanimal:textures/entity/toucan_baby.png" : "outlined_sprite:reanimal/toucan_baby.png",
+    "default" : "outlined_sprite:reanimal/toucan_adult.png"
+  },
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getAgeVariant"
+}
