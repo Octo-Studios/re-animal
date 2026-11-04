@@ -13,14 +13,19 @@ import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -36,15 +41,22 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.Vec3;
 
 public class VultureEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.vulture.idle");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.vulture.fly");
+    private static final RawAnimation GLIDE = RawAnimation.begin().thenLoop("animation.vulture.gliding");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.vulture.walk");
+
+    private static final EntityDataAccessor<Boolean> CIRCLING = SynchedEntityData.defineId(VultureEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> GLIDING = SynchedEntityData.defineId(VultureEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int eggTime = this.random.nextInt(6000) + 6000;
+    private float bank;
+    private float previousBank;
 
     public VultureEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
@@ -59,6 +71,49 @@ public class VultureEntity extends Animal implements GeoEntity {
         super.aiStep();
 
         this.tickEggLaying();
+
+        if (this.level().isClientSide()) {
+            this.previousBank = this.bank;
+            this.bank = Mth.lerp(0.15F, this.bank, this.isGliding() && !this.onGround()
+                    ? Mth.clamp(Mth.wrapDegrees(this.getYRot() - this.yRotO) * -6F, -25F, 25F)
+                    : 0F);
+        }
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+
+        builder.define(CIRCLING, false);
+        builder.define(GLIDING, false);
+    }
+
+    public boolean isCircling() {
+        return this.getEntityData().get(CIRCLING);
+    }
+
+    public void setCircling(boolean circling) {
+        this.getEntityData().set(CIRCLING, circling);
+    }
+
+    public boolean isGliding() {
+        return this.getEntityData().get(GLIDING);
+    }
+
+    public void setGliding(boolean gliding) {
+        this.getEntityData().set(GLIDING, gliding);
+    }
+
+    public float getBank(float partialTick) {
+        return Mth.lerp(partialTick, this.previousBank, this.bank);
+    }
+
+    @Override
+    public void travel(Vec3 input) {
+        if (this.isCircling())
+            this.move(MoverType.SELF, this.getDeltaMovement());
+        else
+            super.travel(input);
     }
 
     @Override
@@ -181,13 +236,10 @@ public class VultureEntity extends Animal implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (state.isMoving()) {
-            if (entity.onGround())
-                controller.setAnimation(WALK);
-            else
-                controller.setAnimation(FLY);
-        } else
-            controller.setAnimation(IDLE);
+        if (!entity.onGround())
+            controller.setAnimation(entity.isGliding() ? GLIDE : FLY);
+        else
+            controller.setAnimation(state.isMoving() ? WALK : IDLE);
 
         return PlayState.CONTINUE;
     }

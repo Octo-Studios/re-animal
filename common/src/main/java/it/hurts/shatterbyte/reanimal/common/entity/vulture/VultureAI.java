@@ -8,21 +8,28 @@ import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -107,6 +114,7 @@ public class VultureAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
+                                                Pair.of(new VultureCircleTask(), 2),
                                                 Pair.of(RandomStroll.stroll(1.1F), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1.1F, 3), 1),
                                                 Pair.of(new DoNothing(80, 160), 6)
@@ -132,6 +140,135 @@ public class VultureAI {
                 && !(prey instanceof VultureEntity)
                 && !(prey instanceof Player player && (player.isCreative() || player.isSpectator()))
                 && vulture.distanceToSqr(prey) <= MAX_PREY_DISTANCE_SQR;
+    }
+
+    static class VultureCircleTask extends Behavior<VultureEntity> {
+        private Vec3 center;
+        private Vec3 landingTarget;
+        private double radius;
+        private double height;
+        private double descentHeight;
+        private double descentRadius;
+        private int direction;
+        private int circlingTicks;
+        private boolean descending;
+        private long nextStartTime;
+
+        VultureCircleTask() {
+            super(ImmutableMap.of(
+                    MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT
+            ), 2400);
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
+            if (entity.isBaby() || entity.isInWater() || entity.getTarget() != null
+                    || !entity.getNavigation().isDone() || level.getGameTime() < nextStartTime
+                    || !level.canSeeSky(entity.blockPosition()))
+                return false;
+
+            radius = 12D + entity.getRandom().nextDouble() * 8D;
+            direction = entity.getRandom().nextBoolean() ? 1 : -1;
+
+            var angle = entity.getYRot() * Mth.DEG_TO_RAD + (direction < 0 ? Math.PI : 0D);
+            center = entity.position().add(-Math.cos(angle) * radius, 0D, -Math.sin(angle) * radius);
+            var ground = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(center));
+
+            if (!level.getFluidState(ground.below()).isEmpty())
+                return false;
+
+            landingTarget = Vec3.atBottomCenterOf(ground);
+            height = Math.max(entity.getY(), ground.getY());
+
+            for (var i = 0; i < 8; i++) {
+                var sampleAngle = i * Math.PI / 4D;
+                var sample = BlockPos.containing(center.x + Math.cos(sampleAngle) * radius, height, center.z + Math.sin(sampleAngle) * radius);
+                height = Math.max(height, level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, sample).getY());
+            }
+
+            height += 12D + entity.getRandom().nextInt(7);
+            return height < level.getMaxY();
+        }
+
+        @Override
+        protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
+            circlingTicks = 600 + entity.getRandom().nextInt(401);
+            descending = false;
+            entity.getNavigation().stop();
+            entity.getMoveControl().setWait();
+            entity.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+            entity.setCircling(true);
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, VultureEntity entity, long gameTime) {
+            return !entity.isBaby() && !entity.isInWater() && entity.getTarget() == null
+                    && !entity.horizontalCollision && (!descending || !entity.onGround())
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET);
+        }
+
+        @Override
+        protected void tick(ServerLevel level, VultureEntity entity, long gameTime) {
+            if (!descending && gameTime % 20L == 0L) {
+                var food = level.getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(32D),
+                                item -> item.onGround() && item.getItem().is(ReAnimalTags.Items.VULTURE_FOOD) && entity.hasLineOfSight(item))
+                        .stream().min(Comparator.comparingDouble(entity::distanceToSqr)).orElse(null);
+
+                if (food != null)
+                    beginDescent(entity, food.position());
+            }
+
+            if (!descending && entity.getY() >= height - 2D) {
+                entity.setGliding(true);
+                height = Math.min(level.getMaxY() - entity.getBbHeight(), height + 0.005D);
+
+                if (--circlingTicks <= 0)
+                    beginDescent(entity, landingTarget);
+            }
+
+            if (descending) {
+                height = Math.max(center.y - 0.1D, height - 0.05D);
+                radius = descentHeight > center.y ? descentRadius * Math.max(0D, height - center.y) / (descentHeight - center.y) : 0D;
+            }
+
+            var angle = Math.atan2(entity.getZ() - center.z, entity.getX() - center.x) + direction * 0.25D;
+            var target = new Vec3(center.x + Math.cos(angle) * radius, height, center.z + Math.sin(angle) * radius);
+            var offset = target.subtract(entity.position());
+            var speed = Math.min(entity.getAttributeValue(Attributes.FLYING_SPEED), offset.length());
+            var motion = entity.getDeltaMovement().lerp(offset.normalize().scale(speed), 0.1D);
+
+            entity.setDeltaMovement(motion);
+            entity.setYRot((float) (Mth.atan2(motion.z, motion.x) * Mth.RAD_TO_DEG) - 90F);
+            entity.yBodyRot = entity.getYRot();
+        }
+
+        private void beginDescent(VultureEntity entity, Vec3 target) {
+            descending = true;
+            center = target;
+            height = entity.getY();
+            descentHeight = height;
+            descentRadius = Math.hypot(entity.getX() - center.x, entity.getZ() - center.z);
+            entity.setGliding(true);
+        }
+
+        @Override
+        protected void stop(ServerLevel level, VultureEntity entity, long gameTime) {
+            entity.setCircling(false);
+            entity.setGliding(false);
+            nextStartTime = gameTime + 200 + entity.getRandom().nextInt(401);
+
+            if (!entity.onGround() && !entity.isInWater() && entity.getTarget() == null
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET)) {
+                var ground = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, entity.blockPosition());
+                entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(ground, 1F, 0));
+            }
+        }
     }
 
     static class VultureRetaliateTask extends Behavior<VultureEntity> {
@@ -244,7 +381,7 @@ public class VultureAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
-            if (entity.getTarget() != null)
+            if (entity.getTarget() != null || entity.isCircling())
                 return false;
 
             if (!entity.getNavigation().isDone())
