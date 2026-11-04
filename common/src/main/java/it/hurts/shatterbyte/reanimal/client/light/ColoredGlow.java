@@ -29,16 +29,12 @@ public final class ColoredGlow {
     private static final int REFLOOD_INTERVAL = 20;
     private static final int LINGER_TICKS = 8;
     private static final float SMOOTH_MAX = 240.0F;
-    private static final float MAX_SKY_DARKEN = 11.0F;
-    private static final float NIGHT_SURFACE_FADE = 0.45F;
     private static final float EDGE_FADE = 0.1F;
-    private static final float LIT_FADE = 0.1F;
     private static final GlowSource[] NONE = new GlowSource[0];
 
     private static final Int2ObjectOpenHashMap<Tracked> TRACKED = new Int2ObjectOpenHashMap<>();
 
     private static volatile GlowSource[] sources = NONE;
-    private static volatile float skySuppression;
     private static long tick;
 
     private ColoredGlow() {
@@ -54,10 +50,6 @@ public final class ColoredGlow {
         }
 
         tick++;
-
-        var daylight = 1.0F - level.getSkyDarken() / MAX_SKY_DARKEN;
-
-        skySuppression = NIGHT_SURFACE_FADE + (1.0F - NIGHT_SURFACE_FADE) * daylight;
 
         var origin = camera.position();
         var found = new ArrayList<Candidate>();
@@ -150,13 +142,9 @@ public final class ColoredGlow {
             return WHITE;
 
         var peak = Math.max(red, Math.max(green, blue));
-        var sky = LightCoordsUtil.smoothSky(lightCoords) / SMOOTH_MAX;
-        var amount = Math.min(1.0F, total / local) * smoothstep(total / EDGE_FADE) * smoothstep(local / LIT_FADE) * (1.0F - skySuppression * sky);
+        var amount = Math.min(1.0F, total / local) * smoothstep(total / EDGE_FADE);
 
-        return 0xFF000000
-                | channel(red / peak, amount) << 16
-                | channel(green / peak, amount) << 8
-                | channel(blue / peak, amount);
+        return GlowLightmap.tint(lightCoords, red / peak, green / peak, blue / peak, amount);
     }
 
     public static int tintOf(Object state, int lightCoords, PoseStack.Pose fallback) {
@@ -205,10 +193,6 @@ public final class ColoredGlow {
         var t = Math.clamp(x, 0.0F, 1.0F);
 
         return t * t * (3.0F - 2.0F * t);
-    }
-
-    private static int channel(float mix, float amount) {
-        return Math.round((1.0F - amount * (1.0F - mix)) * 255.0F);
     }
 
     private static GlowStickItem heldStick(Player player) {
