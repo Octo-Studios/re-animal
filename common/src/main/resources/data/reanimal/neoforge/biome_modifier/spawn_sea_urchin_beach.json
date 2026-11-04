@@ -6,8 +6,8 @@
       "type": "reanimal:sea_urchin",
       "count": {
         "type": "minecraft:uniform",
-        "min_inclusive": 5,
-        "max_inclusive": 10
+        "min_inclusive": 3,
+        "max_inclusive": 5
       },
       "weight": 25
     }

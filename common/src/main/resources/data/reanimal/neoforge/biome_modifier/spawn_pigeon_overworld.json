@@ -6,8 +6,8 @@
       "type": "reanimal:pigeon",
       "count": {
         "type": "minecraft:uniform",
-        "min_inclusive": 5,
-        "max_inclusive": 15
+        "min_inclusive": 4,
+        "max_inclusive": 12
       },
       "weight": 10
     }

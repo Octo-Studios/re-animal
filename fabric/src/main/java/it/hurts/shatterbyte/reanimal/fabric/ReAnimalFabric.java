@@ -105,7 +105,7 @@ public class ReAnimalFabric implements ModInitializer {
     }
 
     private static void registerSpawns() {
-        addSpawn("minecraft:is_overworld", ReAnimalEntities.BUTTERFLY, 20, 3, 7);
+        addSpawn("minecraft:is_overworld", ReAnimalEntities.BUTTERFLY, 16, 3, 7);
         addSpawn("minecraft:is_jungle", ReAnimalEntities.CAPYBARA, 10, 2, 4);
         addSpawn("c:is_swamp", ReAnimalEntities.CROCODILE, 10, 2, 5);
         addSpawn("c:is_swamp", ReAnimalEntities.DRAGONFLY, 10, 2, 5);
@@ -118,13 +118,13 @@ public class ReAnimalFabric implements ModInitializer {
         addSpawn("minecraft:is_savanna", ReAnimalEntities.OSTRICH, 10, 1, 3);
         addSpawn("minecraft:is_savanna", ReAnimalEntities.MEERKAT, 8, 1, 3);
         addSpawn("c:is_cold/overworld", ReAnimalEntities.PENGUIN, 10, 3, 7);
-        addSpawn("minecraft:is_overworld", ReAnimalEntities.PIGEON, 10, 5, 15);
+        addSpawn("minecraft:is_overworld", ReAnimalEntities.PIGEON, 10, 4, 12);
         addSpawn("minecraft:is_jungle", ReAnimalEntities.RED_PANDA, 8, 1, 3);
-        addSpawn("minecraft:is_beach", ReAnimalEntities.SEA_URCHIN, 25, 5, 10);
-        addSpawn("minecraft:is_ocean", ReAnimalEntities.SEA_URCHIN, 25, 5, 15);
+        addSpawn("minecraft:is_beach", ReAnimalEntities.SEA_URCHIN, 25, 3, 5);
+        addSpawn("minecraft:is_ocean", ReAnimalEntities.SEA_URCHIN, 25, 3, 6);
         addSpawn("reanimal:spawns_seal", ReAnimalEntities.SEAL, 20, 3, 6);
-        addSpawn("minecraft:is_beach", ReAnimalEntities.STARFISH, 25, 5, 10);
-        addSpawn("minecraft:is_ocean", ReAnimalEntities.STARFISH, 25, 5, 15);
+        addSpawn("minecraft:is_beach", ReAnimalEntities.STARFISH, 25, 3, 5);
+        addSpawn("minecraft:is_ocean", ReAnimalEntities.STARFISH, 25, 3, 6);
         addSpawn("c:is_desert", ReAnimalEntities.VULTURE, 10, 1, 5);
     }
 
