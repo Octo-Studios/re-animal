@@ -35,7 +35,7 @@ public abstract class FlyingInsectEntity extends Animal {
     protected FlyingInsectEntity(EntityType<? extends Animal> type, Level level) {
         super(type, level);
 
-        this.moveControl = new FlyingMoveControl<>(this, 10, true) {
+        this.moveControl = new FlyingMoveControl<>(this, 10, false) {
             @Override
             public void tick() {
                 if (!FlyingInsectEntity.this.isResting())
