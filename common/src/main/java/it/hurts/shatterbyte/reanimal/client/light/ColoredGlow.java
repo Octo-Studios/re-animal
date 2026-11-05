@@ -24,7 +24,6 @@ public final class ColoredGlow {
 
     private static final int REACH = GlowReach.RANGE;
     private static final double NEAR_RADIUS_SQR = (REACH + 1.5D) * (REACH + 1.5D);
-    private static final double SCAN_RADIUS = 48.0D;
     private static final int REDIRTY_DELAY = 4;
     private static final int REFLOOD_INTERVAL = 20;
     private static final int LINGER_TICKS = 8;
@@ -36,6 +35,7 @@ public final class ColoredGlow {
 
     private static volatile GlowSource[] sources = NONE;
     private static long tick;
+    private static boolean lightmapDirty;
 
     private ColoredGlow() {
     }
@@ -51,17 +51,13 @@ public final class ColoredGlow {
 
         tick++;
 
-        var origin = camera.position();
         var found = new ArrayList<Candidate>();
 
-        for (var stick : level.getEntitiesOfClass(GlowStickEntity.class, camera.getBoundingBox().inflate(SCAN_RADIUS)))
-            if (stick.getItem().getItem() instanceof GlowStickItem item)
+        for (var entity : level.entitiesForRendering())
+            if (entity instanceof GlowStickEntity stick && stick.getItem().getItem() instanceof GlowStickItem item)
                 found.add(new Candidate(stick.getId(), GlowSource.at(stick.position().add(0.0D, 0.12D, 0.0D), GlowColors.of(item))));
 
         for (var player : level.players()) {
-            if (player.position().distanceToSqr(origin) > SCAN_RADIUS * SCAN_RADIUS)
-                continue;
-
             var held = heldStick(player);
 
             if (held != null)
@@ -79,6 +75,17 @@ public final class ColoredGlow {
         forget(level, alive, active);
 
         sources = active.toArray(NONE);
+
+        if (lightmapDirty && tick % REDIRTY_DELAY == 0) {
+            for (var state : TRACKED.values())
+                markDirty(level, state.pos);
+
+            lightmapDirty = false;
+        }
+    }
+
+    public static void onLightmapChanged() {
+        lightmapDirty = true;
     }
 
     public static void onBlockChanged(BlockPos pos, BlockState oldState, BlockState newState) {

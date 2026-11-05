@@ -17,6 +17,8 @@ public final class GlowLightmap {
             return;
 
         var updated = new int[256];
+        var previous = colors;
+        var backgroundChanged = false;
         var ambient = new Vector3f(state.ambientColor).max(new Vector3f(state.nightVisionColor).mul(state.nightVisionEffectIntensity));
 
         for (var sky = 0; sky < 16; sky++) {
@@ -38,9 +40,14 @@ public final class GlowLightmap {
 
                 updated[sky * 16 + block] = Math.round(color.x * 255.0F) << 16 | Math.round(color.y * 255.0F) << 8 | Math.round(color.z * 255.0F);
             }
+
+            backgroundChanged |= updated[sky * 16] != previous[sky * 16];
         }
 
         colors = updated;
+
+        if (backgroundChanged)
+            ColoredGlow.onLightmapChanged();
     }
 
     public static int tint(int lightCoords, float red, float green, float blue, float amount) {
