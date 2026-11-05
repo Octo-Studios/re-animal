@@ -9,7 +9,10 @@ import com.geckolib.renderer.base.RenderPassInfo;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 
 public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> extends GeoEntityRenderer<T, EntityRenderState> {
@@ -25,9 +28,17 @@ public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> e
         super.extractRenderState(entity, renderState, partialTick);
 
         var geoState = (GeoRenderState) renderState;
+        var progress = entity.getRestProgress(partialTick);
 
         geoState.addGeckolibData(RESTING_FACE, entity.getRenderRestingFace().get3DDataValue());
-        geoState.addGeckolibData(REST_PROGRESS, entity.getRestProgress(partialTick));
+        geoState.addGeckolibData(REST_PROGRESS, progress);
+
+        if (progress > 0.0F && renderState instanceof LivingEntityRenderState state) {
+            var look = Vec3.directionFromRotation(entity.getXRot(partialTick) * progress, state.bodyRot).toVector3f();
+
+            new Quaternionf().slerp(entity.getRenderRestingFace().getRotation(), progress).conjugate().transform(look);
+            state.bodyRot = (float) Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG;
+        }
     }
 
     @Override
