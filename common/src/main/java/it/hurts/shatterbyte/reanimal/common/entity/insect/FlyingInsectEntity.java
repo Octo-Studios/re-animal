@@ -31,6 +31,8 @@ public abstract class FlyingInsectEntity extends Animal {
     private Direction renderRestingFace = Direction.UP;
     private float previousRestProgress;
     private float restProgress;
+    private float previousRestYaw;
+    private float restYaw;
 
     protected FlyingInsectEntity(EntityType<? extends Animal> type, Level level) {
         super(type, level);
@@ -67,12 +69,17 @@ public abstract class FlyingInsectEntity extends Animal {
         return Mth.lerp(partialTick, this.previousRestProgress, this.restProgress);
     }
 
+    public float getRestYaw(float partialTick) {
+        return Mth.rotLerp(partialTick, this.previousRestYaw, this.restYaw);
+    }
+
     @Override
     public void aiStep() {
         super.aiStep();
 
         if (this.level().isClientSide()) {
             this.previousRestProgress = this.restProgress;
+            this.previousRestYaw = this.restYaw;
 
             var face = this.getRestingFace();
 
@@ -81,6 +88,14 @@ public abstract class FlyingInsectEntity extends Animal {
                 this.restProgress = Math.min(1.0F, this.restProgress + 1.0F / REST_TRANSITION_TICKS);
             } else
                 this.restProgress = Math.max(0.0F, this.restProgress - 1.0F / REST_TRANSITION_TICKS);
+
+            if (this.restProgress > 0.0F && this.renderRestingFace != Direction.UP) {
+                var look = Vec3.directionFromRotation(this.getXRot(), this.yBodyRot).toVector3f();
+
+                this.renderRestingFace.getRotation().conjugate().transform(look);
+                this.restYaw = Mth.approachDegrees(this.restYaw, (float) Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG, this.getHeadRotSpeed());
+            } else
+                this.restYaw = this.yBodyRot;
         }
     }
 
