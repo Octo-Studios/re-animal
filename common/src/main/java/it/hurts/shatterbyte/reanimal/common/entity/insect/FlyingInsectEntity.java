@@ -77,6 +77,13 @@ public abstract class FlyingInsectEntity extends Animal {
     public void aiStep() {
         super.aiStep();
 
+        if (!this.onGround() && !this.isNoGravity()) {
+            var movement = this.getDeltaMovement();
+
+            if (movement.y < 0D)
+                this.setDeltaMovement(movement.multiply(1D, 0.6D, 1D));
+        }
+
         if (this.level().isClientSide()) {
             this.previousRestProgress = this.restProgress;
             this.previousRestYaw = this.restYaw;
