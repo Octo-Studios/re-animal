@@ -7,9 +7,9 @@
         {
           "type": "minecraft:item",
           "name": "reanimal:raw_starfish_caviar",
-          "functions": [
+          "modifier": [
             {
-              "function": "minecraft:enchanted_count_increase",
+              "type": "minecraft:enchanted_count_increase",
               "enchantment": "minecraft:looting",
               "count": {
                 "type": "minecraft:uniform",
@@ -18,11 +18,9 @@
               }
             }
           ],
-          "conditions": [
-            {
-              "condition": "minecraft:killed_by_player"
-            }
-          ]
+          "condition": {
+            "type": "minecraft:killed_by_player"
+          }
         }
       ]
     }

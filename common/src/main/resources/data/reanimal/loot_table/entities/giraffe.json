@@ -7,9 +7,9 @@
         {
           "type": "minecraft:item",
           "name": "reanimal:raw_giraffe_meat",
-          "functions": [
+          "modifier": [
             {
-              "function": "minecraft:set_count",
+              "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 1.0,
@@ -17,7 +17,7 @@
               }
             },
             {
-              "function": "minecraft:enchanted_count_increase",
+              "type": "minecraft:enchanted_count_increase",
               "enchantment": "minecraft:looting",
               "count": {
                 "type": "minecraft:uniform",
@@ -26,25 +26,21 @@
               }
             },
             {
-              "function": "minecraft:furnace_smelt",
-              "conditions": [
-                {
-                  "condition": "minecraft:entity_properties",
-                  "entity": "this",
-                  "predicate": {
-                    "flags": {
-                      "is_on_fire": true
-                    }
+              "type": "minecraft:furnace_smelt",
+              "condition": {
+                "type": "minecraft:entity_properties",
+                "entity": "this",
+                "predicate": {
+                  "minecraft:flags": {
+                    "is_on_fire": true
                   }
                 }
-              ]
+              }
             }
           ],
-          "conditions": [
-            {
-              "condition": "minecraft:killed_by_player"
-            }
-          ]
+          "condition": {
+            "type": "minecraft:killed_by_player"
+          }
         }
       ]
     },
@@ -54,9 +50,9 @@
         {
           "type": "minecraft:item",
           "name": "minecraft:leather",
-          "functions": [
+          "modifier": [
             {
-              "function": "minecraft:set_count",
+              "type": "minecraft:set_count",
               "count": {
                 "type": "minecraft:uniform",
                 "min": 0.0,
@@ -64,7 +60,7 @@
               }
             },
             {
-              "function": "minecraft:enchanted_count_increase",
+              "type": "minecraft:enchanted_count_increase",
               "enchantment": "minecraft:looting",
               "count": {
                 "type": "minecraft:uniform",
@@ -73,11 +69,9 @@
               }
             }
           ],
-          "conditions": [
-            {
-              "condition": "minecraft:killed_by_player"
-            }
-          ]
+          "condition": {
+            "type": "minecraft:killed_by_player"
+          }
         }
       ]
     }
