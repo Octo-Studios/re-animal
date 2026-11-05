@@ -3,6 +3,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -18,8 +19,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.FlyingMoveControl;
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.player.Player;
@@ -35,7 +34,7 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 
-public class DragonflyEntity extends Animal implements GeoEntity {
+public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.dragonfly.idle");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.dragonfly.fly");
 
@@ -53,11 +52,6 @@ public class DragonflyEntity extends Animal implements GeoEntity {
 
     public DragonflyEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
-
-        this.moveControl = new FlyingMoveControl(this, 10, false);
-        this.navigation = new FlyingPathNavigation(this, this.level());
-
-        this.getNavigation().setCanFloat(true);
 
         this.setNoGravity(true);
 
@@ -162,6 +156,8 @@ public class DragonflyEntity extends Animal implements GeoEntity {
         if (scary == null)
             return;
 
+        this.stopResting();
+
         if (this.getNavigation().isDone()) {
             var dir = this.getDeltaMovement().multiply(1, 0, 1).normalize();
             var away = this.position().subtract(scary.position()).multiply(1.0D, 0.0D, 1.0D).normalize();
@@ -197,7 +193,7 @@ public class DragonflyEntity extends Animal implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (state.isMoving() || !entity.onGround())
+        if (!entity.isResting() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);
         else
             controller.setAnimation(IDLE);
