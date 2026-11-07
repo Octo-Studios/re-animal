@@ -17,7 +17,7 @@ public class PenguinRenderer extends GeoEntityRenderer<PenguinEntity, EntityRend
 
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
         if (isBaby) {
             renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
 
@@ -29,6 +29,13 @@ public class PenguinRenderer extends GeoEntityRenderer<PenguinEntity, EntityRend
         }
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
+    }
+
+    @Override
+    public void extractRenderState(PenguinEntity entity, EntityRenderState renderState, float partialTick) {
+        super.extractRenderState(entity, renderState, partialTick);
+
+        HeadTracking.setMode(renderState, entity.isSliding() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
     }
 
     @Override
