@@ -12,6 +12,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.TamableAnimal;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animation.*;
@@ -70,6 +73,57 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
     @Override
     protected Brain<?> makeBrain(Brain.Packed packed) {
         return CapybaraAI.makeBrain(this.brainProvider().makeBrain(this, packed));
+    }
+
+    public boolean canRideAdult(CapybaraEntity adult) {
+        return this.isBaby() && this.isInWater() && !this.isPassenger() && !this.isVehicle()
+                && this.boardingCooldown == 0 && this.hurtTime == 0 && this.getSitState() == SitState.STANDING
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                && adult.canCarryBaby() && !adult.isVehicle();
+    }
+
+    private boolean canCarryBaby() {
+        return !this.isBaby() && this.isAlive() && this.isInWater() && !this.isPassenger()
+                && this.hurtTime == 0 && this.getSitState() == SitState.STANDING
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+    }
+
+    @Override
+    public boolean canControlVehicle() {
+        return false;
+    }
+
+    @Override
+    protected boolean isImmobile() {
+        return this.getVehicle() instanceof CapybaraEntity || super.isImmobile();
+    }
+
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+        return passenger instanceof CapybaraEntity ? new Vec3(0D, 15.5D / 16D, 0D)
+                : super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        if (!this.level().isClientSide() && this.getVehicle() instanceof CapybaraEntity adult
+                && (!this.isBaby() || this.hurtTime > 0 || this.getSitState() != SitState.STANDING
+                || this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING) || !adult.canCarryBaby()))
+            this.stopRiding();
+    }
+
+    @Override
+    public void rideTick() {
+        super.rideTick();
+
+        if (this.getVehicle() instanceof CapybaraEntity adult) {
+            this.setYRot(adult.yBodyRot);
+            this.yBodyRot = this.getYRot();
+            this.yHeadRot = this.getYRot();
+            this.setXRot(0F);
+        }
     }
 
     @Override
@@ -273,6 +327,12 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
         var controller = state.controller();
 
         controller.setTransitionTicks(this.getSitState() == SitState.STANDING ? STAND_TRANSITION_TICKS : 0);
+
+        if (this.getVehicle() instanceof CapybaraEntity) {
+            controller.setAnimation(IDLE_SIT);
+
+            return PlayState.CONTINUE;
+        }
 
         switch (this.getSitState()) {
             case SITTING_DOWN -> controller.setAnimation(SIT_DOWN);

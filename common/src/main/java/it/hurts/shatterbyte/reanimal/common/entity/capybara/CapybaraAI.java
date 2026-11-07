@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.SeekShallowWater;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
@@ -11,8 +12,10 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
@@ -50,6 +53,34 @@ public class CapybaraAI {
         return BrainUtil.provider(MEMORY_TYPES, SENSOR_TYPES);
     }
 
+    private static OneShot<CapybaraEntity> rideAdult() {
+        return BehaviorBuilder.create(instance -> instance.group(
+                instance.present(MemoryModuleType.NEAREST_VISIBLE_ADULT),
+                instance.registered(MemoryModuleType.WALK_TARGET),
+                instance.registered(MemoryModuleType.LOOK_TARGET),
+                instance.absent(MemoryModuleType.TEMPTING_PLAYER)
+        ).apply(instance, (nearestAdult, walkTarget, lookTarget, temptingPlayer) -> (level, entity, timestamp) -> {
+            if (entity.tickCount % 20 != 0 || !(instance.get(nearestAdult) instanceof CapybaraEntity adult)
+                    || !entity.canRideAdult(adult) || !entity.closerThan(adult, 4D))
+                return false;
+
+            if (entity.getBoundingBox().inflate(0.25D).intersects(adult.getBoundingBox())) {
+                if (!entity.startRiding(adult))
+                    return false;
+
+                entity.getNavigation().stop();
+                walkTarget.erase();
+                lookTarget.erase();
+                entity.getBrain().eraseMemory(MemoryModuleType.PATH);
+            } else {
+                lookTarget.set(new EntityTracker(adult, true));
+                walkTarget.set(new WalkTarget(new EntityTracker(adult, false), 1.25F, 0));
+            }
+
+            return true;
+        }));
+    }
+
     public static Brain<?> makeBrain(Brain<CapybaraEntity> brain) {
         initCoreActivity(brain);
         initIdleActivity(brain);
@@ -69,7 +100,7 @@ public class CapybaraAI {
                 ImmutableList.of(
                         new Swim<>(0.8F),
                         new LookAtTargetSink(45, 90),
-                        new MoveToTargetSink(),
+                        new MoveToTargetSink(600, 800),
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
                         new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)
                 )
@@ -82,6 +113,7 @@ public class CapybaraAI {
                 ImmutableList.of(
                         Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
                         Pair.of(1, new AnimalMakeLove(ReAnimalEntities.CAPYBARA, 1F, 1)),
+                        Pair.of(2, rideAdult()),
                         Pair.of(
                                 2,
                                 new RunOne<>(
@@ -97,6 +129,7 @@ public class CapybaraAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
+                                                Pair.of(new SeekShallowWater<CapybaraEntity>(entity -> entity.getSitState() == CapybaraEntity.SitState.STANDING), 1),
                                                 Pair.of(RandomStroll.stroll(1F), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)

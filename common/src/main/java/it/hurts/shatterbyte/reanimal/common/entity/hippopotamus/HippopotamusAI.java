@@ -1,22 +1,22 @@
 package it.hurts.shatterbyte.reanimal.common.entity.hippopotamus;
 
-import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
+import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.SeekShallowWater;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
@@ -52,6 +52,7 @@ public class HippopotamusAI {
             MemoryModuleType.TEMPTATION_COOLDOWN_TICKS,
             MemoryModuleType.GAZE_COOLDOWN_TICKS,
             MemoryModuleType.BREED_TARGET,
+            MemoryModuleType.IS_PREGNANT,
             MemoryModuleType.NEAREST_VISIBLE_ADULT,
             MemoryModuleType.DANGER_DETECTED_RECENTLY,
             MemoryModuleType.ATTACK_TARGET,
@@ -86,9 +87,9 @@ public class HippopotamusAI {
                 0,
                 ImmutableList.of(
                         new LayCooldownBehavior(),
-                        new Swim<>(0.8F),
+                        new GiveBirthBehavior(),
                         new LookAtTargetSink(45, 90),
-                        new MoveToTargetSink(),
+                        new MoveToTargetSink(600, 800),
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
                         new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)
                 )
@@ -118,6 +119,7 @@ public class HippopotamusAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
+                                                Pair.of(new SeekShallowWater<HippopotamusEntity>(entity -> !entity.isLaying()), 1),
                                                 Pair.of(RandomStroll.stroll(1F), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
@@ -197,6 +199,64 @@ public class HippopotamusAI {
         return target.getMainHandItem().is(ReAnimalTags.Items.HIPPOPOTAMUS_FOOD) || target.getOffhandItem().is(ReAnimalTags.Items.HIPPOPOTAMUS_FOOD);
     }
 
+    private static class GiveBirthBehavior extends Behavior<HippopotamusEntity> {
+        private static final int MAX_BIRTH_WALK_TICKS = 400;
+
+        private BlockPos birthPos;
+        private long birthDeadline;
+
+        public GiveBirthBehavior() {
+            super(ImmutableMap.of(
+                    MemoryModuleType.IS_PREGNANT, MemoryStatus.VALUE_PRESENT,
+                    MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT
+            ), MAX_BIRTH_WALK_TICKS);
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, HippopotamusEntity entity) {
+            return !entity.isLaying();
+        }
+
+        @Override
+        protected void start(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            this.birthPos = null;
+            this.birthDeadline = gameTime + MAX_BIRTH_WALK_TICKS;
+
+            if (!SeekShallowWater.isShallowWater(level, entity, entity.blockPosition()) && SeekShallowWater.walkToWater(level, entity))
+                this.birthPos = entity.getBrain().getMemory(MemoryModuleType.WALK_TARGET).get().getTarget().currentBlockPosition();
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            return entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PREGNANT)
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                    && !entity.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET);
+        }
+
+        @Override
+        protected void tick(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            var brain = entity.getBrain();
+
+            if (this.birthPos != null && !entity.blockPosition().equals(this.birthPos) && gameTime < this.birthDeadline
+                    && brain.getMemory(MemoryModuleType.WALK_TARGET).map(target -> target.getTarget().currentBlockPosition().equals(this.birthPos)).orElse(false))
+                return;
+
+            var baby = entity.getBreedOffspring(level, entity);
+
+            if (baby != null) {
+                baby.snapTo(entity.getX(), entity.getY(), entity.getZ(), 0F, 0F);
+                level.addFreshEntityWithPassengers(baby);
+            }
+
+            entity.getNavigation().stop();
+            brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+            brain.eraseMemory(MemoryModuleType.PATH);
+            brain.eraseMemory(MemoryModuleType.IS_PREGNANT);
+        }
+    }
+
     public static class LayCooldownBehavior extends Behavior<HippopotamusEntity> {
         public LayCooldownBehavior() {
             super(ImmutableMap.of(), 1200);
@@ -242,6 +302,8 @@ public class HippopotamusAI {
             var shouldAbort = brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
                     || brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                     || brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                    || entity.isInLove()
+                    || brain.hasMemoryValue(MemoryModuleType.IS_PREGNANT)
                     || entity.isInWater();
 
             if ((layState == HippopotamusEntity.LayState.LAYING_DOWN || layState == HippopotamusEntity.LayState.LAYING) && shouldAbort) {

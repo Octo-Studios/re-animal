@@ -16,6 +16,13 @@ public class CapybaraRenderer extends GeoEntityRenderer<CapybaraEntity, EntityRe
     }
 
     @Override
+    public void extractRenderState(CapybaraEntity entity, EntityRenderState renderState, float partialTick) {
+        super.extractRenderState(entity, renderState, partialTick);
+
+        HeadTracking.setMode(renderState, entity.getVehicle() instanceof CapybaraEntity ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
+    }
+
+    @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
         boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
         if (isBaby) {

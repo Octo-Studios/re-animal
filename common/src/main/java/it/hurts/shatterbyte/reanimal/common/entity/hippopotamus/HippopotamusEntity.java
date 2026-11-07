@@ -5,6 +5,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.util.Unit;
 import net.minecraft.util.Util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animation.*;
@@ -63,8 +65,16 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     public HippopotamusEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+    }
 
-        this.getNavigation().setCanFloat(true);
+    @Override
+    protected void travelInWater(Vec3 input, double baseGravity, boolean isFalling, double oldY) {
+        super.travelInWater(this.onGround() ? input : Vec3.ZERO, baseGravity, isFalling, oldY);
+    }
+
+    @Override
+    public int getMaxAirSupply() {
+        return 6000;
     }
 
     public boolean isAttacking() {
@@ -205,6 +215,17 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
     }
 
     @Override
+    public void spawnChildFromBreeding(ServerLevel level, Animal partner) {
+        this.finalizeSpawnChildFromBreeding(level, partner, null);
+        this.getBrain().setMemory(MemoryModuleType.IS_PREGNANT, Unit.INSTANCE);
+    }
+
+    @Override
+    public boolean canFallInLove() {
+        return super.canFallInLove() && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PREGNANT);
+    }
+
+    @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
         return super.doHurtTarget(level, target);
     }
@@ -303,6 +324,8 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                && !this.isInLove()
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PREGNANT)
                 && this.random.nextInt(600) == 0;
     }
 
