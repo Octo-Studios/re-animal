@@ -40,15 +40,15 @@ public class SeekShallowWater<E extends PathfinderMob> extends Behavior<E> {
 
     @Override
     protected void start(ServerLevel level, E entity, long gameTime) {
-        walkToWater(level, entity);
+        walkToWater(level, entity, 8);
     }
 
-    public static boolean walkToWater(ServerLevel level, PathfinderMob entity) {
+    public static boolean walkToWater(ServerLevel level, PathfinderMob entity, int radius) {
         var random = entity.getRandom();
         var origin = entity.blockPosition();
 
-        for (var i = 0; i < 32; i++) {
-            var pos = origin.offset(random.nextInt(17) - 8, random.nextInt(5) - 2, random.nextInt(17) - 8);
+        for (var i = 0; i < radius * radius / 2; i++) {
+            var pos = origin.offset(random.nextInt(radius * 2 + 1) - radius, random.nextInt(5) - 2, random.nextInt(radius * 2 + 1) - radius);
 
             if (!level.hasChunkAt(pos) || !isShallowWater(level, entity, pos))
                 continue;
@@ -58,7 +58,7 @@ public class SeekShallowWater<E extends PathfinderMob> extends Behavior<E> {
 
             entity.setPathfindingMalus(PathType.WATER, 0F);
 
-            var path = navigation.createPath(pos, 0);
+            var path = navigation.createPath(pos, 0, radius * 2);
 
             entity.setPathfindingMalus(PathType.WATER, waterMalus);
 

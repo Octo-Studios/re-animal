@@ -224,7 +224,7 @@ public class HippopotamusAI {
             this.birthPos = null;
             this.birthDeadline = gameTime + MAX_BIRTH_WALK_TICKS;
 
-            if (!SeekShallowWater.isShallowWater(level, entity, entity.blockPosition()) && SeekShallowWater.walkToWater(level, entity))
+            if (!SeekShallowWater.isShallowWater(level, entity, entity.blockPosition()) && SeekShallowWater.walkToWater(level, entity, 32))
                 this.birthPos = entity.getBrain().getMemory(MemoryModuleType.WALK_TARGET).get().getTarget().currentBlockPosition();
         }
 
