@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.LightCoordsUtil;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.RenderPassInfo;
 
@@ -34,8 +35,15 @@ public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, Entity
     }
 
     @Override
+    public void extractRenderState(JellyfishEntity entity, EntityRenderState renderState, float partialTick) {
+        super.extractRenderState(entity, renderState, partialTick);
+
+        renderState.lightCoords = LightCoordsUtil.FULL_BRIGHT;
+    }
+
+    @Override
     public RenderType getRenderType(EntityRenderState renderState, Identifier texture) {
-        return RenderTypes.entityTranslucentEmissive(texture);
+        return RenderTypes.entityTranslucent(texture);
     }
 
     @Override
