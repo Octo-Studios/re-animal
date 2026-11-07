@@ -8,6 +8,7 @@ import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.PerchingAnimalEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -19,13 +20,13 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -46,7 +47,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
-public class PigeonEntity extends Animal implements GeoEntity {
+public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.pigeon.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.pigeon.walk");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.pigeon.fly");
@@ -104,6 +105,22 @@ public class PigeonEntity extends Animal implements GeoEntity {
     }
 
     @Override
+    public boolean canPerch() {
+        return super.canPerch() && !this.isScared();
+    }
+
+    @Override
+    protected boolean canStayPerched(Mob mob) {
+        return super.canStayPerched(mob) && !this.isScared();
+    }
+
+    @Override
+    protected void onPerchTakeoff() {
+        this.scaredTicks = 40;
+        this.playSound(ReAnimalSoundEvents.PIGEON_TAKEOFF, 1F, 1F);
+    }
+
+    @Override
     protected PathNavigation createNavigation(Level level) {
         var navigation = new FlyingPathNavigation(this, level);
 
@@ -117,7 +134,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
     protected void customServerAiStep(ServerLevel serverLevel) {
         this.tickScared(serverLevel);
 
-        if (!isScared()) {
+        if (!this.isScared() && !this.isPerched()) {
 
             ((Brain<PigeonEntity>) this.getBrain()).tick(serverLevel, this);
 
@@ -131,14 +148,14 @@ public class PigeonEntity extends Animal implements GeoEntity {
     public void aiStep() {
         super.aiStep();
 
-        if (!this.onGround()) {
+        if (!this.onGround() && !this.isPerched()) {
             var motion = this.getDeltaMovement();
 
             if (motion.y < -0.1D)
                 this.setDeltaMovement(motion.x, -0.1D, motion.z);
         }
 
-        if (!this.level().isClientSide() && !this.onGround() && !this.isInWater() && --this.droppingTicks <= 0) {
+        if (!this.level().isClientSide() && !this.onGround() && !this.isPerched() && !this.isInWater() && --this.droppingTicks <= 0) {
             this.droppingTicks = DROPPING_INTERVAL_MIN + this.random.nextInt(DROPPING_INTERVAL_MAX - DROPPING_INTERVAL_MIN);
 
             var dropping = ReAnimalEntities.PIGEON_DROPPING.create(this.level(), EntitySpawnReason.TRIGGERED);
@@ -165,7 +182,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
         }
 
         if (this.level().isClientSide()) {
-            if (this.onGround() && !this.isScared() && this.getDeltaMovement().horizontalDistanceSqr() < 0.0001D) {
+            if (this.onGround() && !this.isPerched() && !this.isScared() && this.getDeltaMovement().horizontalDistanceSqr() < 0.0001D) {
                 if (peckTicks > 0)
                     peckTicks--;
                 else if (peckCooldown > 0)
@@ -244,7 +261,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
 
         this.scaredTicks = 100;
 
-        if (this.getNavigation().isDone()) {
+        if (!this.isPerched() && this.getNavigation().isDone()) {
             var dir = this.getDeltaMovement().multiply(1, 0, 1).normalize();
             var away = this.position().subtract(scary.position()).multiply(1.0D, 0.0D, 1.0D).normalize();
 
@@ -311,7 +328,7 @@ public class PigeonEntity extends Animal implements GeoEntity {
 
     @Override
     protected SoundEvent getAmbientSound() {
-        if (!this.onGround())
+        if (!this.onGround() && !this.isPerched())
             return null;
 
         return ReAnimalSoundEvents.PIGEON_IDLE;
@@ -352,10 +369,10 @@ public class PigeonEntity extends Animal implements GeoEntity {
     public boolean isScaredBy(LivingEntity entity) {
         if (!this.getBoundingBox().inflate(7F, 3F, 7F).intersects(entity.getBoundingBox()))
             return false;
-        else if (entity.is(EntityTypeTags.UNDEAD))
-            return true;
         else if (this.getLastHurtByMob() == entity)
             return true;
+        else if (entity instanceof Mob mob)
+            return mob.getTarget() == this;
         else if (entity instanceof Player player)
             return !player.isSpectator() && (player.isSprinting() || player.isPassenger());
         else
@@ -366,7 +383,9 @@ public class PigeonEntity extends Animal implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (state.isMoving()) {
+        if (entity.isPerched())
+            controller.setAnimation(IDLE);
+        else if (state.isMoving()) {
             if (entity.onGround())
                 controller.setAnimation(WALK);
             else

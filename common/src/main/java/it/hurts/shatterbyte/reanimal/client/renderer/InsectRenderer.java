@@ -7,11 +7,13 @@ import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.GeoRenderState;
 import com.geckolib.renderer.base.RenderPassInfo;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> extends GeoEntityRenderer<T, EntityRenderState> {
@@ -32,11 +34,26 @@ public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> e
         geoState.addGeckolibData(RESTING_FACE, entity.getRenderRestingFace().get3DDataValue());
         geoState.addGeckolibData(REST_PROGRESS, entity.getRestProgress(partialTick));
         geoState.addGeckolibData(REST_YAW, entity.getRestYaw(partialTick));
+        geoState.addGeckolibData(MobPerch.TRANSFORM, MobPerch.extract(entity, renderState, partialTick, 3F / 16F));
+    }
+
+    @Override
+    public void preRenderPass(RenderPassInfo renderPassInfo, SubmitNodeCollector renderTasks) {
+        super.preRenderPass(renderPassInfo, renderTasks);
+
+        var transform = (Matrix4f) renderPassInfo.renderState().getGeckolibData(MobPerch.TRANSFORM);
+
+        if (transform != null)
+            renderPassInfo.poseStack().mulPose(transform);
     }
 
     @Override
     public void adjustRenderPose(RenderPassInfo renderPassInfo) {
         var geoState = (GeoRenderState) renderPassInfo.renderState();
+
+        if (geoState.getGeckolibData(MobPerch.TRANSFORM) != null)
+            return;
+
         var progress = geoState.getOrDefaultGeckolibData(REST_PROGRESS, 0.0F);
 
         if (progress > 0.0F) {

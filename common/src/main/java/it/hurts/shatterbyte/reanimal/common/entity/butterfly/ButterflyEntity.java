@@ -81,9 +81,11 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     protected void customServerAiStep(ServerLevel serverLevel) {
         this.tickScared(serverLevel);
 
-        ((Brain<ButterflyEntity>) this.getBrain()).tick(serverLevel, this);
+        if (!this.isPerched()) {
+            ((Brain<ButterflyEntity>) this.getBrain()).tick(serverLevel, this);
 
-        ButterflyAI.updateActivity(this);
+            ButterflyAI.updateActivity(this);
+        }
 
         super.customServerAiStep(serverLevel);
     }
@@ -205,7 +207,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (!entity.isResting() && (state.isMoving() || !entity.onGround()))
+        if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);
         else
             controller.setAnimation(IDLE);

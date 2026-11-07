@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.PerchOnMob;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.RestOnSurface;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import net.minecraft.tags.DamageTypeTags;
@@ -95,6 +96,7 @@ public class DragonflyAI {
                                         ImmutableList.of(
                                                 Pair.of(RandomStroll.fly(1F), 1),
                                                 Pair.of(new RestOnSurface(), 1),
+                                                Pair.of(new PerchOnMob(), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
                                         )

@@ -74,9 +74,11 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         this.tickScared(serverLevel);
 
 
-        ((Brain<DragonflyEntity>) this.getBrain()).tick(serverLevel, this);
+        if (!this.isPerched()) {
+            ((Brain<DragonflyEntity>) this.getBrain()).tick(serverLevel, this);
 
-        DragonflyAI.updateActivity(this);
+            DragonflyAI.updateActivity(this);
+        }
 
         super.customServerAiStep(serverLevel);
     }
@@ -193,7 +195,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (!entity.isResting() && (state.isMoving() || !entity.onGround()))
+        if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);
         else
             controller.setAnimation(IDLE);

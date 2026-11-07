@@ -1,5 +1,6 @@
 package it.hurts.shatterbyte.reanimal.common.entity.insect;
 
+import it.hurts.shatterbyte.reanimal.common.entity.PerchingAnimalEntity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -10,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -21,7 +23,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
-public abstract class FlyingInsectEntity extends Animal {
+public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     private static final EntityDataAccessor<Integer> RESTING_FACE = SynchedEntityData.defineId(FlyingInsectEntity.class, EntityDataSerializers.INT);
     private static final int REST_TRANSITION_TICKS = 10;
 
@@ -40,7 +42,7 @@ public abstract class FlyingInsectEntity extends Animal {
         this.moveControl = new FlyingMoveControl<>(this, 10, false) {
             @Override
             public void tick() {
-                if (!FlyingInsectEntity.this.isResting())
+                if (!FlyingInsectEntity.this.isResting() && !FlyingInsectEntity.this.isPerched())
                     super.tick();
             }
         };
@@ -63,6 +65,16 @@ public abstract class FlyingInsectEntity extends Animal {
 
     public boolean isResting() {
         return this.getEntityData().get(RESTING_FACE) >= 0;
+    }
+
+    @Override
+    public boolean canPerch() {
+        return super.canPerch() && this.canLand() && !this.isResting();
+    }
+
+    @Override
+    protected void onPerchTakeoff() {
+        this.delayLanding();
     }
 
     public float getRestProgress(float partialTick) {
@@ -144,6 +156,9 @@ public abstract class FlyingInsectEntity extends Animal {
     }
 
     public void stopResting() {
+        if (this.getVehicle() instanceof Mob mob)
+            this.leavePerch(mob);
+
         var face = this.getRestingFace();
 
         if (face != null) {
@@ -177,7 +192,7 @@ public abstract class FlyingInsectEntity extends Animal {
 
     @Override
     public void travel(Vec3 input) {
-        if (this.isResting())
+        if (this.isResting() || this.isPerched())
             this.setDeltaMovement(Vec3.ZERO);
         else
             super.travel(input);
@@ -185,7 +200,7 @@ public abstract class FlyingInsectEntity extends Animal {
 
     @Override
     public boolean isPushable() {
-        return !this.isResting() && super.isPushable();
+        return !this.isResting() && !this.isPerched() && super.isPushable();
     }
 
     @Override

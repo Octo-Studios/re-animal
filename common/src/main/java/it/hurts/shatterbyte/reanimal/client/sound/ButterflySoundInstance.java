@@ -33,7 +33,7 @@ public class ButterflySoundInstance extends AbstractTickableSoundInstance {
         this.y = (float) butterfly.getY();
         this.z = (float) butterfly.getZ();
 
-        if (butterfly.onGround()) {
+        if (butterfly.onGround() || butterfly.isPerched()) {
             this.pitch = 0.0F;
             this.volume = 0.0F;
             return;
