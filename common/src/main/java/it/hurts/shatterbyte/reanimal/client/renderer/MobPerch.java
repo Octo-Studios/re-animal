@@ -41,6 +41,10 @@ public final class MobPerch {
     }
 
     public static Matrix4f extract(LivingEntity animal, EntityRenderState animalState, float partialTick, float footSpan) {
+        return extract(animal, animalState, partialTick, footSpan, null);
+    }
+
+    public static Matrix4f extract(LivingEntity animal, EntityRenderState animalState, float partialTick, float footSpan, String boneName) {
         if (!(animal.getVehicle() instanceof LivingEntity host)) {
             ATTACHMENTS.remove(animal);
 
@@ -66,14 +70,14 @@ public final class MobPerch {
             info.renderPosed(() -> {
                 if (!attachment.bound) {
                     for (var bone : info.model().topLevelBones())
-                        visitBone(bone, poseStack, attachment, footSpan * animal.getScale(), true);
+                        visitBone(bone, poseStack, attachment, footSpan * animal.getScale(), true, boneName);
 
                     attachment.bound = attachment.transform != null;
                     attachment.transform = null;
                 }
 
                 for (var bone : info.model().topLevelBones())
-                    visitBone(bone, poseStack, attachment, footSpan * animal.getScale(), false);
+                    visitBone(bone, poseStack, attachment, footSpan * animal.getScale(), false, boneName);
             });
         } else {
             var collector = new SubmitNodeStorage() {
@@ -188,7 +192,7 @@ public final class MobPerch {
         });
     }
 
-    private static void visitBone(GeoBone bone, PoseStack poseStack, Attachment attachment, float footSpan, boolean referencePose) {
+    private static void visitBone(GeoBone bone, PoseStack poseStack, Attachment attachment, float footSpan, boolean referencePose, String boneName) {
         var snapshot = bone.frameSnapshot;
 
         if (snapshot != null && (snapshot.getScaleX() == 0F || snapshot.getScaleY() == 0F || snapshot.getScaleZ() == 0F))
@@ -202,7 +206,8 @@ public final class MobPerch {
         RenderUtil.prepMatrixForBone(poseStack, bone);
         bone.frameSnapshot = snapshot;
 
-        if (bone instanceof CuboidGeoBone cuboid && (bone.frameSnapshot == null || !bone.frameSnapshot.isHidden())) {
+        if (bone instanceof CuboidGeoBone cuboid && (boneName == null || boneName.equals(bone.name()))
+                && (bone.frameSnapshot == null || !bone.frameSnapshot.isHidden())) {
             for (var cube : cuboid.cubes) {
                 if (cube.quads() == null || attachment.bound && (attachment.cube != cube || !attachment.bone.equals(bone.name())))
                     continue;
@@ -252,7 +257,7 @@ public final class MobPerch {
 
         if (bone.frameSnapshot == null || !bone.frameSnapshot.areChildrenHidden()) {
             for (var child : bone.children())
-                visitBone(child, poseStack, attachment, footSpan, referencePose);
+                visitBone(child, poseStack, attachment, footSpan, referencePose, boneName);
         }
 
         poseStack.popPose();
