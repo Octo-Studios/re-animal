@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.jellyfish;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
@@ -45,6 +46,8 @@ import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 
 public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketable {
+    public static final int LIGHT_LEVEL = 8;
+
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.jellyfish.idle");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.jellyfish.swim");
 
@@ -189,6 +192,8 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
 
         if (level.isClientSide())
             return;
+
+        GlowStickEntity.tryPlaceGlowLight(level, BlockPos.containing(this.getBoundingBox().getCenter()), LIGHT_LEVEL);
 
         if (!this.isBaby()) {
             var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof JellyfishEntity));

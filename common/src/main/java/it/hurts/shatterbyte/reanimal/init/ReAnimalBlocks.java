@@ -7,15 +7,16 @@ import it.hurts.shatterbyte.reanimal.common.block.OstrichEggBlock;
 import it.hurts.shatterbyte.reanimal.common.block.QuillPlatformBlock;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
+
 import java.util.function.Function;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.core.registries.Registries;
 
 public class ReAnimalBlocks {
     public static QuillPlatformBlock QUILL_PLATFORM;
@@ -34,7 +35,7 @@ public class ReAnimalBlocks {
         GLOW_LIGHT = register("glow_light", props -> new GlowLightBlock(
                 props
                         .strength(0.0F)
-                        .lightLevel(state -> 15)
+                        .lightLevel(state -> state.getValue(GlowLightBlock.LEVEL))
                         .noCollision()
                         .noOcclusion()
                         .noLootTable()));

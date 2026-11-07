@@ -26,7 +26,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.AABB;
@@ -361,22 +360,27 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     }
 
     public static void tryPlaceGlowLight(Level level, BlockPos basePos) {
+        tryPlaceGlowLight(level, basePos, 15);
+    }
+
+    public static void tryPlaceGlowLight(Level level, BlockPos basePos, int lightLevel) {
         if (level.isClientSide())
             return;
 
-        BlockPos pos = findLightPos(level, basePos);
+        var pos = findLightPos(level, basePos, lightLevel);
         if (pos == null)
             return;
 
         var fluidState = level.getFluidState(pos);
-        BlockState glowState = ReAnimalBlocks.GLOW_LIGHT.defaultBlockState()
-                .setValue(GlowLightBlock.WATERLOGGED, fluidState.is(FluidTags.WATER));
+        var glowState = ReAnimalBlocks.GLOW_LIGHT.defaultBlockState()
+                .setValue(GlowLightBlock.WATERLOGGED, fluidState.is(FluidTags.WATER))
+                .setValue(GlowLightBlock.LEVEL, lightLevel);
 
         level.setBlock(pos, glowState, 3);
     }
 
-    private static BlockPos findLightPos(Level level, BlockPos base) {
-        BlockPos[] candidates = new BlockPos[]{
+    private static BlockPos findLightPos(Level level, BlockPos base, int lightLevel) {
+        var candidates = new BlockPos[]{
                 base,
                 base.above(),
                 base.below(),
@@ -388,7 +392,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
         for (var pos : candidates) {
             var state = level.getBlockState(pos);
-            if (state.is(ReAnimalBlocks.GLOW_LIGHT)) {
+            if (state.is(ReAnimalBlocks.GLOW_LIGHT) && state.getValue(GlowLightBlock.LEVEL) == lightLevel) {
                 var blockEntity = level.getBlockEntity(pos);
                 if (blockEntity instanceof GlowLightBlockEntity glowLight)
                     glowLight.refresh();
@@ -407,9 +411,6 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
     private static boolean canPlaceLightAt(Level level, BlockPos pos) {
         var state = level.getBlockState(pos);
-        if (state.is(ReAnimalBlocks.GLOW_LIGHT))
-            return true;
-
         if (state.isAir())
             return true;
 

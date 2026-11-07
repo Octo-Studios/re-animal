@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.client.light;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
 import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -56,6 +57,8 @@ public final class ColoredGlow {
         for (var entity : level.entitiesForRendering())
             if (entity instanceof GlowStickEntity stick && stick.getItem().getItem() instanceof GlowStickItem item)
                 found.add(new Candidate(stick.getId(), GlowSource.at(stick.position().add(0.0D, 0.12D, 0.0D), GlowColors.of(item))));
+            else if (entity instanceof JellyfishEntity jellyfish)
+                found.add(new Candidate(jellyfish.getId(), GlowSource.at(jellyfish.getBoundingBox().getCenter(), GlowColors.of(jellyfish), JellyfishEntity.LIGHT_LEVEL)));
 
         for (var player : level.players()) {
             var held = heldStick(player);
@@ -127,7 +130,7 @@ public final class ColoredGlow {
         var blue = 0.0F;
 
         for (var source : snapshot) {
-            var share = (float) ((REACH - Math.sqrt(source.distanceSqr(x, y, z))) / REACH);
+            var share = (float) ((source.range() - Math.sqrt(source.distanceSqr(x, y, z))) / source.range());
 
             if (share <= 0.0F)
                 continue;
@@ -137,7 +140,7 @@ public final class ColoredGlow {
             if (reach <= 0)
                 continue;
 
-            share = Math.min(share, (reach + 1.0F) / REACH);
+            share = Math.min(share, (reach + 1.0F) / source.range());
 
             total += share;
             red += source.red() * share;
@@ -156,7 +159,7 @@ public final class ColoredGlow {
 
     public static int tintOf(Object state, int lightCoords, PoseStack.Pose fallback) {
         if (state instanceof EntityRenderState entity) {
-            if (entity.entityType == ReAnimalEntities.GLOW_STICK)
+            if (entity.entityType == ReAnimalEntities.GLOW_STICK || entity.entityType == ReAnimalEntities.JELLYFISH)
                 return WHITE;
 
             return tint(entity.x, entity.y + entity.boundingBoxHeight * 0.5D, entity.z, lightCoords);
@@ -219,7 +222,7 @@ public final class ColoredGlow {
         var state = TRACKED.get(candidate.id());
 
         if (state == null) {
-            state = new Tracked(block, rgb, tick, GlowReach.flood(level, block));
+            state = new Tracked(block, rgb, tick, GlowReach.flood(level, block, source.range()));
 
             TRACKED.put(candidate.id(), state);
             markDirty(level, block);
@@ -229,11 +232,11 @@ public final class ColoredGlow {
 
             state.pos = block;
             state.rgb = rgb;
-            state.reach = GlowReach.flood(level, block);
+            state.reach = GlowReach.flood(level, block, source.range());
             state.lastDirty = tick;
             state.lastFlood = tick;
         } else if (tick - state.lastFlood >= REFLOOD_INTERVAL) {
-            var reach = GlowReach.flood(level, state.pos);
+            var reach = GlowReach.flood(level, state.pos, source.range());
 
             if (!reach.equals(state.reach))
                 markDirty(level, state.pos);

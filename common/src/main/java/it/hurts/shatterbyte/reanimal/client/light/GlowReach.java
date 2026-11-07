@@ -12,12 +12,12 @@ public final class GlowReach {
     private GlowReach() {
     }
 
-    public static Long2ByteOpenHashMap flood(ClientLevel level, BlockPos origin) {
+    public static Long2ByteOpenHashMap flood(ClientLevel level, BlockPos origin, int range) {
         var levels = new Long2ByteOpenHashMap();
         var queue = new LongArrayFIFOQueue();
         var cursor = new BlockPos.MutableBlockPos();
 
-        levels.put(origin.asLong(), (byte) RANGE);
+        levels.put(origin.asLong(), (byte) range);
         queue.enqueue(origin.asLong());
 
         while (!queue.isEmpty()) {

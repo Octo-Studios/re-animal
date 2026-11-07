@@ -6,21 +6,26 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-public record GlowSource(double x, double y, double z, float red, float green, float blue, Long2ByteMap reach) {
+public record GlowSource(double x, double y, double z, float red, float green, float blue, int range, Long2ByteMap reach) {
     private static final double CORNER_MARGIN = 0.01D;
 
     public static GlowSource at(Vec3 pos, int rgb) {
+        return at(pos, rgb, GlowReach.RANGE);
+    }
+
+    public static GlowSource at(Vec3 pos, int rgb, int range) {
         return new GlowSource(
                 pos.x, pos.y, pos.z,
                 (rgb >> 16 & 0xFF) / 255.0F,
                 (rgb >> 8 & 0xFF) / 255.0F,
                 (rgb & 0xFF) / 255.0F,
+                range,
                 Long2ByteMaps.EMPTY_MAP
         );
     }
 
     public GlowSource reaching(Long2ByteMap reach) {
-        return new GlowSource(this.x, this.y, this.z, this.red, this.green, this.blue, reach);
+        return new GlowSource(this.x, this.y, this.z, this.red, this.green, this.blue, this.range, reach);
     }
 
     public int rgb() {

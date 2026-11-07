@@ -1,5 +1,6 @@
 package it.hurts.shatterbyte.reanimal.client.light;
 
+import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
 import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 
@@ -8,6 +9,7 @@ import java.util.Map;
 
 public final class GlowColors {
     private static final int FALLBACK = 0xF2F7FF;
+    private static final int[] JELLYFISH_COLORS = {0xEEEEDC, 0x71D5E1, 0xE07664, 0x79E56D, 0xEB7FC3};
 
     private static Map<GlowStickItem, Integer> table;
 
@@ -19,6 +21,10 @@ public final class GlowColors {
             table = build();
 
         return table.getOrDefault(item.getBase(), FALLBACK);
+    }
+
+    public static int of(JellyfishEntity entity) {
+        return JELLYFISH_COLORS[entity.getVariant()];
     }
 
     private static Map<GlowStickItem, Integer> build() {

@@ -2,7 +2,9 @@ package it.hurts.shatterbyte.reanimal.client.renderer.glow_stick;
 
 import com.mojang.math.Axis;
 import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
 import it.hurts.shatterbyte.reanimal.client.model.glow_stick.GlowStickModel;
+import it.hurts.shatterbyte.reanimal.client.renderer.SoftGlowLayer;
 import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
@@ -23,6 +25,17 @@ public class GlowStickRenderer extends GeoEntityRenderer<GlowStickEntity, Entity
 
     public GlowStickRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new GlowStickModel());
+
+        this.withRenderLayer(new SoftGlowLayer(this,
+                new SoftGlowLayer.Glow("bb_main", 0.125F, 0.32F, 0.45F),
+                new SoftGlowLayer.Glow("bb_main", 0.25F, 0.32F, 0.45F),
+                new SoftGlowLayer.Glow("bb_main", 0.375F, 0.32F, 0.45F),
+                new SoftGlowLayer.Glow("bb_main", 0.5F, 0.32F, 0.45F)));
+    }
+
+    @Override
+    protected int getBlockLightLevel(GlowStickEntity entity, BlockPos pos) {
+        return 15;
     }
 
     @Override
