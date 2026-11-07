@@ -50,6 +50,7 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int sitTransitionTicks;
+    private int dismountDelay;
 
     public CapybaraEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -79,11 +80,11 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
         return this.isBaby() && this.isInWater() && !this.isPassenger() && !this.isVehicle()
                 && this.boardingCooldown == 0 && this.hurtTime == 0 && this.getSitState() == SitState.STANDING
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
-                && adult.canCarryBaby() && !adult.isVehicle();
+                && adult.isInWater() && adult.canCarryBaby() && !adult.isVehicle();
     }
 
     private boolean canCarryBaby() {
-        return !this.isBaby() && this.isAlive() && this.isInWater() && !this.isPassenger()
+        return !this.isBaby() && this.isAlive() && !this.isPassenger()
                 && this.hurtTime == 0 && this.getSitState() == SitState.STANDING
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
     }
@@ -108,10 +109,18 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
     public void tick() {
         super.tick();
 
-        if (!this.level().isClientSide() && this.getVehicle() instanceof CapybaraEntity adult
-                && (!this.isBaby() || this.hurtTime > 0 || this.getSitState() != SitState.STANDING
-                || this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING) || !adult.canCarryBaby()))
-            this.stopRiding();
+        if (!this.level().isClientSide() && this.getVehicle() instanceof CapybaraEntity adult) {
+            if (!this.isBaby() || this.hurtTime > 0 || this.getSitState() != SitState.STANDING
+                    || this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING) || !adult.canCarryBaby())
+                this.stopRiding();
+            else if (adult.isInWater())
+                this.dismountDelay = 0;
+            else if (this.dismountDelay == 0)
+                this.dismountDelay = this.random.nextIntBetweenInclusive(20, 100);
+            else if (--this.dismountDelay == 0)
+                this.stopRiding();
+        } else
+            this.dismountDelay = 0;
     }
 
     @Override
