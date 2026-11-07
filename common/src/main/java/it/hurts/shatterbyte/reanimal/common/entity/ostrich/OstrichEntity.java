@@ -44,6 +44,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.ostrich.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.ostrich.walk");
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.ostrich.run");
+    private static final RawAnimation COURTSHIP = RawAnimation.begin().then("animation.ostrich.courtship", LoopType.PLAY_ONCE);
     private static final RawAnimation KICK_LEFT = RawAnimation.begin().then("animation.ostrich.kick_left", LoopType.PLAY_ONCE);
     private static final RawAnimation KICK_RIGHT = RawAnimation.begin().then("animation.ostrich.kick_right", LoopType.PLAY_ONCE);
     private static final int KICK_DURATION_TICKS = 12;
@@ -54,6 +55,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> KICKING = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> COURTING = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
 
     private float jumpPower;
     private LivingEntity kickTarget;
@@ -80,6 +82,21 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         return this.entityData.get(KICKING);
     }
 
+    public boolean isCourting() {
+        return this.entityData.get(COURTING);
+    }
+
+    public void startCourtship() {
+        this.entityData.set(COURTING, true);
+    }
+
+    public void stopCourtship() {
+        this.entityData.set(COURTING, false);
+        this.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
+        this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        this.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+    }
+
     public OstrichEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
@@ -92,7 +109,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
         this.tickEggLaying();
 
-        if (this.isKicking()) {
+        if (this.isKicking() || this.isCourting()) {
             this.yBodyRot = this.getYRot();
             this.yHeadRot = this.getYRot();
         }
@@ -103,7 +120,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (this.isBaby() || this.isKicking())
+        if (this.isBaby() || this.isKicking() || this.isCourting())
             return super.mobInteract(player, hand);
 
         var stack = player.getItemInHand(hand);
@@ -135,8 +152,9 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public void travel(Vec3 travelVector) {
-        if (this.isKicking()) {
-            this.setYRot(this.kickYaw);
+        if (this.isKicking() || this.isCourting()) {
+            if (this.isKicking())
+                this.setYRot(this.kickYaw);
 
             if (this.hurtTime == 0)
                 this.setDeltaMovement(0D, this.getDeltaMovement().y, 0D);
@@ -232,6 +250,11 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         var result = super.hurtServer(level, source, amount);
 
         if (result) {
+            this.getBrain().getMemory(MemoryModuleType.BREED_TARGET).ifPresent(partner -> {
+                ((OstrichEntity) partner).stopCourtship();
+                this.stopCourtship();
+            });
+
             this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
 
             OstrichAI.updateActivity(this);
@@ -337,6 +360,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
         builder.define(SADDLED, false);
         builder.define(KICKING, false);
+        builder.define(COURTING, false);
     }
 
     @Override
@@ -414,7 +438,9 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         if (entity.isKicking())
             return PlayState.STOP;
 
-        if (state.isMoving()) {
+        if (entity.isCourting())
+            controller.setAnimation(COURTSHIP);
+        else if (state.isMoving()) {
             if (entity.isSprinting() || entity.isVehicle())
                 controller.setAnimation(RUN);
             else

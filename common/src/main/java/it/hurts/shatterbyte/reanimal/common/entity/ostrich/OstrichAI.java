@@ -5,7 +5,6 @@ import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.tags.DamageTypeTags;
@@ -83,7 +82,7 @@ public class OstrichAI {
                 Activity.IDLE,
                 ImmutableList.of(
                         Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
-                        Pair.of(1, new AnimalMakeLove(ReAnimalEntities.OSTRICH, 1F, 1)),
+                        Pair.of(1, new OstrichCourtship()),
                         Pair.of(
                                 2,
                                 new RunOne<>(

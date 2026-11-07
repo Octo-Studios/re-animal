@@ -21,7 +21,7 @@ public class OstrichRenderer extends GeoEntityRenderer<OstrichEntity, EntityRend
     public void extractRenderState(OstrichEntity entity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(entity, renderState, partialTick);
 
-        HeadTracking.setMode(renderState, entity.isKicking() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
+        HeadTracking.setMode(renderState, entity.isKicking() || entity.isCourting() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
     }
 
     @Override
