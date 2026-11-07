@@ -11,7 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -39,7 +39,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     protected FlyingInsectEntity(EntityType<? extends Animal> type, Level level) {
         super(type, level);
 
-        this.moveControl = new FlyingMoveControl<>(this, 10, false) {
+        this.moveControl = new FlyingMoveControl<>(this, 10, true) {
             @Override
             public void tick() {
                 if (!FlyingInsectEntity.this.isResting() && !FlyingInsectEntity.this.isPerched())
@@ -156,8 +156,8 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     }
 
     public void stopResting() {
-        if (this.getVehicle() instanceof Mob mob)
-            this.leavePerch(mob);
+        if (this.getVehicle() instanceof LivingEntity host)
+            this.leavePerch(host);
 
         var face = this.getRestingFace();
 

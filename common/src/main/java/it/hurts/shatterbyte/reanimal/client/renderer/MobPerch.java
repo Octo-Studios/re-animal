@@ -20,7 +20,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.UvMapping;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.LivingEntity;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -38,13 +38,13 @@ public final class MobPerch {
     }
 
     public static Matrix4f extract(PerchingAnimalEntity animal, EntityRenderState animalState, float partialTick, float footSpan) {
-        if (!(animal.getVehicle() instanceof Mob host)) {
+        if (!(animal.getVehicle() instanceof LivingEntity host)) {
             ATTACHMENTS.remove(animal);
 
             return null;
         }
 
-        var renderer = (EntityRenderer<Mob, EntityRenderState>) Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(host);
+        var renderer = (EntityRenderer<LivingEntity, EntityRenderState>) Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(host);
         var state = renderer.createRenderState(host, partialTick);
         var poseStack = new PoseStack();
         var offset = renderer.getRenderOffset(state);
@@ -61,8 +61,16 @@ public final class MobPerch {
             info.captureModelRenderPose();
 
             info.renderPosed(() -> {
+                if (!attachment.bound) {
+                    for (var bone : info.model().topLevelBones())
+                        visitBone(bone, poseStack, attachment, footSpan * animal.getScale(), true);
+
+                    attachment.bound = attachment.transform != null;
+                    attachment.transform = null;
+                }
+
                 for (var bone : info.model().topLevelBones())
-                    visitBone(bone, poseStack, attachment, footSpan * animal.getScale());
+                    visitBone(bone, poseStack, attachment, footSpan * animal.getScale(), false);
             });
         } else {
             var collector = new SubmitNodeStorage() {
@@ -70,7 +78,18 @@ public final class MobPerch {
                     @Override
                     public <S> void submitModel(Model<? super S> model, S modelState, PoseStack stack, RenderType renderType, int lightCoords, int overlayCoords, int tintedColor, UvMapping uvMapping, int outlineColor) {
                         model.setupAnim(modelState);
-                        visitModel(model.root(), stack, attachment, footSpan * animal.getScale());
+
+                        if (!attachment.bound) {
+                            var parts = model.root().getAllParts();
+                            var poses = parts.stream().map(ModelPart::storePose).toList();
+
+                            parts.forEach(ModelPart::resetPose);
+                            visitModel(model.root(), stack, attachment, footSpan * animal.getScale());
+
+                            for (var i = 0; i < parts.size(); i++)
+                                parts.get(i).loadPose(poses.get(i));
+                        } else
+                            visitModel(model.root(), stack, attachment, footSpan * animal.getScale());
                     }
                 };
 
@@ -80,6 +99,12 @@ public final class MobPerch {
                 }
             };
             renderer.submit(state, poseStack, collector, new CameraRenderState());
+
+            if (!attachment.bound && attachment.transform != null) {
+                attachment.bound = true;
+                attachment.transform = null;
+                renderer.submit(state, poseStack, collector, new CameraRenderState());
+            }
         }
 
         if (attachment.transform == null) {
@@ -95,7 +120,7 @@ public final class MobPerch {
         return transform.mul(attachment.transform);
     }
 
-    private static Attachment getAttachment(PerchingAnimalEntity animal, Mob host) {
+    private static Attachment getAttachment(PerchingAnimalEntity animal, LivingEntity host) {
         var attachment = ATTACHMENTS.get(animal);
 
         if (attachment == null || attachment.hostId != host.getId()) {
@@ -126,26 +151,22 @@ public final class MobPerch {
                     return;
             }
 
-            if (part.skipDraw)
+            if (part.skipDraw || attachment.bound && (attachment.cube != cube || !attachment.bone.equals(path)))
                 return;
 
-            var face = attachment.face;
+            var face = -1;
+            var upward = 0F;
 
-            if (!attachment.bound) {
-                face = -1;
-                var upward = 0F;
+            for (var i = 0; i < cube.polygons.length; i++) {
+                var normal = pose.normal().transform(cube.polygons[i].normal(), new Vector3f()).normalize();
 
-                for (var i = 0; i < cube.polygons.length; i++) {
-                    var normal = pose.normal().transform(cube.polygons[i].normal(), new Vector3f()).normalize();
-
-                    if (normal.y > upward) {
-                        upward = normal.y;
-                        face = i;
-                    }
+                if (normal.y > upward) {
+                    upward = normal.y;
+                    face = i;
                 }
             }
 
-            if (face < 0 || attachment.bound && (attachment.cube != cube || !attachment.bone.equals(path)))
+            if (face < 0)
                 return;
 
             var polygon = cube.polygons[face];
@@ -159,17 +180,24 @@ public final class MobPerch {
             var edge = new Vector3f(vertices[1].worldX(), vertices[1].worldY(), vertices[1].worldZ()).sub(first);
             var otherEdge = new Vector3f(vertices[3].worldX(), vertices[3].worldY(), vertices[3].worldZ()).sub(first);
 
-            attachment.offer(path, cube, face, pose, center.div(vertices.length), new Vector3f(polygon.normal()), edge, otherEdge, footSpan);
+            attachment.offer(path, cube, pose, center.div(vertices.length), new Vector3f(polygon.normal()), edge, otherEdge, footSpan);
         });
     }
 
-    private static void visitBone(GeoBone bone, PoseStack poseStack, Attachment attachment, float footSpan) {
+    private static void visitBone(GeoBone bone, PoseStack poseStack, Attachment attachment, float footSpan, boolean referencePose) {
         poseStack.pushPose();
+
+        var snapshot = bone.frameSnapshot;
+
+        if (referencePose)
+            bone.frameSnapshot = null;
+
         RenderUtil.prepMatrixForBone(poseStack, bone);
+        bone.frameSnapshot = snapshot;
 
         if (bone instanceof CuboidGeoBone cuboid && (bone.frameSnapshot == null || !bone.frameSnapshot.isHidden())) {
             for (var cube : cuboid.cubes) {
-                if (cube.quads() == null)
+                if (cube.quads() == null || attachment.bound && (attachment.cube != cube || !attachment.bone.equals(bone.name())))
                     continue;
 
                 poseStack.pushPose();
@@ -179,29 +207,24 @@ public final class MobPerch {
                 cube.translateAwayFromPivotPoint(poseStack);
 
                 var pose = poseStack.last();
-                var face = attachment.face;
+                var face = -1;
+                var upward = 0F;
 
-                if (!attachment.bound) {
-                    face = -1;
+                for (var i = 0; i < cube.quads().length; i++) {
+                    var quad = cube.quads()[i];
 
-                    var upward = 0F;
+                    if (quad == null)
+                        continue;
 
-                    for (var i = 0; i < cube.quads().length; i++) {
-                        var quad = cube.quads()[i];
+                    var normal = pose.normal().transform(quad.normalVec()).normalize();
 
-                        if (quad == null)
-                            continue;
-
-                        var normal = pose.normal().transform(quad.normalVec()).normalize();
-
-                        if (normal.y > upward) {
-                            upward = normal.y;
-                            face = i;
-                        }
+                    if (normal.y > upward) {
+                        upward = normal.y;
+                        face = i;
                     }
                 }
 
-                if (face >= 0 && (!attachment.bound || attachment.cube == cube && attachment.bone.equals(bone.name()))) {
+                if (face >= 0) {
                     var quad = cube.quads()[face];
                     var vertices = quad.vertices();
                     var center = new Vector3f();
@@ -213,7 +236,7 @@ public final class MobPerch {
                     var edge = new Vector3f(vertices[1].posX(), vertices[1].posY(), vertices[1].posZ()).sub(first);
                     var otherEdge = new Vector3f(vertices[3].posX(), vertices[3].posY(), vertices[3].posZ()).sub(first);
 
-                    attachment.offer(bone.name(), cube, face, pose, center.div(vertices.length), quad.normalVec(), edge, otherEdge, footSpan);
+                    attachment.offer(bone.name(), cube, pose, center.div(vertices.length), quad.normalVec(), edge, otherEdge, footSpan);
                 }
 
                 poseStack.popPose();
@@ -222,7 +245,7 @@ public final class MobPerch {
 
         if (bone.frameSnapshot == null || !bone.frameSnapshot.areChildrenHidden()) {
             for (var child : bone.children())
-                visitBone(child, poseStack, attachment, footSpan);
+                visitBone(child, poseStack, attachment, footSpan, referencePose);
         }
 
         poseStack.popPose();
@@ -233,7 +256,6 @@ public final class MobPerch {
         private boolean bound;
         private String bone;
         private Object cube;
-        private int face;
         private int priority = -1;
         private float height;
         private Matrix4f transform;
@@ -242,7 +264,7 @@ public final class MobPerch {
             this.hostId = hostId;
         }
 
-        private void offer(String bone, Object cube, int face, PoseStack.Pose pose, Vector3f center, Vector3f normal, Vector3f edge, Vector3f otherEdge, float footSpan) {
+        private void offer(String bone, Object cube, PoseStack.Pose pose, Vector3f center, Vector3f normal, Vector3f edge, Vector3f otherEdge, float footSpan) {
             var span = Math.min(pose.pose().transformDirection(edge).length(), pose.pose().transformDirection(otherEdge).length());
 
             if (span == 0F)
@@ -264,7 +286,6 @@ public final class MobPerch {
 
             this.bone = bone;
             this.cube = cube;
-            this.face = face;
             this.priority = priority;
             this.height = position.y;
             this.transform = new Matrix4f(new Matrix3f(right, up, forward)).setTranslation(position);

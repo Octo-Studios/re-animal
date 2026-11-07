@@ -18,6 +18,7 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
 
     private LandingSpot landing;
     private int approachTicks;
+    private long nextSearchTick;
 
     public RestOnSurface() {
         super(Map.of(
@@ -29,7 +30,7 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
 
     @Override
     protected boolean checkExtraStartConditions(ServerLevel level, FlyingInsectEntity insect) {
-        if (!insect.canLand())
+        if (!insect.canLand() || level.getGameTime() < this.nextSearchTick)
             return false;
 
         if (insect.isResting()) {
@@ -79,7 +80,7 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
             return true;
         }
 
-        insect.delayLanding();
+        this.nextSearchTick = level.getGameTime() + 100 + insect.getRandom().nextInt(100);
 
         return false;
     }

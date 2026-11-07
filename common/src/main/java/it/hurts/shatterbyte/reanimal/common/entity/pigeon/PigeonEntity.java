@@ -33,6 +33,8 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -110,8 +112,8 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
     }
 
     @Override
-    protected boolean canStayPerched(Mob mob) {
-        return super.canStayPerched(mob) && !this.isScared();
+    protected boolean canStayPerched(LivingEntity host) {
+        return super.canStayPerched(host) && !this.isScared();
     }
 
     @Override
@@ -276,6 +278,7 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
             var target = Vec3.atCenterOf(ground);
 
             this.getNavigation().moveTo(target.x, target.y, target.z, 1D);
+            this.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 1F, 0));
 
             if (this.onGround() && !this.isBaby())
                 this.playSound(ReAnimalSoundEvents.PIGEON_TAKEOFF, 1F, 1F);
@@ -385,7 +388,7 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
 
         if (entity.isPerched())
             controller.setAnimation(IDLE);
-        else if (state.isMoving()) {
+        else if (state.isMoving() || !entity.onGround() && !entity.isBaby()) {
             if (entity.onGround())
                 controller.setAnimation(WALK);
             else

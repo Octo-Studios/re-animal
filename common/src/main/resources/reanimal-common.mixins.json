@@ -4,6 +4,8 @@
   "package": "it.hurts.shatterbyte.reanimal.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "BodyRotationControlMixin",
+    "EntityMixin",
     "PolarBearMixin"
   ],
   "client": [
