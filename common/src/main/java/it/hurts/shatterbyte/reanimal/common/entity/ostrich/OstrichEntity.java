@@ -1,10 +1,16 @@
 package it.hurts.shatterbyte.reanimal.common.entity.ostrich;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.LoopType;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -28,40 +34,41 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import com.geckolib.animatable.GeoEntity;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animation.*;
-import com.geckolib.animation.object.PlayState;
-import com.geckolib.animation.object.LoopType;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.util.GeckoLibUtil;
 
 import java.util.Comparator;
 
-public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJumping {
+public class OstrichEntity extends TamableAnimal implements GeoEntity, PlayerRideableJumping {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.ostrich.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.ostrich.walk");
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.ostrich.run");
+    private static final RawAnimation IDLE_SIT = RawAnimation.begin().thenLoop("animation.ostrich.idle_sit");
+    private static final RawAnimation SIT_DOWN = RawAnimation.begin().then("animation.ostrich.sitting", LoopType.PLAY_ONCE).thenLoop("animation.ostrich.idle_sit");
+    private static final RawAnimation GETTING_UP = RawAnimation.begin().then("animation.ostrich.getting_up", LoopType.PLAY_ONCE);
     private static final RawAnimation COURTSHIP = RawAnimation.begin().then("animation.ostrich.courtship", LoopType.PLAY_ONCE);
     private static final RawAnimation KICK_LEFT = RawAnimation.begin().then("animation.ostrich.kick_left", LoopType.PLAY_ONCE);
     private static final RawAnimation KICK_RIGHT = RawAnimation.begin().then("animation.ostrich.kick_right", LoopType.PLAY_ONCE);
     private static final int KICK_DURATION_TICKS = 12;
     private static final int KICK_HIT_TICK = 4;
     private static final int KICK_COOLDOWN_TICKS = 40;
+    private static final int SIT_TRANSITION_TICKS = 10;
+    private static final int STAND_TRANSITION_TICKS = 5;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> KICKING = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> COURTING = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> SIT_STATE = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.INT);
 
     private float jumpPower;
     private LivingEntity kickTarget;
     private int kickTicks;
     private int nextKickTick;
     private float kickYaw;
+    private int sitTransitionTicks;
 
     private static final int EGG_RETRY_TICKS = 100;
     private static final int EGG_DELAY_MIN = 100;
@@ -97,7 +104,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         this.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
     }
 
-    public OstrichEntity(EntityType<? extends Animal> entityType, Level level) {
+    public OstrichEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
 
         this.getNavigation().setCanFloat(true);
@@ -108,6 +115,21 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         super.aiStep();
 
         this.tickEggLaying();
+
+        if (!this.level().isClientSide())
+            this.tickSitTransition();
+
+        if (this.getSitState() != SitState.STANDING) {
+            this.getNavigation().stop();
+            this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+            this.setJumping(false);
+
+            this.zza = 0F;
+            this.xxa = 0F;
+
+            if (this.onGround())
+                this.setDeltaMovement(0D, this.getDeltaMovement().y, 0D);
+        }
 
         if (this.isKicking() || this.isCourting()) {
             this.yBodyRot = this.getYRot();
@@ -120,13 +142,43 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (this.isBaby() || this.isKicking() || this.isCourting())
-            return super.mobInteract(player, hand);
-
         var stack = player.getItemInHand(hand);
         var level = this.level();
 
-        if (stack.is(Items.SADDLE) && !this.isSaddled()) {
+        if (this.isFood(stack)) {
+            if (!this.isTame()) {
+                if (!level.isClientSide()) {
+                    if (!player.getAbilities().instabuild)
+                        stack.shrink(1);
+
+                    this.tame(player);
+                    this.setTarget(null);
+                    this.getNavigation().stop();
+
+                    level.broadcastEntityEvent(this, (byte) 7);
+                }
+
+                return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+            }
+
+            if (this.isOwnedBy(player) && this.getHealth() < this.getMaxHealth()) {
+                if (!level.isClientSide()) {
+                    if (!player.getAbilities().instabuild)
+                        stack.shrink(1);
+
+                    this.heal(2F);
+                }
+
+                return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+            }
+
+            return super.mobInteract(player, hand);
+        }
+
+        if (this.isKicking() || this.isCourting())
+            return super.mobInteract(player, hand);
+
+        if (this.isTame() && !this.isBaby() && stack.is(Items.SADDLE) && !this.isSaddled()) {
             if (!level.isClientSide()) {
                 this.setSaddled(true);
 
@@ -140,7 +192,18 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
             return (level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME);
         }
 
-        if (this.isSaddled() && !this.isVehicle()) {
+        if (hand == InteractionHand.MAIN_HAND && this.isTame() && this.isOwnedBy(player) && !this.isVehicle()
+                && (!this.isSaddled() || player.isSecondaryUseActive() || this.getSitState() != SitState.STANDING)) {
+            if (level.isClientSide())
+                this.setSitState(this.isSittingDownOrSitting() ? SitState.GETTING_UP : SitState.SITTING_DOWN);
+            else
+                this.setSitting(!this.isSittingDownOrSitting());
+
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+        }
+
+        if (this.isTame() && !this.isBaby() && this.isSaddled() && !this.isVehicle()
+                && this.getSitState() == SitState.STANDING && !player.isSecondaryUseActive()) {
             if (!level.isClientSide())
                 player.startRiding(this);
 
@@ -150,9 +213,41 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         return super.mobInteract(player, hand);
     }
 
+    private boolean isSittingDownOrSitting() {
+        return this.getSitState() == SitState.SITTING_DOWN || this.getSitState() == SitState.SITTING;
+    }
+
+    private void setSitting(boolean sitting) {
+        this.setOrderedToSit(sitting);
+        this.setInSittingPose(sitting);
+        this.setSitState(sitting ? SitState.SITTING_DOWN : SitState.GETTING_UP);
+        this.sitTransitionTicks = SIT_TRANSITION_TICKS;
+
+        this.getNavigation().stop();
+        this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+    }
+
+    private void tickSitTransition() {
+        var state = this.getSitState();
+
+        if (state != SitState.SITTING_DOWN && state != SitState.GETTING_UP)
+            return;
+
+        if (--this.sitTransitionTicks == 0)
+            this.setSitState(state == SitState.SITTING_DOWN ? SitState.SITTING : SitState.STANDING);
+    }
+
+    private SitState getSitState() {
+        return SitState.values()[this.entityData.get(SIT_STATE)];
+    }
+
+    private void setSitState(SitState state) {
+        this.entityData.set(SIT_STATE, state.ordinal());
+    }
+
     @Override
     public void travel(Vec3 travelVector) {
-        if (this.isKicking() || this.isCourting()) {
+        if (this.isKicking() || this.isCourting() || this.getSitState() != SitState.STANDING) {
             if (this.isKicking())
                 this.setYRot(this.kickYaw);
 
@@ -178,8 +273,8 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
             this.yBodyRot = this.getYRot();
             this.yHeadRot = this.getYRot();
 
-            float strafe = rider.xxa * 0.5F;
-            float forward = rider.zza;
+            var strafe = rider.xxa * 0.5F;
+            var forward = rider.zza;
 
             if (forward <= 0.0F)
                 forward *= 0.25F;
@@ -205,7 +300,8 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     private void tickKick(ServerLevel level) {
         if (this.kickTicks == 0) {
-            if (!this.isPanicking() || this.tickCount < this.nextKickTick || this.isBaby() || this.isVehicle() || this.isPassenger() || !this.onGround())
+            if (!this.isPanicking() || this.tickCount < this.nextKickTick || this.isBaby() || this.isVehicle() || this.isPassenger()
+                    || !this.onGround() || this.getSitState() != SitState.STANDING)
                 return;
 
             var attacker = this.getLastHurtByMob();
@@ -249,7 +345,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         var result = super.hurtServer(level, source, amount);
 
-        if (result) {
+        if (result && !this.isOrderedToSit()) {
             this.getBrain().getMemory(MemoryModuleType.BREED_TARGET).ifPresent(partner -> {
                 ((OstrichEntity) partner).stopCourtship();
                 this.stopCourtship();
@@ -336,6 +432,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     public void readAdditionalSaveData(ValueInput tag) {
         super.readAdditionalSaveData(tag);
 
+        this.setSitState(this.isOrderedToSit() ? SitState.SITTING : SitState.STANDING);
         this.setSaddled(tag.getBooleanOr("saddled", false));
         this.hasEgg = tag.getBooleanOr("hasEgg", false);
         this.eggTime = tag.getIntOr("eggTime", 0);
@@ -345,6 +442,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     public Vec3 getPassengerRidingPosition(Entity entity) {
         return super.getPassengerRidingPosition(entity).add(0, -1, 0);
     }
+
     protected Brain.Provider<OstrichEntity> brainProvider() {
         return OstrichAI.brainProvider();
     }
@@ -361,6 +459,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         builder.define(SADDLED, false);
         builder.define(KICKING, false);
         builder.define(COURTING, false);
+        builder.define(SIT_STATE, SitState.STANDING.ordinal());
     }
 
     @Override
@@ -412,7 +511,8 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public boolean canMate(Animal other) {
-        if (this.hasEgg || other instanceof OstrichEntity ostrich && ostrich.hasEgg)
+        if (this.getSitState() != SitState.STANDING || this.hasEgg
+                || other instanceof OstrichEntity ostrich && (ostrich.getSitState() != SitState.STANDING || ostrich.hasEgg))
             return false;
 
         return super.canMate(other);
@@ -435,18 +535,27 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         var controller = state.controller();
         var entity = state.animatable();
 
+        controller.setTransitionTicks(this.getSitState() == SitState.STANDING ? STAND_TRANSITION_TICKS : 0);
+
         if (entity.isKicking())
             return PlayState.STOP;
 
-        if (entity.isCourting())
-            controller.setAnimation(COURTSHIP);
-        else if (state.isMoving()) {
-            if (entity.isSprinting() || entity.isVehicle())
-                controller.setAnimation(RUN);
-            else
-                controller.setAnimation(WALK);
-        } else
-            controller.setAnimation(IDLE);
+        switch (this.getSitState()) {
+            case SITTING_DOWN -> controller.setAnimation(SIT_DOWN);
+            case SITTING -> controller.setAnimation(controller.getCurrentRawAnimation() == SIT_DOWN ? SIT_DOWN : IDLE_SIT);
+            case GETTING_UP -> controller.setAnimation(GETTING_UP);
+            case STANDING -> {
+                if (entity.isCourting())
+                    controller.setAnimation(COURTSHIP);
+                else if (state.isMoving()) {
+                    if (entity.isSprinting() || entity.isVehicle())
+                        controller.setAnimation(RUN);
+                    else
+                        controller.setAnimation(WALK);
+                } else
+                    controller.setAnimation(IDLE);
+            }
+        }
 
         return PlayState.CONTINUE;
     }
@@ -487,5 +596,12 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.35D)
                 .add(Attributes.STEP_HEIGHT, 1.1D)
                 .add(Attributes.SAFE_FALL_DISTANCE, 8D);
+    }
+
+    private enum SitState {
+        STANDING,
+        SITTING_DOWN,
+        SITTING,
+        GETTING_UP
     }
 }
