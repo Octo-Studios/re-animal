@@ -124,7 +124,7 @@ public class ToucanEntity extends Animal implements GeoEntity {
             if (--this.flightTicks == 0 || this.getNavigation().isDone() || this.isInWater())
                 this.stopFlying();
         } else if (!this.tickFood(level)) {
-            if (this.onGround() && !this.isInWater() && !this.isBaby() && --this.flightCooldown <= 0)
+            if (this.onGround() && !this.isInWater() && !this.isBaby() && !this.isPanicking() && --this.flightCooldown <= 0)
                 this.startFlying();
 
             if (this.flightTicks == 0) {
@@ -138,7 +138,7 @@ public class ToucanEntity extends Animal implements GeoEntity {
     }
 
     private boolean tickFood(ServerLevel level) {
-        if (this.isBaby() || this.isFlying() || this.isInWater())
+        if (this.isBaby() || this.isFlying() || this.isInWater() || this.isPanicking())
             return false;
 
         if (this.targetFood != null && (!this.targetFood.isAlive() || !this.isFood(this.targetFood.getItem()) || this.distanceToSqr(this.targetFood) > 256D)) {
@@ -268,6 +268,26 @@ public class ToucanEntity extends Animal implements GeoEntity {
         this.gameEvent(GameEvent.ENTITY_PLACE, this);
 
         this.eggTime = this.random.nextInt(6000) + 6000;
+    }
+
+    @Override
+    public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        var result = super.hurtServer(level, source, amount);
+
+        if (result && this.isAlive()) {
+            if (this.isFlying())
+                this.stopFlying();
+
+            this.targetFood = null;
+            this.getEntityData().set(EATING_TICKS, 0);
+            this.spawnAtLocation(level, this.getMainHandItem());
+            this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+            this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
+
+            ToucanAI.updateActivity(this);
+        }
+
+        return result;
     }
 
     @Override
