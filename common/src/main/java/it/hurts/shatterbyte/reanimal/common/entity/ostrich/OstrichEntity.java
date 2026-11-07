@@ -2,18 +2,18 @@ package it.hurts.shatterbyte.reanimal.common.entity.ostrich;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
- import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -33,20 +33,33 @@ import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animation.*;
 import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.object.LoopType;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
+
+import java.util.Comparator;
 
 public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJumping {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.ostrich.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.ostrich.walk");
     private static final RawAnimation RUN = RawAnimation.begin().thenLoop("animation.ostrich.run");
+    private static final RawAnimation KICK_LEFT = RawAnimation.begin().then("animation.ostrich.kick_left", LoopType.PLAY_ONCE);
+    private static final RawAnimation KICK_RIGHT = RawAnimation.begin().then("animation.ostrich.kick_right", LoopType.PLAY_ONCE);
+    private static final int KICK_DURATION_TICKS = 12;
+    private static final int KICK_HIT_TICK = 4;
+    private static final int KICK_COOLDOWN_TICKS = 40;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private static final EntityDataAccessor<Boolean> SADDLED = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> KICKING = SynchedEntityData.defineId(OstrichEntity.class, EntityDataSerializers.BOOLEAN);
 
     private float jumpPower;
+    private LivingEntity kickTarget;
+    private int kickTicks;
+    private int nextKickTick;
+    private float kickYaw;
 
     private static final int EGG_RETRY_TICKS = 100;
     private static final int EGG_DELAY_MIN = 100;
@@ -63,6 +76,10 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         this.entityData.set(SADDLED, saddled);
     }
 
+    public boolean isKicking() {
+        return this.entityData.get(KICKING);
+    }
+
     public OstrichEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
@@ -75,13 +92,18 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
         this.tickEggLaying();
 
+        if (this.isKicking()) {
+            this.yBodyRot = this.getYRot();
+            this.yHeadRot = this.getYRot();
+        }
+
         if (!this.level().isClientSide() && this.isVehicle() && this.isInWater())
             this.ejectPassengers();
     }
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
-        if (this.isBaby())
+        if (this.isBaby() || this.isKicking())
             return super.mobInteract(player, hand);
 
         var stack = player.getItemInHand(hand);
@@ -113,6 +135,17 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     public void travel(Vec3 travelVector) {
+        if (this.isKicking()) {
+            this.setYRot(this.kickYaw);
+
+            if (this.hurtTime == 0)
+                this.setDeltaMovement(0D, this.getDeltaMovement().y, 0D);
+
+            super.travel(Vec3.ZERO);
+
+            return;
+        }
+
         var rider = this.getControllingPassenger();
 
         if (rider != null && this.isSaddled() && this.isVehicle()) {
@@ -142,15 +175,56 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        var level = this.level();
-
         ((Brain<OstrichEntity>) this.getBrain()).tick(serverLevel, this);
 
         OstrichAI.updateActivity(this);
 
         this.setSprinting(this.isPanicking());
+        this.tickKick(serverLevel);
 
         super.customServerAiStep(serverLevel);
+    }
+
+    private void tickKick(ServerLevel level) {
+        if (this.kickTicks == 0) {
+            if (!this.isPanicking() || this.tickCount < this.nextKickTick || this.isBaby() || this.isVehicle() || this.isPassenger() || !this.onGround())
+                return;
+
+            var attacker = this.getLastHurtByMob();
+
+            this.kickTarget = level.getEntitiesOfClass(LivingEntity.class, this.getAttackBoundingBox(1D), target ->
+                            (target instanceof Player player ? !player.isCreative() : target == attacker)
+                                    && this.canAttack(target) && !this.isAlliedTo(target)
+                                    && this.isWithinMeleeAttackRange(target) && this.hasLineOfSight(target))
+                    .stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+
+            if (this.kickTarget == null)
+                return;
+
+            this.kickTicks = KICK_DURATION_TICKS + 1;
+            this.nextKickTick = this.tickCount + KICK_COOLDOWN_TICKS;
+            this.entityData.set(KICKING, true);
+
+            this.triggerAnim("kick", this.random.nextBoolean() ? "left" : "right");
+        }
+
+        this.kickYaw = (float) Mth.atan2(this.getX() - this.kickTarget.getX(), this.kickTarget.getZ() - this.getZ()) * Mth.RAD_TO_DEG;
+
+        this.setYRot(this.kickYaw);
+        this.getLookControl().setLookAt(this.kickTarget, 180F, 45F);
+
+        if (--this.kickTicks == KICK_DURATION_TICKS - KICK_HIT_TICK) {
+            this.playSound(SoundEvents.PLAYER_ATTACK_SWEEP, 1F, 0.8F);
+
+            if (this.canAttack(this.kickTarget) && this.isWithinMeleeAttackRange(this.kickTarget) && this.hasLineOfSight(this.kickTarget)
+                    && this.doHurtTarget(level, this.kickTarget))
+                this.playSound(SoundEvents.PLAYER_ATTACK_STRONG, 1F, 0.7F);
+        }
+
+        if (this.kickTicks == 0) {
+            this.entityData.set(KICKING, false);
+            this.kickTarget = null;
+        }
     }
 
     @Override
@@ -262,6 +336,7 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
         super.defineSynchedData(builder);
 
         builder.define(SADDLED, false);
+        builder.define(KICKING, false);
     }
 
     @Override
@@ -327,11 +402,17 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
+        controllers.add(new AnimationController<>("kick", 0, state -> PlayState.STOP)
+                .triggerableAnim("left", KICK_LEFT)
+                .triggerableAnim("right", KICK_RIGHT));
     }
 
     private PlayState mainPredicate(AnimationTest<OstrichEntity> state) {
         var controller = state.controller();
         var entity = state.animatable();
+
+        if (entity.isKicking())
+            return PlayState.STOP;
 
         if (state.isMoving()) {
             if (entity.isSprinting() || entity.isVehicle())
@@ -374,6 +455,8 @@ public class OstrichEntity extends Animal implements GeoEntity, PlayerRideableJu
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 20D)
                 .add(Attributes.MOVEMENT_SPEED, 0.25D)
+                .add(Attributes.ATTACK_DAMAGE, 8D)
+                .add(Attributes.ATTACK_KNOCKBACK, 2.5D)
                 .add(Attributes.FOLLOW_RANGE, 16D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.35D)
                 .add(Attributes.STEP_HEIGHT, 1.1D)

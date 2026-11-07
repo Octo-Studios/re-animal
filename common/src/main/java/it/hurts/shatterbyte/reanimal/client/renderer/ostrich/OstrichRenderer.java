@@ -18,8 +18,16 @@ public class OstrichRenderer extends GeoEntityRenderer<OstrichEntity, EntityRend
     }
 
     @Override
+    public void extractRenderState(OstrichEntity entity, EntityRenderState renderState, float partialTick) {
+        super.extractRenderState(entity, renderState, partialTick);
+
+        HeadTracking.setMode(renderState, entity.isKicking() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
+    }
+
+    @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
+
         if (isBaby) {
             renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
 
