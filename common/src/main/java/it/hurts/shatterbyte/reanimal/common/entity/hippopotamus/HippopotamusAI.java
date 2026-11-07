@@ -12,6 +12,8 @@ import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -20,12 +22,16 @@ import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.pathfinder.PathType;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -70,6 +76,7 @@ public class HippopotamusAI {
 
     public static Brain<?> makeBrain(Brain<HippopotamusEntity> brain) {
         initCoreActivity(brain);
+        initRestActivity(brain);
         initIdleActivity(brain);
         initPanicActivity(brain);
         initFightActivity(brain);
@@ -130,6 +137,14 @@ public class HippopotamusAI {
         );
     }
 
+    private static void initRestActivity(Brain<HippopotamusEntity> brain) {
+        BrainUtil.<HippopotamusEntity>addActivity(brain,
+                Activity.REST,
+                0,
+                ImmutableList.of(new BreatheAirBehavior())
+        );
+    }
+
     private static void initFightActivity(Brain<HippopotamusEntity> brain) {
         BrainUtil.<HippopotamusEntity>addActivityAndRemoveMemoryWhenStopped(brain,
                 Activity.FIGHT,
@@ -158,7 +173,21 @@ public class HippopotamusAI {
     }
 
     public static void updateActivity(HippopotamusEntity entity) {
-        entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.FIGHT, Activity.IDLE));
+        var brain = (Brain<HippopotamusEntity>) entity.getBrain();
+        var needsAir = needsAir(entity);
+
+        if (needsAir != brain.isActive(Activity.REST))
+            brain.stopAll((ServerLevel) entity.level(), entity);
+
+        if (needsAir)
+            brain.setActiveActivityIfPossible(Activity.REST);
+        else
+            brain.setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.FIGHT, Activity.IDLE));
+    }
+
+    private static boolean needsAir(HippopotamusEntity entity) {
+        return entity.getAirSupply() < entity.getMaxAirSupply() / 3
+                || entity.getBrain().isActive(Activity.REST) && entity.getAirSupply() < entity.getMaxAirSupply();
     }
 
     public static Predicate<ItemStack> getTemptations() {
@@ -191,12 +220,102 @@ public class HippopotamusAI {
     }
 
     public static boolean isValidTarget(HippopotamusEntity self, LivingEntity target) {
-        return target.getType() != ReAnimalEntities.HIPPOPOTAMUS && !(target instanceof Monster)
+        return !needsAir(self) && target.getType() != ReAnimalEntities.HIPPOPOTAMUS && !(target instanceof Monster)
                 && self.level() instanceof net.minecraft.server.level.ServerLevel serverLevel && Sensor.isEntityAttackable(serverLevel, self, target) && !HippopotamusAI.isHoldingFavoriteFood(target);
     }
 
     public static boolean isHoldingFavoriteFood(LivingEntity target) {
         return target.getMainHandItem().is(ReAnimalTags.Items.HIPPOPOTAMUS_FOOD) || target.getOffhandItem().is(ReAnimalTags.Items.HIPPOPOTAMUS_FOOD);
+    }
+
+    private static class BreatheAirBehavior extends Behavior<HippopotamusEntity> {
+        private static final int SEARCH_RADIUS = 32;
+        private long nextSearchTick;
+
+        public BreatheAirBehavior() {
+            super(ImmutableMap.of());
+        }
+
+        @Override
+        protected void start(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            var brain = entity.getBrain();
+
+            brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
+            brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
+            brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+            brain.eraseMemory(MemoryModuleType.PATH);
+            entity.getNavigation().stop();
+
+            if (entity.getLayState() != HippopotamusEntity.LayState.STANDING)
+                entity.finishGettingUp();
+
+            this.nextSearchTick = gameTime;
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            return needsAir(entity);
+        }
+
+        @Override
+        protected boolean timedOut(long gameTime) {
+            return false;
+        }
+
+        @Override
+        protected void tick(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            var navigation = entity.getNavigation();
+            var brain = entity.getBrain();
+
+            if (!entity.isEyeInFluid(FluidTags.WATER)) {
+                navigation.stop();
+                brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+                brain.eraseMemory(MemoryModuleType.PATH);
+
+                return;
+            }
+
+            if (gameTime < this.nextSearchTick || !navigation.isDone())
+                return;
+
+            this.nextSearchTick = gameTime + 40;
+
+            var origin = entity.blockPosition();
+            var random = entity.getRandom();
+            var targets = new HashSet<BlockPos>();
+
+            for (var i = 0; i < 64; i++) {
+                var column = origin.offset(random.nextInt(SEARCH_RADIUS * 2 + 1) - SEARCH_RADIUS, 0, random.nextInt(SEARCH_RADIUS * 2 + 1) - SEARCH_RADIUS);
+
+                if (!level.hasChunkAt(column))
+                    continue;
+
+                var pos = level.getHeightmapPos(Heightmap.Types.OCEAN_FLOOR, column);
+
+                if (level.getFluidState(pos.above(Mth.floor(entity.getEyeHeight()))).isEmpty() && navigation.isStableDestination(pos))
+                    targets.add(pos);
+            }
+
+            var waterMalus = entity.getPathfindingMalus(PathType.WATER);
+
+            entity.setPathfindingMalus(PathType.WATER, 0F);
+
+            var path = navigation.createPath(targets, 0);
+
+            entity.setPathfindingMalus(PathType.WATER, waterMalus);
+
+            if (path != null) {
+                navigation.moveTo(path, 1.5D);
+                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(path.getTarget(), 1.5F, 0));
+            }
+        }
+
+        @Override
+        protected void stop(ServerLevel level, HippopotamusEntity entity, long gameTime) {
+            entity.getNavigation().stop();
+            entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+            entity.getBrain().eraseMemory(MemoryModuleType.PATH);
+        }
     }
 
     private static class GiveBirthBehavior extends Behavior<HippopotamusEntity> {
@@ -216,7 +335,7 @@ public class HippopotamusAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, HippopotamusEntity entity) {
-            return !entity.isLaying();
+            return !entity.isLaying() && !needsAir(entity);
         }
 
         @Override
@@ -231,6 +350,7 @@ public class HippopotamusAI {
         @Override
         protected boolean canStillUse(ServerLevel level, HippopotamusEntity entity, long gameTime) {
             return entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PREGNANT)
+                    && !needsAir(entity)
                     && !entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                     && !entity.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET);
         }
