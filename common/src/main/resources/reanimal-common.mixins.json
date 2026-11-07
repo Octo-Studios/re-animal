@@ -10,9 +10,9 @@
     "PolarBearMixin"
   ],
   "client": [
-    "client.AvatarRendererMixin",
     "client.BlockModelSubmitMixin",
     "client.ClientLevelMixin",
+    "client.EntityRenderDispatcherMixin",
     "client.FluidRendererMixin",
     "client.ItemFeatureRendererMixin",
     "client.LightmapRenderStateExtractorMixin",

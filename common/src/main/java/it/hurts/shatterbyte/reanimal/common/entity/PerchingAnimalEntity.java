@@ -1,6 +1,10 @@
 package it.hurts.shatterbyte.reanimal.common.entity;
 
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -16,6 +20,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class PerchingAnimalEntity extends Animal {
+    private static final EntityDataAccessor<Integer> PERCH_SEED = SynchedEntityData.defineId(PerchingAnimalEntity.class, EntityDataSerializers.INT);
     private static final double MAX_PERCH_SPEED = 0.3D;
     private static final double MAX_PERCH_VERTICAL_SPEED = 0.2D;
     private static final float MAX_PERCH_TURN = 35F;
@@ -25,6 +30,17 @@ public abstract class PerchingAnimalEntity extends Animal {
 
     protected PerchingAnimalEntity(EntityType<? extends Animal> type, Level level) {
         super(type, level);
+    }
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+
+        builder.define(PERCH_SEED, 0);
+    }
+
+    public int getPerchSeed() {
+        return this.getEntityData().get(PERCH_SEED);
     }
 
     public boolean isPerched() {
@@ -42,7 +58,11 @@ public abstract class PerchingAnimalEntity extends Animal {
     }
 
     public boolean canPerchOn(LivingEntity host) {
-        return this.canStayPerched(host) && host.getPassengers().stream().noneMatch(PerchingAnimalEntity.class::isInstance);
+        return this.canStayPerched(host) && !isPerchOccupied(host);
+    }
+
+    public static boolean isPerchOccupied(LivingEntity host) {
+        return host.getPassengers().stream().anyMatch(passenger -> passenger instanceof PerchingAnimalEntity || passenger instanceof HedgehogEntity);
     }
 
     protected boolean canStayPerched(LivingEntity host) {
@@ -58,6 +78,8 @@ public abstract class PerchingAnimalEntity extends Animal {
     }
 
     public void perchOn(LivingEntity host) {
+        this.getEntityData().set(PERCH_SEED, this.random.nextInt());
+
         if (this.startRiding(host, true, true)) {
             this.perchTicks = 400 + this.random.nextInt(400);
             this.getNavigation().stop();
@@ -149,8 +171,17 @@ public abstract class PerchingAnimalEntity extends Animal {
     }
 
     @Override
+    public void addAdditionalSaveData(ValueOutput output) {
+        super.addAdditionalSaveData(output);
+
+        output.putInt("perch_seed", this.getPerchSeed());
+    }
+
+    @Override
     public void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
+
+        this.getEntityData().set(PERCH_SEED, input.getIntOr("perch_seed", 0));
 
         this.perchTicks = 400 + this.random.nextInt(400);
     }

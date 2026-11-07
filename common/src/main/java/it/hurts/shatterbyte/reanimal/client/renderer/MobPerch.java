@@ -20,7 +20,10 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.UvMapping;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.levelgen.RandomSupport;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
@@ -32,12 +35,12 @@ import java.util.WeakHashMap;
 
 public final class MobPerch {
     public static final DataTicket<Matrix4f> TRANSFORM = DataTicket.create("reanimal_mob_perch", Matrix4f.class);
-    private static final Map<PerchingAnimalEntity, Attachment> ATTACHMENTS = new WeakHashMap<>();
+    private static final Map<LivingEntity, Attachment> ATTACHMENTS = new WeakHashMap<>();
 
     private MobPerch() {
     }
 
-    public static Matrix4f extract(PerchingAnimalEntity animal, EntityRenderState animalState, float partialTick, float footSpan) {
+    public static Matrix4f extract(LivingEntity animal, EntityRenderState animalState, float partialTick, float footSpan) {
         if (!(animal.getVehicle() instanceof LivingEntity host)) {
             ATTACHMENTS.remove(animal);
 
@@ -120,11 +123,12 @@ public final class MobPerch {
         return transform.mul(attachment.transform);
     }
 
-    private static Attachment getAttachment(PerchingAnimalEntity animal, LivingEntity host) {
+    private static Attachment getAttachment(LivingEntity animal, LivingEntity host) {
         var attachment = ATTACHMENTS.get(animal);
+        var seed = animal instanceof PerchingAnimalEntity perching ? perching.getPerchSeed() : 0;
 
-        if (attachment == null || attachment.hostId != host.getId()) {
-            attachment = new Attachment(host.getId());
+        if (attachment == null || attachment.hostId != host.getId() || attachment.seed != seed) {
+            attachment = new Attachment(host.getId(), seed, animal instanceof PerchingAnimalEntity);
 
             ATTACHMENTS.put(animal, attachment);
         }
@@ -185,9 +189,12 @@ public final class MobPerch {
     }
 
     private static void visitBone(GeoBone bone, PoseStack poseStack, Attachment attachment, float footSpan, boolean referencePose) {
-        poseStack.pushPose();
-
         var snapshot = bone.frameSnapshot;
+
+        if (snapshot != null && (snapshot.getScaleX() == 0F || snapshot.getScaleY() == 0F || snapshot.getScaleZ() == 0F))
+            return;
+
+        poseStack.pushPose();
 
         if (referencePose)
             bone.frameSnapshot = null;
@@ -253,15 +260,22 @@ public final class MobPerch {
 
     private static class Attachment {
         private final int hostId;
+        private final int seed;
+        private final boolean randomized;
+        private final float yaw;
         private boolean bound;
         private String bone;
         private Object cube;
         private int priority = -1;
+        private long rank;
         private float height;
         private Matrix4f transform;
 
-        private Attachment(int hostId) {
+        private Attachment(int hostId, int seed, boolean randomized) {
             this.hostId = hostId;
+            this.seed = seed;
+            this.randomized = randomized;
+            this.yaw = randomized ? RandomSource.create(seed).nextFloat() * Mth.TWO_PI : 0F;
         }
 
         private void offer(String bone, Object cube, PoseStack.Pose pose, Vector3f center, Vector3f normal, Vector3f edge, Vector3f otherEdge, float footSpan) {
@@ -275,8 +289,14 @@ public final class MobPerch {
             var priority = (span >= footSpan ? 2 : 0)
                     + (name.contains("head") || name.contains("body") || name.contains("torso") || name.contains("back") || name.contains("chest") ? 1 : 0);
 
-            if (!this.bound && (priority < this.priority || priority == this.priority && position.y <= this.height))
-                return;
+            if (!this.bound) {
+                var rank = this.randomized ? RandomSupport.mixStafford13(((long) this.seed << 32) ^ bone.hashCode()) : 0L;
+
+                if (priority < this.priority || priority == this.priority && (rank < this.rank || rank == this.rank && position.y <= this.height))
+                    return;
+
+                this.rank = rank;
+            }
 
             var up = pose.normal().transform(normal, new Vector3f()).normalize();
             var rotation = new Quaternionf().rotationTo(new Vector3f(0F, 1F, 0F), normal);
@@ -288,7 +308,7 @@ public final class MobPerch {
             this.cube = cube;
             this.priority = priority;
             this.height = position.y;
-            this.transform = new Matrix4f(new Matrix3f(right, up, forward)).setTranslation(position);
+            this.transform = new Matrix4f(new Matrix3f(right, up, forward)).setTranslation(position).rotateY(this.yaw);
         }
     }
 }
