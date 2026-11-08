@@ -5,7 +5,9 @@ import net.minecraft.world.level.storage.ValueOutput;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -14,15 +16,23 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.EntityTracker;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.util.Mth;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -47,11 +57,17 @@ public class RedPandaEntity extends Animal implements GeoEntity {
     private static final RawAnimation BABY_DESCEND = RawAnimation.begin().then("animation.red_panda_baby.descend", LoopType.PLAY_ONCE);
 
     private static final EntityDataAccessor<Integer> STAND_STATE = SynchedEntityData.defineId(RedPandaEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Direction> CLIMBING_SIDE = SynchedEntityData.defineId(RedPandaEntity.class, EntityDataSerializers.DIRECTION);
+    private static final EntityDataAccessor<Vector3fc> CLIMBING_FACING = SynchedEntityData.defineId(RedPandaEntity.class, EntityDataSerializers.VECTOR3);
 
     private static final int STAND_TRANSITION_TICKS = 10;
     private static final double STAND_PLAYER_RADIUS = 6D;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+    private final Quaternionf surfaceRotation = new Quaternionf();
+    private final Quaternionf previousSurfaceRotation = new Quaternionf();
+
     private int standTransitionTicks;
 
     public RedPandaEntity(EntityType<? extends Animal> entityType, Level level) {
@@ -61,14 +77,108 @@ public class RedPandaEntity extends Animal implements GeoEntity {
     }
 
     @Override
-    protected void customServerAiStep(ServerLevel serverLevel) {
-        var level = this.level();
+    protected PathNavigation createNavigation(Level level) {
+        return new RedPandaNavigation(this, level);
+    }
 
+    public Direction getClimbingSide() {
+        return this.entityData.get(CLIMBING_SIDE);
+    }
+
+    public boolean isClimbing() {
+        return this.getClimbingSide() != Direction.DOWN;
+    }
+
+    public boolean isInLeaves(Vec3 position) {
+        var box = this.getBoundingBox().move(position.subtract(this.position())).deflate(Shapes.EPSILON);
+
+        for (var pos : BlockPos.betweenClosed(BlockPos.containing(box.minX, box.minY, box.minZ), BlockPos.containing(box.maxX, box.maxY, box.maxZ))) {
+            if (this.level().getBlockState(pos).is(BlockTags.LEAVES))
+                return true;
+        }
+
+        return false;
+    }
+
+    public void setClimbingSide(Direction side, Vec3 movement) {
+        var facing = side == Direction.DOWN && this.isInLeaves(this.position()) ? movement : movement.with(side.getAxis(), 0D);
+
+        if (facing.lengthSqr() > 0D)
+            this.entityData.set(CLIMBING_FACING, facing.normalize().toVector3f());
+        else if (side != this.getClimbingSide())
+            this.entityData.set(CLIMBING_FACING, side.getOpposite().getRotation().transform(new Vector3f(0F, 0F, -1F)));
+
+        this.entityData.set(CLIMBING_SIDE, side);
+    }
+
+    @Override
+    public void tick() {
+        this.previousSurfaceRotation.set(this.surfaceRotation);
+
+        super.tick();
+
+        var rotation = new Quaternionf().rotationY((180F - this.yBodyRot) * Mth.DEG_TO_RAD);
+
+        if (this.isClimbing()) {
+            rotation = this.getClimbingSide().getOpposite().getRotation();
+
+            var facing = new Vector3f(this.entityData.get(CLIMBING_FACING));
+
+            new Quaternionf(rotation).conjugate().transform(facing);
+            rotation.rotateY((float) Mth.atan2(-facing.x, -facing.z));
+        } else if (this.isInLeaves(this.position())) {
+            var facing = this.entityData.get(CLIMBING_FACING);
+            var horizontal = Math.sqrt(facing.x() * facing.x() + facing.z() * facing.z());
+
+            if (horizontal > 0D)
+                rotation.rotationY((float) Mth.atan2(-facing.x(), -facing.z()));
+
+            rotation.rotateX((float) Mth.atan2(facing.y(), horizontal));
+        }
+
+        this.surfaceRotation.slerp(rotation, 0.25F);
+    }
+
+    public Quaternionf getSurfaceRotation(float partialTick) {
+        return new Quaternionf(this.previousSurfaceRotation).slerp(this.surfaceRotation, partialTick);
+    }
+
+    @Override
+    public void calculateEntityAnimation(boolean useY) {
+        super.calculateEntityAnimation(useY || this.isClimbing()
+                || this.onGround() && this.isInLeaves(this.position()));
+    }
+
+    @Override
+    public void travel(Vec3 input) {
+        var navigation = (RedPandaNavigation) this.getNavigation();
+
+        if (this.isEffectiveAi() && !this.isNoAi() && this.isAlive() && !this.isInLiquid() && !this.isPassenger() && navigation.isOnSurfacePath()) {
+            this.setDeltaMovement(navigation.getMotion());
+            this.move(MoverType.SELF, this.getDeltaMovement());
+            this.setOnGround(this.getClimbingSide() == Direction.DOWN);
+            this.resetFallDistance();
+        } else {
+            if (!this.level().isClientSide()) {
+                if (this.isClimbing())
+                    this.setDeltaMovement(Vec3.ZERO);
+
+                this.setClimbingSide(Direction.DOWN, Vec3.ZERO);
+            }
+
+            super.travel(input);
+        }
+    }
+
+    @Override
+    protected void customServerAiStep(ServerLevel serverLevel) {
         ((Brain<RedPandaEntity>) this.getBrain()).tick(serverLevel, this);
 
         RedPandaAI.updateActivity(this);
 
         super.customServerAiStep(serverLevel);
+
+        ((RedPandaNavigation) this.getNavigation()).recover();
     }
     protected Brain.Provider<RedPandaEntity> brainProvider() {
         return RedPandaAI.brainProvider();
@@ -84,7 +194,8 @@ public class RedPandaEntity extends Animal implements GeoEntity {
         super.aiStep();
 
         var targetPlayer = this.findNearbyPlayer();
-        var shouldStand = targetPlayer != null && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+        var shouldStand = this.onGround() && !this.isClimbing() && !this.isInLeaves(this.position())
+                && targetPlayer != null && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
 
         if (!this.level().isClientSide())
             this.updateStandState(shouldStand);
@@ -166,6 +277,8 @@ public class RedPandaEntity extends Animal implements GeoEntity {
         super.defineSynchedData(builder);
 
         builder.define(STAND_STATE, StandState.ON_ALL_FOURS.ordinal());
+        builder.define(CLIMBING_SIDE, Direction.DOWN);
+        builder.define(CLIMBING_FACING, new Vector3f(0F, 0F, -1F));
     }
 
     @Override
@@ -209,6 +322,7 @@ public class RedPandaEntity extends Animal implements GeoEntity {
         super.addAdditionalSaveData(tag);
 
         tag.putInt("StandState", this.entityData.get(STAND_STATE));
+        tag.putInt("ClimbingSide", this.getClimbingSide().get3DDataValue());
     }
 
     @Override
@@ -216,6 +330,7 @@ public class RedPandaEntity extends Animal implements GeoEntity {
         super.readAdditionalSaveData(tag);
 
         this.setStandState(StandState.byId(tag.getIntOr("StandState", 0)));
+        this.setClimbingSide(Direction.from3DDataValue(tag.getIntOr("ClimbingSide", Direction.DOWN.get3DDataValue())), Vec3.ZERO);
     }
 
     private Player findNearbyPlayer() {

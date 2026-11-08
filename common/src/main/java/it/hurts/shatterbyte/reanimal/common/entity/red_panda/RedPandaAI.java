@@ -1,42 +1,40 @@
 package it.hurts.shatterbyte.reanimal.common.entity.red_panda;
 
-import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
+import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
-import net.minecraft.world.entity.ai.behavior.AnimalPanic;
-import net.minecraft.world.entity.ai.behavior.BabyFollowAdult;
-import net.minecraft.world.entity.ai.behavior.CountDownCooldownTicks;
-import net.minecraft.world.entity.ai.behavior.DoNothing;
-import net.minecraft.world.entity.ai.behavior.FollowTemptation;
-import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
-import net.minecraft.world.entity.ai.behavior.MoveToTargetSink;
-import net.minecraft.world.entity.ai.behavior.RandomLookAround;
-import net.minecraft.world.entity.ai.behavior.RandomStroll;
-import net.minecraft.world.entity.ai.behavior.RunOne;
-import net.minecraft.world.entity.ai.behavior.SetEntityLookTargetSometimes;
-import net.minecraft.world.entity.ai.behavior.SetWalkTargetFromLookTarget;
-import net.minecraft.world.entity.ai.behavior.Swim;
+import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
 public class RedPandaAI {
+    private static final int TREE_SEARCH_RADIUS = 6;
+    private static final int TREE_SEARCH_HEIGHT = 12;
+
     private static final ImmutableList<SensorType<? extends Sensor<? super RedPandaEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
@@ -84,7 +82,28 @@ public class RedPandaAI {
                 ImmutableList.of(
                         new Swim<>(0.8F),
                         new LookAtTargetSink(45, 90),
-                        new MoveToTargetSink(),
+                        new MoveToTargetSink() {
+                            private RedPandaNavigation navigation;
+
+                            @Override
+                            protected void start(ServerLevel level, Mob entity, long timestamp) {
+                                this.navigation = (RedPandaNavigation) entity.getNavigation();
+
+                                super.start(level, entity, timestamp);
+                            }
+
+                            @Override
+                            protected boolean timedOut(long timestamp) {
+                                return !this.navigation.isOnSurfacePath() && super.timedOut(timestamp);
+                            }
+
+                            @Override
+                            protected boolean canStillUse(ServerLevel level, Mob entity, long timestamp) {
+                                return this.navigation.isOnSurfacePath()
+                                        && entity.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
+                                        || super.canStillUse(level, entity, timestamp);
+                            }
+                        },
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
                         new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)
                 )
@@ -107,8 +126,9 @@ public class RedPandaAI {
                                 )
                         ),
                         Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(4, new ClimbTree()),
                         Pair.of(
-                                4,
+                                5,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
@@ -127,10 +147,7 @@ public class RedPandaAI {
                 Activity.PANIC,
                 10,
                 ImmutableList.of(
-                        new AnimalPanic<>(
-                                1.5F,
-                                mob -> DamageTypeTags.PANIC_CAUSES
-                        )
+                        new RedPandaPanic()
                 ),
                 MemoryModuleType.IS_PANICKING
         );
@@ -142,5 +159,104 @@ public class RedPandaAI {
 
     public static Predicate<ItemStack> getTemptations() {
         return stack -> stack.is(ReAnimalTags.Items.RED_PANDA_FOOD);
+    }
+
+    private static Path findTreePath(RedPandaEntity panda) {
+        var candidates = new HashSet<BlockPos>();
+        var navigation = (RedPandaNavigation) panda.getNavigation();
+
+        for (var support : BlockPos.betweenClosed(panda.blockPosition().offset(-TREE_SEARCH_RADIUS, 0, -TREE_SEARCH_RADIUS),
+                panda.blockPosition().offset(TREE_SEARCH_RADIUS, TREE_SEARCH_HEIGHT, TREE_SEARCH_RADIUS))) {
+            var state = panda.level().getBlockState(support);
+
+            if (!state.is(ReAnimalTags.Blocks.RED_PANDA_CLIMBABLE) && !state.is(BlockTags.LEAVES))
+                continue;
+
+            for (var point : navigation.getPoints(support.above())) {
+                if (point.side() == Direction.DOWN && point.position().y > panda.getY() + panda.maxUpStep() && navigation.canRest(point.position()))
+                    candidates.add(point.cell());
+            }
+        }
+
+        return candidates.isEmpty() ? null : navigation.createSurfacePath(candidates, 0, 16F);
+    }
+
+    private static class RedPandaPanic extends AnimalPanic<RedPandaEntity> {
+        private BlockPos hidingPlace;
+        private long nextTreeSearchTick;
+
+        private RedPandaPanic() {
+            super(1.5F, mob -> DamageTypeTags.PANIC_CAUSES);
+        }
+
+        @Override
+        protected void start(ServerLevel level, RedPandaEntity panda, long timestamp) {
+            super.start(level, panda, timestamp);
+
+            this.hidingPlace = null;
+            this.nextTreeSearchTick = timestamp;
+        }
+
+        @Override
+        protected void tick(ServerLevel level, RedPandaEntity panda, long timestamp) {
+            var navigation = (RedPandaNavigation) panda.getNavigation();
+
+            if (!navigation.isDone())
+                return;
+
+            if (!panda.isOnFire() && !panda.isInLiquid() && !panda.isPassenger()) {
+                if (panda.blockPosition().equals(this.hidingPlace) && navigation.canRest(panda.position()))
+                    return;
+
+                if (timestamp >= this.nextTreeSearchTick) {
+                    this.nextTreeSearchTick = timestamp + 20L;
+
+                    var path = findTreePath(panda);
+
+                    if (path != null) {
+                        this.hidingPlace = path.getTarget();
+                        panda.setStandState(RedPandaEntity.StandState.ON_ALL_FOURS);
+                        panda.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(Vec3.atBottomCenterOf(this.hidingPlace), 1.5F, 0));
+                        navigation.moveTo(path, 1.5D);
+
+                        return;
+                    }
+                }
+            }
+
+            super.tick(level, panda, timestamp);
+        }
+    }
+
+    private static class ClimbTree extends Behavior<RedPandaEntity> {
+        private long nextSearchTick;
+        private Path path;
+
+        private ClimbTree() {
+            super(Map.of(
+                    MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT
+            ), 1);
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, RedPandaEntity panda) {
+            if (panda.isInLiquid() || panda.isPassenger() || level.getGameTime() < this.nextSearchTick)
+                return false;
+
+            this.nextSearchTick = level.getGameTime() + 100 + panda.getRandom().nextInt(100);
+
+            this.path = findTreePath(panda);
+
+            return this.path != null;
+        }
+
+        @Override
+        protected void start(ServerLevel level, RedPandaEntity panda, long timestamp) {
+            panda.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(Vec3.atBottomCenterOf(this.path.getTarget()), 1F, 0));
+            panda.getNavigation().moveTo(this.path, 1D);
+        }
     }
 }

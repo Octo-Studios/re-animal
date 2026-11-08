@@ -6,6 +6,7 @@
   "mixins": [
     "BodyRotationControlMixin",
     "DolphinMixin",
+    "EntityCollisionContextMixin",
     "EntityMixin",
     "PathNavigationMixin",
     "PolarBearMixin",

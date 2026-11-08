@@ -5,8 +5,13 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
 
 public class ReAnimalTags {
+    public static final class Blocks {
+        public static final TagKey<Block> RED_PANDA_CLIMBABLE = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "red_panda_climbable"));
+    }
+
     public static final class Items {
         public static final TagKey<Item> PIGEON_FOOD = Items.create("pigeon_food");
         public static final TagKey<Item> TOUCAN_FOOD = Items.create("toucan_food");

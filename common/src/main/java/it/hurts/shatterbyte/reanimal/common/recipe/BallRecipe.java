@@ -16,7 +16,9 @@ import net.minecraft.world.level.Level;
 import java.util.List;
 
 public class BallRecipe extends CustomRecipe {
-    public static final RecipeSerializer<BallRecipe> SERIALIZER = new RecipeSerializer<>(MapCodec.unit(BallRecipe::new), StreamCodec.unit(new BallRecipe()));
+    private static final BallRecipe INSTANCE = new BallRecipe();
+
+    public static final RecipeSerializer<BallRecipe> SERIALIZER = new RecipeSerializer<>(MapCodec.unit(INSTANCE), StreamCodec.unit(INSTANCE));
 
     @Override
     public boolean matches(CraftingInput input, Level level) {
