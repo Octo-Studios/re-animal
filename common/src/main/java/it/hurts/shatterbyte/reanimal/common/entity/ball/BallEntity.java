@@ -8,11 +8,13 @@ import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 import lombok.Getter;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -24,6 +26,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LinearInterpolationHandler;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.wolf.Wolf;
@@ -33,11 +36,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+
+import java.util.List;
 
 public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
     private static final EntityDataAccessor<ItemStack> ITEM = SynchedEntityData.defineId(BallEntity.class, EntityDataSerializers.ITEM_STACK);
@@ -70,6 +76,26 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
     public BallEntity(EntityType<? extends BallEntity> entityType, Level level) {
         super(entityType, level);
+    }
+
+    @Override
+    public float maxUpStep() {
+        return 0.5F;
+    }
+
+    @Override
+    protected MovementEmission getMovementEmission() {
+        return MovementEmission.EVENTS;
+    }
+
+    @Override
+    protected SoundEvent getSwimSplashSound() {
+        return SoundEvents.EMPTY;
+    }
+
+    @Override
+    protected SoundEvent getSwimHighSpeedSplashSound() {
+        return SoundEvents.EMPTY;
     }
 
     @Override
@@ -114,7 +140,7 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
         this.setDeltaMovement(movement);
         this.move(MoverType.SELF, movement);
 
-        if (!this.bounceOffBalls(start, movement)) {
+        if (!this.bounceOffEntities(start, movement)) {
             var collided = this.getDeltaMovement();
             var hitX = this.horizontalCollision && collided.x == 0D;
             var hitZ = this.horizontalCollision && collided.z == 0D;
@@ -135,57 +161,87 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
             this.returnTicks--;
     }
 
-    private boolean bounceOffBalls(Vec3 start, Vec3 movement) {
+    private boolean bounceOffEntities(Vec3 start, Vec3 movement) {
         var traveled = this.position().subtract(start);
         var distanceSqr = traveled.lengthSqr();
         var velocity = this.onGround() && traveled.y == 0D ? movement.multiply(1D, 0D, 1D) : movement;
-        BallEntity hitBall = null;
+        var center = start.add(0D, this.getBbHeight() * 0.5D, 0D);
+        Entity hitEntity = null;
+        Vec3 hitNormal = null;
         var hitTime = 1D;
 
-        for (var ball : this.level().getEntitiesOfClass(BallEntity.class, this.getBoundingBox().expandTowards(start.subtract(this.position())), ball -> ball != this && ball.isAlive() && !ball.isPassenger())) {
-            var offset = start.subtract(ball.position());
-            var radius = (this.getBbWidth() + ball.getBbWidth()) * 0.5D;
-            var separation = offset.lengthSqr() - radius * radius;
+        for (var entity : this.level().getEntities(this, this.getBoundingBox().expandTowards(start.subtract(this.position())),
+                entity -> entity.isAlive() && !entity.isSpectator() && !entity.noPhysics && entity != this.playingAnimal
+                        && (entity instanceof BallEntity && !entity.isPassenger() || entity instanceof LivingEntity && !(entity instanceof Player)))) {
             var time = 0D;
+            Vec3 normal;
 
-            if (separation > 0D) {
-                var projection = offset.dot(traveled);
-                var discriminant = projection * projection - distanceSqr * separation;
+            if (entity instanceof BallEntity ball) {
+                var offset = start.subtract(ball.position());
+                var radius = (this.getBbWidth() + ball.getBbWidth()) * 0.5D;
+                var separation = offset.lengthSqr() - radius * radius;
 
-                if (projection >= 0D || discriminant < 0D)
-                    continue;
+                if (separation > 0D) {
+                    var projection = offset.dot(traveled);
+                    var discriminant = projection * projection - distanceSqr * separation;
 
-                time = (-projection - Math.sqrt(discriminant)) / distanceSqr;
+                    if (projection >= 0D || discriminant < 0D)
+                        continue;
+
+                    time = (-projection - Math.sqrt(discriminant)) / distanceSqr;
+                }
+
+                normal = offset.add(traveled.scale(time)).normalize();
+            } else {
+                var body = entity.getBoundingBox();
+                var bounds = body.inflate(this.getBbWidth() * 0.5D, this.getBbHeight() * 0.5D, this.getBbWidth() * 0.5D);
+
+                if (bounds.contains(center)) {
+                    normal = center.subtract(new Vec3(Mth.clamp(center.x, body.minX, body.maxX), Mth.clamp(center.y, body.minY, body.maxY),
+                            Mth.clamp(center.z, body.minZ, body.maxZ))).normalize();
+
+                    if (normal.lengthSqr() == 0D)
+                        normal = start.subtract(entity.position()).multiply(1D, 0D, 1D).normalize();
+                } else {
+                    var hit = AABB.clip(List.of(bounds), center, center.add(traveled), BlockPos.ZERO);
+
+                    if (hit == null)
+                        continue;
+
+                    time = hit.getLocation().subtract(center).dot(traveled) / distanceSqr;
+                    normal = hit.getDirection().getUnitVec3();
+                }
             }
 
-            if (time > hitTime)
+            if (time > hitTime || velocity.subtract(entity.getKnownMovement()).dot(normal) >= 0D)
                 continue;
 
-            var normal = offset.add(traveled.scale(time)).normalize();
-
-            if (velocity.subtract(ball.getDeltaMovement()).dot(normal) >= 0D)
-                continue;
-
-            hitBall = ball;
+            hitEntity = entity;
+            hitNormal = normal;
             hitTime = time;
         }
 
-        if (hitBall == null)
+        if (hitEntity == null)
             return false;
 
-        var contact = start.add(traveled.scale(hitTime));
-        var normal = contact.subtract(hitBall.position()).normalize();
-        var impulse = normal.scale(hitBall.getDeltaMovement().subtract(velocity).dot(normal) * (1D + BOUNCE_DAMPING) * 0.5D);
-
-        this.setPos(contact);
-        this.setDeltaMovement(velocity.add(impulse));
-        hitBall.setDeltaMovement(hitBall.getDeltaMovement().subtract(impulse));
-        this.markHurt();
-        hitBall.markHurt();
-        this.impact(impulse);
-        hitBall.impact(impulse.reverse());
+        this.setPos(start.add(traveled.scale(hitTime)));
+        this.bounceOff(hitEntity, hitNormal, velocity, hitEntity.getKnownMovement().subtract(velocity).dot(hitNormal));
 
         return true;
+    }
+
+    private void bounceOff(Entity entity, Vec3 normal, Vec3 movement, double approachSpeed) {
+        var impulse = normal.scale(approachSpeed * (1D + BOUNCE_DAMPING) * (entity instanceof BallEntity ? 0.5D : 1D));
+
+        this.setDeltaMovement(movement.add(impulse));
+        this.markHurt();
+        this.impact(impulse);
+
+        if (entity instanceof BallEntity ball) {
+            ball.setDeltaMovement(ball.getDeltaMovement().subtract(impulse));
+            ball.markHurt();
+            ball.impact(impulse.reverse());
+        }
     }
 
     public void kick(Vec3 movement) {
@@ -207,7 +263,6 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
         this.entityData.set(IMPACT, impulse.normalize().scale(Math.min(speed, 1D)).toVector3f());
         this.entityData.set(IMPACT_ID, this.entityData.get(IMPACT_ID) + 1);
         this.markHurt();
-        this.playSound(SoundEvents.SLIME_BLOCK_HIT, (float) Math.min(speed * 0.35D, 0.35D), 1.3F + this.random.nextFloat() * 0.2F);
     }
 
     @Override
@@ -298,7 +353,6 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
         this.kick(movement);
         this.returnTicks = 100;
         this.playHits = 0;
-        this.playSound(SoundEvents.SNOWBALL_THROW, 0.5F, 1F);
     }
 
     @Override
@@ -319,19 +373,26 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
     @Override
     public void push(Entity entity) {
-        if (this.level().isClientSide() || this.isPassenger() || this.footKickCooldown > 0 || !(entity instanceof Player player)
-                || this.getY() > player.getY() + this.getBbHeight() * 0.5D)
+        if (this.level().isClientSide() || this.isPassenger() || entity == this.playingAnimal || !(entity instanceof LivingEntity)
+                || !entity.isAlive() || entity.isSpectator() || entity.noPhysics)
             return;
 
-        var direction = this.position().subtract(player.position()).multiply(1D, 0D, 1D).normalize();
+        if (entity instanceof Player && (this.footKickCooldown > 0 || this.getY() > entity.getY() + this.getBbHeight() * 0.5D))
+            return;
+
+        var direction = this.position().subtract(entity.position()).multiply(1D, 0D, 1D).normalize();
         var movement = this.getDeltaMovement();
-        var playerMovement = player.getKnownMovement();
+        var entityMovement = entity.getKnownMovement();
+        var approachSpeed = entityMovement.subtract(movement).dot(direction);
 
-        if (playerMovement.subtract(movement).dot(direction) <= 0D)
+        if (approachSpeed <= 0D)
             return;
 
-        this.setThrower(player);
-        this.kick(direction.scale(FOOT_KICK_SPEED + Math.max(0D, playerMovement.dot(direction))).add(0D, movement.y, 0D));
+        if (entity instanceof Player player) {
+            this.setThrower(player);
+            this.kick(direction.scale(FOOT_KICK_SPEED + Math.max(0D, entityMovement.dot(direction))).add(0D, movement.y, 0D));
+        } else
+            this.bounceOff(entity, direction, movement, approachSpeed);
     }
 
     @Override

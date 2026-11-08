@@ -2,7 +2,6 @@ package it.hurts.shatterbyte.reanimal.common.entity.ball;
 
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -25,7 +24,6 @@ public class BallPlay {
     private static final double PLAY_RANGE = 32D;
 
     private final Mob mob;
-    private final SoundEvent sound;
     @Nullable
     private BallEntity ball;
     private long playUntil;
@@ -38,9 +36,8 @@ public class BallPlay {
     private long returnAt;
     private long waitUntil;
 
-    public BallPlay(Mob mob, SoundEvent sound) {
+    public BallPlay(Mob mob) {
         this.mob = mob;
-        this.sound = sound;
     }
 
     @Nullable
@@ -168,10 +165,8 @@ public class BallPlay {
                     (float) Mth.atan2(thrower.getZ() - this.mob.getZ(), thrower.getX() - this.mob.getX()) * Mth.RAD_TO_DEG - 90F, 10F));
             this.mob.yBodyRot = this.mob.getYRot();
 
-            if (this.returnAt == 0) {
+            if (this.returnAt == 0)
                 this.returnAt = gameTime + 20;
-                this.mob.playSound(this.sound, 0.5F, 1F);
-            }
 
             if (gameTime >= this.returnAt) {
                 this.ball.returnTo(thrower);

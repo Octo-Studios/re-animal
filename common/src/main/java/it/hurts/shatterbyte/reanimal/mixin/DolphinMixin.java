@@ -3,7 +3,6 @@ package it.hurts.shatterbyte.reanimal.mixin;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallPlay;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.DolphinPlayWithBallGoal;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
@@ -33,7 +32,7 @@ public abstract class DolphinMixin extends AgeableWaterCreature {
     private void reanimal$addBallGoal(CallbackInfo ci) {
         var dolphin = (Dolphin) (Object) this;
 
-        this.reanimal$ballPlay = new BallPlay(dolphin, SoundEvents.DOLPHIN_PLAY);
+        this.reanimal$ballPlay = new BallPlay(dolphin);
         this.goalSelector.addGoal(1, new DolphinPlayWithBallGoal(dolphin, this.reanimal$ballPlay));
     }
 

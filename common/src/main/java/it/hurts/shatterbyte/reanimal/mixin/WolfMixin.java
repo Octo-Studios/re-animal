@@ -3,7 +3,6 @@ package it.hurts.shatterbyte.reanimal.mixin;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallPlay;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.WolfPlayWithBallGoal;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
@@ -38,7 +37,7 @@ public abstract class WolfMixin extends TamableAnimal {
     private void reanimal$addBallGoal(CallbackInfo ci) {
         var wolf = (Wolf) (Object) this;
 
-        this.reanimal$ballPlay = new BallPlay(wolf, wolf.get(DataComponents.WOLF_SOUND_VARIANT).value().adultSounds().ambientSound().value());
+        this.reanimal$ballPlay = new BallPlay(wolf);
         this.goalSelector.addGoal(6, new WolfPlayWithBallGoal(wolf, this.reanimal$ballPlay));
     }
 

@@ -81,7 +81,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
     @Nullable
     private BlockPos environmentTarget;
 
-    private final BallPlay ballPlay = new BallPlay(this, ReAnimalSoundEvents.SEAL_IDLE);
+    private final BallPlay ballPlay = new BallPlay(this);
 
     private float swimPitch;
     private float previousSwimPitch;
