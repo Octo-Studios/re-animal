@@ -166,11 +166,14 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
                     if (!player.getAbilities().instabuild)
                         held.shrink(1);
 
-                    this.tame(player);
-                    this.setTarget(null);
-                    this.getNavigation().stop();
+                    if (this.random.nextInt(3) == 0) {
+                        this.tame(player);
+                        this.setTarget(null);
+                        this.getNavigation().stop();
 
-                    level.broadcastEntityEvent(this, (byte) 7);
+                        level.broadcastEntityEvent(this, (byte) 7);
+                    } else
+                        level.broadcastEntityEvent(this, (byte) 6);
                 }
 
                 return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
