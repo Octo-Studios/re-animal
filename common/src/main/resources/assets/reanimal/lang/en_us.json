@@ -93,6 +93,8 @@
   "item.reanimal.jellyfish_spawn_egg": "Jellyfish Spawn Egg",
   "item.reanimal.jellyfish_bucket": "Bucket of Jellyfish",
 
+  "item.reanimal.ball": "Ball",
+  "entity.reanimal.ball": "Ball",
   "item.reanimal.quill": "Quill",
   "item.reanimal.quill_arrow": "Quill Arrow",
   "entity.reanimal.quill_arrow": "Quill Arrow",

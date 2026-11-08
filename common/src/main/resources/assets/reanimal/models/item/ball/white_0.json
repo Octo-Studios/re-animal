@@ -1,0 +1,7 @@
+{
+  "parent": "reanimal:item/ball/part_0",
+  "textures": {
+    "ball": "reanimal:item/ball/white",
+    "particle": "reanimal:item/ball/white"
+  }
+}

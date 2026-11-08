@@ -12,6 +12,7 @@ public class ReAnimal {
         ReAnimalBlockEntities.init();
         ReAnimalEntities.init();
         ReAnimalItems.init();
+        ReAnimalRecipes.init();
         ReAnimalSoundEvents.init();
         ReAnimalParticleTypes.init();
         ReAnimalSensorTypes.init();

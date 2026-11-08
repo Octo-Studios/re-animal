@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.init;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
+import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.crocodile.CrocodileEggEntity;
@@ -68,6 +69,7 @@ public class ReAnimalEntities {
     public static EntityType<PenguinEggEntity> PENGUIN_EGG;
     public static EntityType<CrocodileEggEntity> CROCODILE_EGG;
     public static EntityType<GlowStickEntity> GLOW_STICK;
+    public static EntityType<BallEntity> BALL;
     public static EntityType<QuillArrowEntity> QUILL_ARROW;
 
     public static void init() {
@@ -98,6 +100,7 @@ public class ReAnimalEntities {
         PENGUIN_EGG = register("penguin_egg", EntityType.Builder.of(PenguinEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         CROCODILE_EGG = register("crocodile_egg", EntityType.Builder.of(CrocodileEggEntity::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10));
         GLOW_STICK = register("glow_stick", EntityType.Builder.<GlowStickEntity>of(GlowStickEntity::new, MobCategory.MISC).sized(GlowStickEntity.SIZE, GlowStickEntity.SIZE).clientTrackingRange(ChunkMap.MAX_VIEW_DISTANCE).updateInterval(10));
+        BALL = register("ball", EntityType.Builder.<BallEntity>of(BallEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(8).updateInterval(2));
         QUILL_ARROW = register("quill_arrow", EntityType.Builder.<QuillArrowEntity>of(QuillArrowEntity::new, MobCategory.MISC).sized(0.5F, 0.5F).clientTrackingRange(4).updateInterval(20));
     }
 

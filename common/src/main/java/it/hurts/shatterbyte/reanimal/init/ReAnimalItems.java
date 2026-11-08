@@ -59,6 +59,7 @@ public class ReAnimalItems {
 
     public static Item BUTTERFLY_POLLEN;
     public static Item QUILL;
+    public static BallItem BALL;
     public static QuillArrowItem QUILL_ARROW;
     public static BlockItem QUILL_PLATFORM;
     public static GlowStickItem GLOW_STICK_WHITE;
@@ -151,6 +152,7 @@ public class ReAnimalItems {
 
         BUTTERFLY_POLLEN = register("butterfly_pollen", props -> new BoneMealItem(props));
         QUILL = register("quill", props -> new Item(props));
+        BALL = register("ball", props -> new BallItem(props.stacksTo(16)));
         QUILL_ARROW = register("quill_arrow", props -> new QuillArrowItem(props));
         QUILL_PLATFORM = register("quill_platform", props -> new BlockItem(ReAnimalBlocks.QUILL_PLATFORM, props.useBlockDescriptionPrefix()));
         GLOW_STICK_WHITE = register("glow_stick_white", props -> new GlowStickItem(props));

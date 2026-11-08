@@ -8,9 +8,12 @@ import net.minecraft.resources.Identifier;
 
 public class ReAnimalParticleTypes {
     public static SimpleParticleType PIGEON_SPLAT;
+    public static SimpleParticleType BALL_IMPACT;
 
     public static void init() {
         PIGEON_SPLAT = register("pigeon_splat", new SimpleParticleType(false) {
+        });
+        BALL_IMPACT = register("ball_impact", new SimpleParticleType(false) {
         });
     }
 

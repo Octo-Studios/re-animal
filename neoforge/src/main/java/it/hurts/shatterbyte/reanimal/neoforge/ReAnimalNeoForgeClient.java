@@ -1,6 +1,9 @@
 package it.hurts.shatterbyte.reanimal.neoforge;
 
 import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer;
+import it.hurts.shatterbyte.reanimal.client.renderer.ball.BallRenderer;
+import it.hurts.shatterbyte.reanimal.client.particle.BallImpactParticle;
+import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
 import it.hurts.shatterbyte.reanimal.client.renderer.capybara.CapybaraRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.crocodile.CrocodileRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.dragonfly.DragonflyRenderer;
@@ -74,13 +77,16 @@ public class ReAnimalNeoForgeClient {
         event.registerEntityRenderer(ReAnimalEntities.PENGUIN_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.CROCODILE_EGG, ThrownItemRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.GLOW_STICK, GlowStickRenderer::new);
+        event.registerEntityRenderer(ReAnimalEntities.BALL, BallRenderer::new);
         event.registerEntityRenderer(ReAnimalEntities.QUILL_ARROW, QuillArrowRenderer::new);
 
         EntityTrailRegistry.registerProvider(ReAnimalEntities.GLOW_STICK, GlowStickEntity.TrailProvider::new);
+        EntityTrailRegistry.registerProvider(ReAnimalEntities.BALL, BallEntity.TrailProvider::new);
     }
 
     private void registerParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ReAnimalParticleTypes.PIGEON_SPLAT, PigeonSplatParticle.Provider::new);
+        event.registerSpriteSet(ReAnimalParticleTypes.BALL_IMPACT, BallImpactParticle.Provider::new);
     }
 
     private void onEntityJoin(EntityJoinLevelEvent event) {

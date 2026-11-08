@@ -3,10 +3,14 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -18,6 +22,12 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.sounds.SoundEvent;
@@ -46,21 +56,32 @@ import com.geckolib.util.GeckoLibUtil;
 
 import org.jspecify.annotations.Nullable;
 
-public class SealEntity extends Animal implements GeoEntity {
+import java.util.Comparator;
+
+public class SealEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.seal.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.seal.walk");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.seal.swim");
+    private static final RawAnimation SWIM_IDLE = RawAnimation.begin().thenLoop("animation.seal.swim_idle");
     private static final RawAnimation LAYING = RawAnimation.begin().then("animation.seal.laying", LoopType.PLAY_ONCE);
     private static final RawAnimation LAY = RawAnimation.begin().thenLoop("animation.seal.lay");
     private static final RawAnimation LAY_SLAP = RawAnimation.begin().thenLoop("animation.seal.lay_slap");
     private static final RawAnimation GETTING_UP = RawAnimation.begin().then("animation.seal.getting_up", LoopType.PLAY_ONCE);
 
     private static final EntityDataAccessor<Integer> LAY_STATE = SynchedEntityData.defineId(SealEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> SWIM_ROLL = SynchedEntityData.defineId(SealEntity.class, EntityDataSerializers.FLOAT);
 
     private static final int LAY_TRANSITION_TICKS = 14;
+    private static final int SWIM_ROLL_DURATION = 40;
+    private static final int SWIM_BACKSTROKE_DURATION = 100;
+    private static final int SWIM_BACKSTROKE_TRANSITION = 20;
+
+    private static final UniformInt SWIM_ROLL_COOLDOWN = UniformInt.of(160, 320);
 
     public static final UniformInt LAY_DURATION = UniformInt.of(400, 800);
     private static final UniformInt LAY_COOLDOWN = UniformInt.of(200, 400);
+    private static final UniformInt BALL_PLAY_DURATION = UniformInt.of(400, 800);
+    private static final UniformInt BALL_PLAY_COOLDOWN = UniformInt.of(600, 1200);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -70,14 +91,44 @@ public class SealEntity extends Animal implements GeoEntity {
     @Nullable
     private BlockPos environmentTarget;
 
-    public SealEntity(EntityType<? extends Animal> entityType, Level level) {
+    @Nullable
+    private BallEntity playBall;
+
+    private long playUntil;
+    private long playAgainAt;
+    private long playStoppedAt;
+    private long lastBallThrowAt;
+
+    private float swimPitch;
+    private float previousSwimPitch;
+    private float swimRoll;
+    private float previousSwimRoll;
+    private int swimRollType;
+    private int swimRollTime;
+    private int swimRollCooldown;
+    private int dismountDelay;
+
+    public SealEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
 
-        this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.4F, 1F, false);
+        this.moveControl = new SmoothSwimmingMoveControl<>(this, 85, 10, 0.4F, 1F, false) {
+            private float movementPitch;
+
+            @Override
+            public void tick() {
+                if (this.mob.isInWater())
+                    this.mob.setXRot(this.movementPitch);
+
+                super.tick();
+
+                this.movementPitch = this.mob.isInWater() ? this.mob.getXRot() : 0F;
+            }
+        };
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
         this.navigation = new AmphibiousPathNavigation(this, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
+        this.swimRollCooldown = SWIM_ROLL_COOLDOWN.sample(this.random);
     }
 
     public void setEnvironmentTarget(@Nullable BlockPos pos) {
@@ -106,22 +157,73 @@ public class SealEntity extends Animal implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        var level = this.level();
+        var gameTime = serverLevel.getGameTime();
+
+        if (this.isPlayingWithBall()) {
+            if (this.playBall.getLastThrownAt() != this.lastBallThrowAt)
+                this.startPlayingWithBall(this.playBall);
+            else if (gameTime >= this.playUntil)
+                this.stopPlayingWithBall();
+        }
 
         if (this.tickCount % 20 == 0) {
             this.checkForThreats();
-        }
 
-        ((Brain<SealEntity>) this.getBrain()).tick(serverLevel, this);
+            if (!this.isPlayingWithBall() && this.isTame() && !this.isInLove()) {
+                var ball = serverLevel.getEntitiesOfClass(BallEntity.class, this.getBoundingBox().inflate(16D), candidate -> candidate.isAlive()
+                                && this.hasLineOfSight(candidate) && (gameTime >= this.playAgainAt || candidate.getLastThrownAt() > this.playStoppedAt))
+                        .stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
+
+                if (ball != null)
+                    this.startPlayingWithBall(ball);
+            }
+        }
 
         SealAI.updateActivity(this);
 
+        ((Brain<SealEntity>) this.getBrain()).tick(serverLevel, this);
+
         super.customServerAiStep(serverLevel);
+    }
+
+    @Nullable
+    public BallEntity getPlayBall() {
+        return this.playBall;
+    }
+
+    public void startPlayingWithBall(BallEntity ball) {
+        this.playBall = ball;
+        this.lastBallThrowAt = ball.getLastThrownAt();
+        this.playUntil = this.level().getGameTime() + BALL_PLAY_DURATION.sample(this.random);
+    }
+
+    public void stopPlayingWithBall() {
+        this.playBall = null;
+        this.playStoppedAt = this.level().getGameTime();
+        this.playAgainAt = this.playStoppedAt + BALL_PLAY_COOLDOWN.sample(this.random);
+    }
+
+    public boolean isPlayingWithBall() {
+        return this.isTame() && this.playBall != null && this.playBall.isAlive()
+                && this.distanceToSqr(this.playBall) <= 32D * 32D && !this.isInLove();
     }
 
     @Override
     public void aiStep() {
         super.aiStep();
+
+        if (this.level().isClientSide()) {
+            this.previousSwimPitch = this.swimPitch;
+
+            var movement = this.getDeltaMovement();
+            var maxPitch = this.isEyeInFluid(FluidTags.WATER) ? 35F : 12F;
+            var targetPitch = this.isInWater()
+                    ? Mth.clamp((float) Mth.atan2(movement.y, movement.horizontalDistance()) * Mth.RAD_TO_DEG, -maxPitch, maxPitch)
+                            * (float) Math.min(movement.length() / this.getAttributeValue(Attributes.MOVEMENT_SPEED), 1D)
+                    : 0F;
+
+            this.swimPitch = Mth.lerp(0.15F, this.swimPitch, targetPitch);
+        }
 
         if (this.isLaying()) {
             this.setXRot(0);
@@ -134,6 +236,56 @@ public class SealEntity extends Animal implements GeoEntity {
         if (!this.level().isClientSide() && this.isLaying())
             this.getNavigation().stop();
     }
+
+    public float getSwimPitch(float partialTick) {
+        return Mth.lerp(partialTick, this.previousSwimPitch, this.swimPitch);
+    }
+
+    public float getSwimRoll(float partialTick) {
+        return Mth.rotLerp(partialTick, this.previousSwimRoll, this.swimRoll);
+    }
+
+    private void updateSwimRoll() {
+        if (this.swimRollCooldown > 0)
+            this.swimRollCooldown--;
+
+        if (!this.isAlive() || !this.isInWater() || this.isPassenger() || this.isVehicle() || this.hurtTime > 0
+                || this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)) {
+            if (this.swimRollType != 0)
+                this.swimRollCooldown = SWIM_ROLL_COOLDOWN.sample(this.random);
+
+            this.swimRollType = 0;
+            this.entityData.set(SWIM_ROLL, 0F);
+
+            return;
+        }
+
+        if (this.swimRollType == 0) {
+            if (this.swimRollCooldown > 0 || !this.isEyeInFluid(FluidTags.WATER) || this.getNavigation().isDone()
+                    || !this.level().getFluidState(this.blockPosition().below()).is(FluidTags.WATER))
+                return;
+
+            this.swimRollType = (this.random.nextInt(2) + 1) * (this.random.nextBoolean() ? 1 : -1);
+            this.swimRollTime = 0;
+        }
+
+        this.swimRollTime++;
+
+        var backstroke = Math.abs(this.swimRollType) == 2;
+        var duration = backstroke ? SWIM_BACKSTROKE_DURATION : SWIM_ROLL_DURATION;
+        var roll = backstroke
+                ? 180F * (Mth.smoothstep(Mth.clamp((float) this.swimRollTime / SWIM_BACKSTROKE_TRANSITION, 0F, 1F))
+                        + Mth.smoothstep(Mth.clamp((float) (this.swimRollTime - duration + SWIM_BACKSTROKE_TRANSITION) / SWIM_BACKSTROKE_TRANSITION, 0F, 1F)))
+                : 360F * Mth.smoothstep((float) this.swimRollTime / duration);
+
+        if (this.swimRollTime >= duration) {
+            this.swimRollType = 0;
+            this.swimRollCooldown = SWIM_ROLL_COOLDOWN.sample(this.random);
+            this.entityData.set(SWIM_ROLL, 0F);
+        } else
+            this.entityData.set(SWIM_ROLL, (float) roll * Math.signum(this.swimRollType));
+    }
+
     protected Brain.Provider<SealEntity> brainProvider() {
         return SealAI.brainProvider();
     }
@@ -143,9 +295,129 @@ public class SealEntity extends Animal implements GeoEntity {
         return SealAI.makeBrain(this.brainProvider().makeBrain(this, packed));
     }
 
+    public boolean canRideAdult(SealEntity adult) {
+        return this.isBaby() && this.isInWater() && !this.isPassenger() && !this.isVehicle()
+                && this.boardingCooldown == 0 && this.hurtTime == 0 && !this.isLaying() && this.swimRollType == 0
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                && adult.isInWater() && adult.canCarryBaby() && !adult.isVehicle();
+    }
+
+    private boolean canCarryBaby() {
+        return !this.isBaby() && this.isAlive() && !this.isPassenger()
+                && this.hurtTime == 0 && !this.isLaying() && this.swimRollType == 0
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+    }
+
+    @Override
+    public boolean canControlVehicle() {
+        return false;
+    }
+
+    @Override
+    protected boolean isImmobile() {
+        return this.getVehicle() instanceof SealEntity || super.isImmobile();
+    }
+
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+        return passenger instanceof SealEntity ? new Vec3(0D, 13D / 16D, 0D)
+                : super.getPassengerAttachmentPoint(passenger, dimensions, scale);
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+
+        if (this.level().isClientSide()) {
+            this.previousSwimRoll = this.swimRoll;
+
+            var targetRoll = this.isInWater() && !this.isPassenger()
+                    ? this.entityData.get(SWIM_ROLL) - Mth.clamp(Mth.wrapDegrees(this.yBodyRot - this.yBodyRotO) * 3F, -20F, 20F)
+                    : 0F;
+
+            this.swimRoll = Mth.wrapDegrees(Mth.rotLerp(0.2F, this.swimRoll, targetRoll));
+        } else
+            this.updateSwimRoll();
+
+        if (!this.level().isClientSide() && this.getVehicle() instanceof SealEntity adult) {
+            if (!this.isBaby() || this.hurtTime > 0 || this.isLaying()
+                    || this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING) || !adult.canCarryBaby())
+                this.stopRiding();
+            else if (adult.isInWater())
+                this.dismountDelay = 0;
+            else if (this.dismountDelay == 0)
+                this.dismountDelay = this.random.nextIntBetweenInclusive(20, 100);
+            else if (--this.dismountDelay == 0)
+                this.stopRiding();
+        } else
+            this.dismountDelay = 0;
+    }
+
+    @Override
+    public void rideTick() {
+        super.rideTick();
+
+        if (this.getVehicle() instanceof SealEntity adult) {
+            this.setYRot(adult.yBodyRot);
+            this.yBodyRot = this.getYRot();
+            this.yHeadRot = this.getYRot();
+            this.setXRot(0F);
+        }
+    }
+
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.SEAL_FOOD);
+    }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        var level = this.level();
+        var held = player.getItemInHand(hand);
+
+        if (this.isFood(held)) {
+            if (!this.isTame()) {
+                if (!level.isClientSide()) {
+                    if (!player.getAbilities().instabuild)
+                        held.shrink(1);
+
+                    this.tame(player);
+                    level.broadcastEntityEvent(this, (byte) 7);
+                }
+
+                return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+            }
+
+            if (this.isOwnedBy(player) && this.getHealth() < this.getMaxHealth()) {
+                if (!level.isClientSide()) {
+                    if (!player.getAbilities().instabuild)
+                        held.shrink(1);
+
+                    this.heal(2F);
+                }
+
+                return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+            }
+        }
+
+        if (held.is(ReAnimalItems.BALL) && this.isTame()) {
+            if (!level.isClientSide()) {
+                var ball = ReAnimalEntities.BALL.create(level, EntitySpawnReason.TRIGGERED);
+
+                ball.setItem(held);
+                ball.setThrower(player);
+                ball.setPos(this.position().add(this.getLookAngle().multiply(1D, 0D, 1D).scale(this.getBbWidth())).add(0D, 0.25D, 0D));
+                level.addFreshEntity(ball);
+                this.startPlayingWithBall(ball);
+
+                if (!player.getAbilities().instabuild)
+                    held.shrink(1);
+            }
+
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+        }
+
+        return super.mobInteract(player, hand);
     }
 
     @Override
@@ -213,11 +485,22 @@ public class SealEntity extends Animal implements GeoEntity {
     @Override
     public void travel(Vec3 travelVector) {
         if (this.isEffectiveAi() && this.isInWater() && this.isSwimming()) {
-            this.moveRelative(this.getSpeed(), travelVector);
+            var swimSpeed = (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.25F;
+            var target = this.getNavigation().getTargetPos();
+            var leavingWater = this.getNavigation().isInProgress() && target != null
+                    && target.getY() > this.getY() && !this.level().getFluidState(target).is(FluidTags.WATER);
+
+            this.moveRelative(swimSpeed, travelVector);
+
+            if (this.isPlayingWithBall() && !leavingWater)
+                this.setDeltaMovement(this.getDeltaMovement().x,
+                        Math.min(this.getDeltaMovement().y, Math.max(0D, this.getFluidHeight(FluidTags.WATER) - this.getBbHeight() * 0.5D)),
+                        this.getDeltaMovement().z);
+
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.setDeltaMovement(this.getDeltaMovement().scale(0.9));
 
-            if (this.horizontalCollision)
+            if (this.horizontalCollision && leavingWater)
                 this.setDeltaMovement(this.getDeltaMovement().x, 0.3D, this.getDeltaMovement().z);
         } else
             super.travel(travelVector);
@@ -237,6 +520,12 @@ public class SealEntity extends Animal implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
+        if (this.getVehicle() instanceof SealEntity) {
+            controller.setAnimation(IDLE);
+
+            return PlayState.CONTINUE;
+        }
+
         switch (this.getLayState()) {
             case LAYING_DOWN -> controller.setAnimation(LAYING);
             case LAYING -> {
@@ -247,13 +536,10 @@ public class SealEntity extends Animal implements GeoEntity {
             }
             case GETTING_UP -> controller.setAnimation(GETTING_UP);
             case STANDING -> {
-                if (state.isMoving()) {
-                    if (this.isInWater())
-                        controller.setAnimation(SWIM);
-                    else
-                        controller.setAnimation(WALK);
-                } else
-                    controller.setAnimation(IDLE);
+                if (this.isInWater())
+                    controller.setAnimation(state.isMoving() ? SWIM : SWIM_IDLE);
+                else
+                    controller.setAnimation(state.isMoving() ? WALK : IDLE);
             }
         }
 
@@ -281,6 +567,7 @@ public class SealEntity extends Animal implements GeoEntity {
         super.defineSynchedData(buidler);
 
         buidler.define(LAY_STATE, LayState.STANDING.ordinal());
+        buidler.define(SWIM_ROLL, 0F);
     }
 
     @Override
@@ -290,6 +577,8 @@ public class SealEntity extends Animal implements GeoEntity {
         tag.putInt("LayState", this.entityData.get(LAY_STATE));
         tag.putInt("LayTime", this.layTime);
         tag.putInt("LayCooldown", this.layCooldown);
+        tag.putLong("BallPlayAgainAt", this.playAgainAt);
+        tag.putLong("BallPlayStoppedAt", this.playStoppedAt);
     }
 
     @Override
@@ -301,6 +590,8 @@ public class SealEntity extends Animal implements GeoEntity {
         this.layTime = tag.getIntOr("LayTime", 0);
 
         this.layCooldown = tag.getIntOr("LayCooldown", 0);
+        this.playAgainAt = tag.getLongOr("BallPlayAgainAt", 0L);
+        this.playStoppedAt = tag.getLongOr("BallPlayStoppedAt", 0L);
     }
 
     @Override
