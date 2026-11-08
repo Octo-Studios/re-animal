@@ -25,6 +25,8 @@ import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ItemSupplier;
 import net.minecraft.world.item.ItemStack;
@@ -45,7 +47,8 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
     private static final double GRAVITY = 0.04D;
     private static final double AIR_DRAG = 0.99D;
     private static final double BOUNCE_DAMPING = 0.55D;
-    private static final double FOOT_KICK_SPEED = 0.18D;
+    private static final double GROUND_BOUNCE_DAMPING = 0.75D;
+    private static final double FOOT_KICK_SPEED = 0.28D;
 
     private static final int[] DEFAULT_COLORS = {15961002, 16701501, 15961002, 16701501};
 
@@ -58,6 +61,8 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
     @Nullable
     private EntityReference<Player> thrower;
+    @Nullable
+    private Mob playingAnimal;
     private int returnTicks;
     @Getter
     private long lastThrownAt;
@@ -77,7 +82,9 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
             var movement = this.position().subtract(this.previousPosition);
             var horizontal = movement.horizontalDistance();
 
-            if (this.tickCount > 1 && horizontal > 0D) {
+            if (this.getVehicle() instanceof Wolf wolf)
+                this.rotation.rotationYXZ(-wolf.getViewYRot(1F) * Mth.DEG_TO_RAD, wolf.getViewXRot(1F) * Mth.DEG_TO_RAD, 0F);
+            else if (this.tickCount > 1 && horizontal > 0D) {
                 var angle = (float) Math.min(horizontal / (this.getBbWidth() * 0.5D), Mth.PI * 0.25F);
 
                 this.rotation.premul(new Quaternionf().rotationAxis(angle, (float) (movement.z / horizontal), 0F, (float) (-movement.x / horizontal))).normalize();
@@ -88,6 +95,9 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
             return;
         }
+
+        if (this.isPassenger())
+            return;
 
         if (this.footKickCooldown > 0)
             this.footKickCooldown--;
@@ -113,7 +123,7 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
             this.setDeltaMovement(
                     hitX ? -movement.x * BOUNCE_DAMPING : movement.x * friction,
-                    this.verticalCollision ? (bounceY ? -movement.y * BOUNCE_DAMPING : 0D) : movement.y,
+                    this.verticalCollision ? (bounceY ? -movement.y * (movement.y < 0D ? GROUND_BOUNCE_DAMPING : BOUNCE_DAMPING) : 0D) : movement.y,
                     hitZ ? -movement.z * BOUNCE_DAMPING : movement.z * friction
             );
 
@@ -132,7 +142,7 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
         BallEntity hitBall = null;
         var hitTime = 1D;
 
-        for (var ball : this.level().getEntitiesOfClass(BallEntity.class, this.getBoundingBox().expandTowards(start.subtract(this.position())), ball -> ball != this && ball.isAlive())) {
+        for (var ball : this.level().getEntitiesOfClass(BallEntity.class, this.getBoundingBox().expandTowards(start.subtract(this.position())), ball -> ball != this && ball.isAlive() && !ball.isPassenger())) {
             var offset = start.subtract(ball.position());
             var radius = (this.getBbWidth() + ball.getBbWidth()) * 0.5D;
             var separation = offset.lengthSqr() - radius * radius;
@@ -179,6 +189,7 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
     }
 
     public void kick(Vec3 movement) {
+        this.stopRiding();
         this.setDeltaMovement(movement);
         this.markHurt();
         this.footKickCooldown = 8;
@@ -214,7 +225,20 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
     }
 
     public Quaternionf getRenderRotation(float partialTick) {
+        if (this.getVehicle() instanceof Wolf wolf)
+            return new Quaternionf().rotationYXZ(-wolf.getViewYRot(partialTick) * Mth.DEG_TO_RAD, wolf.getViewXRot(partialTick) * Mth.DEG_TO_RAD, 0F);
+
         return new Quaternionf(this.previousRotation).slerp(this.rotation, partialTick);
+    }
+
+    public Vec3 getCarriedPosition(Wolf wolf, float partialTick) {
+        var head = new Vec3(wolf.isBaby() ? 0D : 1D / 16D, (wolf.isBaby() ? 5.75D : 10.5D) / 16D, (wolf.isBaby() ? 4D : 7D) / 16D)
+                .scale(wolf.getScale()).yRot(-Mth.rotLerp(partialTick, wolf.yBodyRotO, wolf.yBodyRot) * Mth.DEG_TO_RAD);
+        var mouth = new Vec3(wolf.isBaby() ? 0D : -1D / 16D, -(wolf.isBaby() ? 0.75D : 1.5D) / 16D, 5D / 16D)
+                .scale(wolf.getScale()).add(0D, 0D, this.getBbWidth() * 0.3D)
+                .xRot(-wolf.getViewXRot(partialTick) * Mth.DEG_TO_RAD).yRot(-wolf.getViewYRot(partialTick) * Mth.DEG_TO_RAD);
+
+        return wolf.getPosition(partialTick).add(head).add(mouth).add(0D, -this.getBbHeight() * 0.5D, 0D);
     }
 
     public Vec3 getImpact() {
@@ -239,6 +263,14 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
         this.playHits = 0;
         this.returnTicks = 0;
         this.lastThrownAt = this.level().getGameTime();
+    }
+
+    boolean isAvailableFor(Mob mob) {
+        return (!this.isPassenger() || this.getVehicle() == mob) && (this.playingAnimal == null || !this.playingAnimal.isAlive() || this.playingAnimal == mob);
+    }
+
+    void setPlayingAnimal(@Nullable Mob mob) {
+        this.playingAnimal = mob;
     }
 
     @Nullable
@@ -276,30 +308,37 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
     @Override
     public boolean isPushable() {
-        return true;
+        return !this.isPassenger();
+    }
+
+    @Override
+    public void playerTouch(Player player) {
+        if (this.getBoundingBox().intersects(player.getBoundingBox().expandTowards(player.getKnownMovement().multiply(1D, 0D, 1D))))
+            this.push(player);
     }
 
     @Override
     public void push(Entity entity) {
-        if (this.level().isClientSide() || this.footKickCooldown > 0 || !(entity instanceof Player player)
+        if (this.level().isClientSide() || this.isPassenger() || this.footKickCooldown > 0 || !(entity instanceof Player player)
                 || this.getY() > player.getY() + this.getBbHeight() * 0.5D)
             return;
 
         var direction = this.position().subtract(player.position()).multiply(1D, 0D, 1D).normalize();
         var movement = this.getDeltaMovement();
+        var playerMovement = player.getKnownMovement();
 
-        if (player.getKnownMovement().subtract(movement).dot(direction) <= 0D || movement.dot(direction) >= FOOT_KICK_SPEED)
+        if (playerMovement.subtract(movement).dot(direction) <= 0D)
             return;
 
         this.setThrower(player);
-        this.kick(direction.scale(FOOT_KICK_SPEED).add(0D, movement.y, 0D));
+        this.kick(direction.scale(FOOT_KICK_SPEED + Math.max(0D, playerMovement.dot(direction))).add(0D, movement.y, 0D));
     }
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         if (source.getEntity() instanceof Player player) {
             this.setThrower(player);
-            this.kick(player.getLookAngle().scale(0.55D).add(0D, 0.16D, 0D));
+            this.kick(player.getLookAngle().scale(0.7D).add(0D, 0.18D, 0D));
 
             return true;
         }
@@ -380,7 +419,7 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
         @Override
         public boolean isTrailGrowing() {
-            return this.entity.tickCount > 1 && this.entity.getDeltaMovement().lengthSqr() > 0.12D * 0.12D;
+            return !this.entity.isPassenger() && this.entity.tickCount > 1 && this.entity.getDeltaMovement().lengthSqr() > 0.12D * 0.12D;
         }
 
         @Override

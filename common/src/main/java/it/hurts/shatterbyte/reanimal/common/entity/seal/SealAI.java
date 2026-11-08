@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -243,10 +242,6 @@ public class SealAI {
         private BlockPos waterTarget;
         private long nextWaterSearch;
         private long nextHit;
-        private long circleUntil;
-        private long returnAt;
-        private long waitUntil;
-        private long lastThrowAt;
 
         public SealPlayWithBall() {
             super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.REGISTERED), 1200);
@@ -275,36 +270,19 @@ public class SealAI {
             this.waterTarget = null;
             this.nextWaterSearch = gameTime;
             this.nextHit = gameTime;
-            this.circleUntil = gameTime;
-            this.returnAt = 0;
-            this.waitUntil = 0;
-            this.lastThrowAt = seal.getPlayBall().getLastThrownAt();
         }
 
         @Override
         protected void tick(ServerLevel level, SealEntity seal, long gameTime) {
             var ball = seal.getPlayBall();
             var brain = seal.getBrain();
-            var thrower = ball.getThrower();
+            var play = seal.getBallPlay();
 
-            if (ball.getLastThrownAt() != this.lastThrowAt) {
-                this.lastThrowAt = ball.getLastThrownAt();
-                this.waitUntil = 0;
-                this.returnAt = 0;
-            }
+            brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(play.getLookTarget(), true));
 
-            brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(ball, true));
-
-            if (this.waitUntil > 0 || ball.isReturning()) {
-                if (thrower != null && thrower.level() == level)
-                    brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(thrower, true));
-
+            if (play.isWaiting()) {
                 brain.eraseMemory(MemoryModuleType.WALK_TARGET);
                 seal.getNavigation().stop();
-                this.returnAt = 0;
-
-                if (this.waitUntil > 0 && gameTime >= this.waitUntil)
-                    seal.stopPlayingWithBall();
 
                 return;
             }
@@ -335,15 +313,12 @@ public class SealAI {
                 }
             }
 
-            if (gameTime < this.circleUntil && seal.isInWater()) {
-                var angle = gameTime * 0.12D + seal.getId();
-                var target = ball.position().add(Math.cos(angle) * 1.8D, -0.5D, Math.sin(angle) * 1.8D);
+            var circle = play.getCircleTarget();
 
-                if (level.getFluidState(BlockPos.containing(target)).is(FluidTags.WATER)) {
-                    brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 1.4F, 0));
+            if (circle != null) {
+                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(circle, 1.4F, 0));
 
-                    return;
-                }
+                return;
             }
 
             if ((ball.isInWater() && !seal.isInWater()) || seal.distanceToSqr(ball) > 1.8D * 1.8D) {
@@ -362,52 +337,7 @@ public class SealAI {
             brain.eraseMemory(MemoryModuleType.WALK_TARGET);
             seal.getNavigation().stop();
 
-            if (gameTime < this.nextHit)
-                return;
-
-            if (ball.playHits >= 2 && thrower != null && thrower.isAlive() && !thrower.isSpectator()
-                    && thrower.level() == level && ball.distanceToSqr(thrower) <= 32D * 32D && seal.hasLineOfSight(thrower)) {
-                brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(thrower, true));
-                seal.setYRot(Mth.approachDegrees(seal.getYRot(),
-                        (float) Mth.atan2(thrower.getZ() - seal.getZ(), thrower.getX() - seal.getX()) * Mth.RAD_TO_DEG - 90F, 10F));
-                seal.yBodyRot = seal.getYRot();
-
-                if (this.returnAt == 0) {
-                    this.returnAt = gameTime + 20;
-                    seal.playSound(ReAnimalSoundEvents.SEAL_IDLE, 0.5F, 1F);
-                }
-
-                if (gameTime >= this.returnAt) {
-                    ball.returnTo(thrower);
-                    this.returnAt = 0;
-                    this.waitUntil = gameTime + 160;
-                }
-
-                return;
-            }
-
-            this.returnAt = 0;
-
-            var direction = ball.position().subtract(seal.position()).multiply(1D, 0D, 1D).normalize();
-            var action = seal.getRandom().nextInt(6);
-
-            switch (action) {
-                case 0 -> {
-                    var target = ball.position().add(direction.scale(3D));
-
-                    if (level.getFluidState(BlockPos.containing(target)).is(FluidTags.WATER))
-                        ball.kick(direction.scale(0.45D).add(0D, 0.15D, 0D));
-                    else
-                        ball.kick(new Vec3(0D, 0.4D, 0D));
-                }
-                case 1 -> this.circleUntil = gameTime + 20;
-                default -> ball.kick(direction.scale(ball.isInWater() ? 0.12D : 0.06D).add(0D, ball.isInWater() ? 0.5D : 0.35D, 0D));
-            }
-
-            if (action != 1 && thrower != null)
-                ball.playHits++;
-
-            this.nextHit = gameTime + 20;
+            play.hitBall();
         }
 
         @Override

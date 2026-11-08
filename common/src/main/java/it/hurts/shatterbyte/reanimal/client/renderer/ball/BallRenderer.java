@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
@@ -37,6 +38,14 @@ public class BallRenderer extends GeoEntityRenderer<BallEntity, EntityRenderStat
     @Override
     public void extractRenderState(BallEntity entity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(entity, renderState, partialTick);
+
+        if (entity.getVehicle() instanceof Wolf wolf) {
+            var position = entity.getCarriedPosition(wolf, partialTick);
+
+            renderState.x = position.x;
+            renderState.y = position.y;
+            renderState.z = position.z;
+        }
 
         var colors = new int[4];
 

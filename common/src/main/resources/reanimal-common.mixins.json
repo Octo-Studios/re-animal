@@ -5,9 +5,11 @@
   "compatibilityLevel": "JAVA_25",
   "mixins": [
     "BodyRotationControlMixin",
+    "DolphinMixin",
     "EntityMixin",
     "PathNavigationMixin",
-    "PolarBearMixin"
+    "PolarBearMixin",
+    "WolfMixin"
   ],
   "client": [
     "client.BlockModelSubmitMixin",

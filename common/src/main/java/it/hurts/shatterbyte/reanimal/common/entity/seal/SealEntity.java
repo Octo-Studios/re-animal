@@ -1,36 +1,35 @@
 package it.hurts.shatterbyte.reanimal.common.entity.seal;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
-import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.LoopType;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.ball.BallPlay;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Mth;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.EntitySpawnReason;
-import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.FluidTags;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.TamableAnimal;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MoverType;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -41,22 +40,15 @@ import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.polarbear.PolarBear;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
-import com.geckolib.animatable.GeoEntity;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animation.*;
-import com.geckolib.animation.object.LoopType;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.animation.object.PlayState;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.util.GeckoLibUtil;
-
 import org.jspecify.annotations.Nullable;
-
-import java.util.Comparator;
 
 public class SealEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.seal.idle");
@@ -80,8 +72,6 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
 
     public static final UniformInt LAY_DURATION = UniformInt.of(400, 800);
     private static final UniformInt LAY_COOLDOWN = UniformInt.of(200, 400);
-    private static final UniformInt BALL_PLAY_DURATION = UniformInt.of(400, 800);
-    private static final UniformInt BALL_PLAY_COOLDOWN = UniformInt.of(600, 1200);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -91,13 +81,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
     @Nullable
     private BlockPos environmentTarget;
 
-    @Nullable
-    private BallEntity playBall;
-
-    private long playUntil;
-    private long playAgainAt;
-    private long playStoppedAt;
-    private long lastBallThrowAt;
+    private final BallPlay ballPlay = new BallPlay(this, ReAnimalSoundEvents.SEAL_IDLE);
 
     private float swimPitch;
     private float previousSwimPitch;
@@ -157,26 +141,13 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        var gameTime = serverLevel.getGameTime();
-
-        if (this.isPlayingWithBall()) {
-            if (this.playBall.getLastThrownAt() != this.lastBallThrowAt)
-                this.startPlayingWithBall(this.playBall);
-            else if (gameTime >= this.playUntil)
-                this.stopPlayingWithBall();
-        }
+        this.ballPlay.tick();
 
         if (this.tickCount % 20 == 0) {
             this.checkForThreats();
 
-            if (!this.isPlayingWithBall() && this.isTame() && !this.isInLove()) {
-                var ball = serverLevel.getEntitiesOfClass(BallEntity.class, this.getBoundingBox().inflate(16D), candidate -> candidate.isAlive()
-                                && this.hasLineOfSight(candidate) && (gameTime >= this.playAgainAt || candidate.getLastThrownAt() > this.playStoppedAt))
-                        .stream().min(Comparator.comparingDouble(this::distanceToSqr)).orElse(null);
-
-                if (ball != null)
-                    this.startPlayingWithBall(ball);
-            }
+            if (!this.isPlayingWithBall() && this.isTame() && !this.isInLove())
+                this.ballPlay.findBall(ball -> true);
         }
 
         SealAI.updateActivity(this);
@@ -186,26 +157,25 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
         super.customServerAiStep(serverLevel);
     }
 
+    public BallPlay getBallPlay() {
+        return this.ballPlay;
+    }
+
     @Nullable
     public BallEntity getPlayBall() {
-        return this.playBall;
+        return this.ballPlay.getBall();
     }
 
     public void startPlayingWithBall(BallEntity ball) {
-        this.playBall = ball;
-        this.lastBallThrowAt = ball.getLastThrownAt();
-        this.playUntil = this.level().getGameTime() + BALL_PLAY_DURATION.sample(this.random);
+        this.ballPlay.start(ball);
     }
 
     public void stopPlayingWithBall() {
-        this.playBall = null;
-        this.playStoppedAt = this.level().getGameTime();
-        this.playAgainAt = this.playStoppedAt + BALL_PLAY_COOLDOWN.sample(this.random);
+        this.ballPlay.stop();
     }
 
     public boolean isPlayingWithBall() {
-        return this.isTame() && this.playBall != null && this.playBall.isAlive()
-                && this.distanceToSqr(this.playBall) <= 32D * 32D && !this.isInLove();
+        return this.isTame() && !this.isInLove() && this.ballPlay.isPlaying();
     }
 
     @Override
@@ -219,7 +189,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
             var maxPitch = this.isEyeInFluid(FluidTags.WATER) ? 35F : 12F;
             var targetPitch = this.isInWater()
                     ? Mth.clamp((float) Mth.atan2(movement.y, movement.horizontalDistance()) * Mth.RAD_TO_DEG, -maxPitch, maxPitch)
-                            * (float) Math.min(movement.length() / this.getAttributeValue(Attributes.MOVEMENT_SPEED), 1D)
+                    * (float) Math.min(movement.length() / this.getAttributeValue(Attributes.MOVEMENT_SPEED), 1D)
                     : 0F;
 
             this.swimPitch = Mth.lerp(0.15F, this.swimPitch, targetPitch);
@@ -275,7 +245,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
         var duration = backstroke ? SWIM_BACKSTROKE_DURATION : SWIM_ROLL_DURATION;
         var roll = backstroke
                 ? 180F * (Mth.smoothstep(Mth.clamp((float) this.swimRollTime / SWIM_BACKSTROKE_TRANSITION, 0F, 1F))
-                        + Mth.smoothstep(Mth.clamp((float) (this.swimRollTime - duration + SWIM_BACKSTROKE_TRANSITION) / SWIM_BACKSTROKE_TRANSITION, 0F, 1F)))
+                + Mth.smoothstep(Mth.clamp((float) (this.swimRollTime - duration + SWIM_BACKSTROKE_TRANSITION) / SWIM_BACKSTROKE_TRANSITION, 0F, 1F)))
                 : 360F * Mth.smoothstep((float) this.swimRollTime / duration);
 
         if (this.swimRollTime >= duration) {
@@ -401,18 +371,8 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
         }
 
         if (held.is(ReAnimalItems.BALL) && this.isTame()) {
-            if (!level.isClientSide()) {
-                var ball = ReAnimalEntities.BALL.create(level, EntitySpawnReason.TRIGGERED);
-
-                ball.setItem(held);
-                ball.setThrower(player);
-                ball.setPos(this.position().add(this.getLookAngle().multiply(1D, 0D, 1D).scale(this.getBbWidth())).add(0D, 0.25D, 0D));
-                level.addFreshEntity(ball);
-                this.startPlayingWithBall(ball);
-
-                if (!player.getAbilities().instabuild)
-                    held.shrink(1);
-            }
+            if (!level.isClientSide())
+                this.ballPlay.giveBall(player, hand);
 
             return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
         }
@@ -462,7 +422,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
 
         return result;
     }
-    
+
     private void checkForThreats() {
         if (this.level().isClientSide()) return;
 
@@ -470,13 +430,13 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
 
         if (polarBear != null) {
             this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
-            
+
             if (this.isLaying() && this.getLayState() != LayState.GETTING_UP) {
                 this.startGettingUp();
             }
         }
     }
-    
+
     @Override
     public void updateSwimming() {
         this.setSwimming(this.isEffectiveAi() && this.isInWater());
@@ -577,8 +537,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
         tag.putInt("LayState", this.entityData.get(LAY_STATE));
         tag.putInt("LayTime", this.layTime);
         tag.putInt("LayCooldown", this.layCooldown);
-        tag.putLong("BallPlayAgainAt", this.playAgainAt);
-        tag.putLong("BallPlayStoppedAt", this.playStoppedAt);
+        this.ballPlay.save(tag);
     }
 
     @Override
@@ -590,8 +549,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
         this.layTime = tag.getIntOr("LayTime", 0);
 
         this.layCooldown = tag.getIntOr("LayCooldown", 0);
-        this.playAgainAt = tag.getLongOr("BallPlayAgainAt", 0L);
-        this.playStoppedAt = tag.getLongOr("BallPlayStoppedAt", 0L);
+        this.ballPlay.load(tag);
     }
 
     @Override
