@@ -19,6 +19,7 @@
     "client.FluidRendererMixin",
     "client.ItemFeatureRendererMixin",
     "client.LightmapRenderStateExtractorMixin",
+    "client.LocalPlayerMixin",
     "client.ModelBlockRendererMixin",
     "client.QuadParticleRenderStateMixin",
     "client.RenderPassInfoMixin",

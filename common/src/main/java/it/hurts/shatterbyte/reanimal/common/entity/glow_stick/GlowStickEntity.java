@@ -1,44 +1,45 @@
 package it.hurts.shatterbyte.reanimal.common.entity.glow_stick;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 
-import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailProvider;
+import com.geckolib.animatable.GeoEntity;
+import com.geckolib.animatable.instance.AnimatableInstanceCache;
+import com.geckolib.animatable.manager.AnimatableManager;
+import com.geckolib.animation.AnimationController;
+import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.object.PlayState;
+import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.common.block.GlowLightBlock;
 import it.hurts.shatterbyte.reanimal.common.blockentity.GlowLightBlockEntity;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.phys.Vec3;
-import com.geckolib.animatable.GeoEntity;
-import com.geckolib.animatable.instance.AnimatableInstanceCache;
-import com.geckolib.animation.*;
-import com.geckolib.animation.state.AnimationTest;
-import com.geckolib.animation.object.PlayState;
-import com.geckolib.animatable.manager.AnimatableManager;
-import com.geckolib.util.GeckoLibUtil;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.*;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.glow_stick.idle");
@@ -47,12 +48,16 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     public static final float SIZE = 0.4F;
 
     private static final int MAX_LIFETIME = 6000;
+    private static final UniformInt ATTACH_DURATION = UniformInt.of(600, 1200);
+    private static final int DETACH_COOLDOWN = 20;
     private static final float STUCK_RENDER_HEIGHT = 0.085F;
 
     private static final EntityDataAccessor<Float> RENDER_YAW = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> RENDER_TUMBLE = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> SETTLED = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> STUCK_FACE = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> ATTACHED_ENTITY = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Vector3fc> ATTACHED_OFFSET = SynchedEntityData.defineId(GlowStickEntity.class, EntityDataSerializers.VECTOR3);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private float renderYaw;
@@ -64,6 +69,9 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     private float tumbleSpeed;
     private int restTicks;
     private boolean stuckRendered;
+    private EntityReference<LivingEntity> attachedTo;
+    private int attachedTicks;
+    private int attachmentCooldown;
 
     public GlowStickEntity(EntityType<? extends GlowStickEntity> entityType, Level level) {
         super(entityType, level);
@@ -77,6 +85,8 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         builder.define(RENDER_TUMBLE, 90.0F);
         builder.define(SETTLED, false);
         builder.define(STUCK_FACE, -1);
+        builder.define(ATTACHED_ENTITY, -1);
+        builder.define(ATTACHED_OFFSET, new Vector3f());
     }
 
     @Override
@@ -88,7 +98,19 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
     protected void onHitEntity(EntityHitResult result) {
         super.onHitEntity(result);
 
+        if (this.isSticky() && result.getEntity() instanceof LivingEntity host && host.isAlive()) {
+            if (!this.level().isClientSide())
+                this.stickTo(host, result.getLocation());
+
+            return;
+        }
+
         result.getEntity().hurt(this.damageSources().thrown(this, this.getOwner()), 0F);
+    }
+
+    @Override
+    protected boolean canHitEntity(Entity entity) {
+        return this.attachmentCooldown == 0 && super.canHitEntity(entity);
     }
 
     @Override
@@ -146,6 +168,66 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         var face = this.getEntityData().get(STUCK_FACE);
 
         return face < 0 ? null : Direction.from3DDataValue(face);
+    }
+
+    public LivingEntity getAttachedEntity() {
+        if (!this.level().isClientSide())
+            return EntityReference.getLivingEntity(this.attachedTo, this.level());
+
+        return this.level().getEntity(this.getEntityData().get(ATTACHED_ENTITY)) instanceof LivingEntity host ? host : null;
+    }
+
+    private boolean isAttached() {
+        return this.attachedTo != null || this.getEntityData().get(ATTACHED_ENTITY) >= 0;
+    }
+
+    private void stickTo(LivingEntity host, Vec3 hitPosition) {
+        var offset = hitPosition.subtract(host.position()).yRot(host.yBodyRot * Mth.DEG_TO_RAD);
+
+        this.attachedTo = EntityReference.of(host);
+        this.attachedTicks = ATTACH_DURATION.sample(this.random);
+        this.getEntityData().set(ATTACHED_ENTITY, host.getId());
+        this.getEntityData().set(STUCK_FACE, -1);
+        this.getEntityData().set(ATTACHED_OFFSET, new Vector3f((float) (offset.x / host.getBbWidth()),
+                (float) (offset.y / host.getBbHeight()), (float) (offset.z / host.getBbWidth())));
+        this.getEntityData().set(RENDER_YAW, this.random.nextFloat() * 360F);
+        this.getEntityData().set(SETTLED, false);
+        this.setDeltaMovement(Vec3.ZERO);
+        this.setNoGravity(true);
+    }
+
+    private void tickAttached() {
+        var host = this.getAttachedEntity();
+
+        if (!this.level().isClientSide() && (host == null || !host.isAlive() || host.level() != this.level() || --this.attachedTicks <= 0)) {
+            this.attachedTo = null;
+            this.getEntityData().set(ATTACHED_ENTITY, -1);
+            this.setNoGravity(false);
+            this.attachmentCooldown = DETACH_COOLDOWN;
+            this.setDeltaMovement(host == null ? Vec3.ZERO : host.getDeltaMovement());
+
+            return;
+        }
+
+        if (host != null) {
+            this.getEntityData().set(ATTACHED_ENTITY, host.getId());
+            var offset = this.getEntityData().get(ATTACHED_OFFSET);
+
+            this.setPos(host.position().add(new Vec3(offset.x() * host.getBbWidth(), offset.y() * host.getBbHeight(),
+                    offset.z() * host.getBbWidth()).yRot(-host.yBodyRot * Mth.DEG_TO_RAD)));
+        }
+
+        this.renderYaw = this.getEntityData().get(RENDER_YAW);
+        this.renderYawO = this.renderYaw;
+        this.renderTumble = 90F;
+        this.renderTumbleO = 90F;
+        this.renderHeight = STUCK_RENDER_HEIGHT;
+        this.renderHeightO = STUCK_RENDER_HEIGHT;
+
+        tryPlaceGlowLight(this.level(), this.blockPosition());
+
+        if (!this.level().isClientSide() && this.tickCount > MAX_LIFETIME)
+            this.expireToItem();
     }
 
     private void stickTo(BlockHitResult result) {
@@ -221,7 +303,23 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
     @Override
     public void tick() {
+        if (this.isAttached()) {
+            this.baseTick();
+            this.tickAttached();
+
+            return;
+        }
+
         super.tick();
+
+        if (this.isAttached()) {
+            this.tickAttached();
+
+            return;
+        }
+
+        if (this.attachmentCooldown > 0)
+            this.attachmentCooldown--;
 
         var stuckFace = this.getStuckFace();
 
@@ -325,6 +423,10 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         tag.putFloat("renderTumble", this.renderTumble);
         tag.putBoolean("settled", this.getEntityData().get(SETTLED));
         tag.putInt("stuckFace", this.getEntityData().get(STUCK_FACE));
+        EntityReference.store(this.attachedTo, tag, "attachedTo");
+        tag.putInt("attachedTicks", this.attachedTicks);
+        var offset = this.getEntityData().get(ATTACHED_OFFSET);
+        tag.store("attachedOffset", Vec3.CODEC, new Vec3(offset.x(), offset.y(), offset.z()));
     }
 
     @Override
@@ -342,8 +444,12 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         this.getEntityData().set(RENDER_TUMBLE, flat);
         this.getEntityData().set(SETTLED, tag.getBooleanOr("settled", false));
         this.getEntityData().set(STUCK_FACE, tag.getIntOr("stuckFace", -1));
+        this.attachedTo = EntityReference.read(tag, "attachedTo");
+        this.attachedTicks = tag.getIntOr("attachedTicks", 0);
+        tag.read("attachedOffset", Vec3.CODEC).ifPresent(offset -> this.getEntityData().set(ATTACHED_OFFSET,
+                new Vector3f((float) offset.x, (float) offset.y, (float) offset.z)));
 
-        if (this.getStuckFace() != null)
+        if (this.getStuckFace() != null || this.isAttached())
             this.setNoGravity(true);
     }
 
@@ -422,10 +528,15 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
-        if (this.tickCount > 20 && player.getInventory().add(this.getItem().copy())) {
-            this.discard();
+        if (this.isAttached() || this.tickCount > 20) {
+            if (this.level().isClientSide())
+                return InteractionResult.SUCCESS;
 
-            return InteractionResult.CONSUME;
+            if (player.getInventory().add(this.getItem().copy())) {
+                this.discard();
+
+                return InteractionResult.CONSUME;
+            }
         }
 
         return InteractionResult.PASS;
@@ -433,7 +544,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
     @Override
     public boolean isPickable() {
-        return true;
+        return !this.isAttached();
     }
 
     @Override
@@ -597,7 +708,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
         @Override
         public boolean isTrailGrowing() {
-            return this.entity.tickCount > 1;
+            return this.entity.tickCount > 1 && !this.entity.isAttached();
         }
 
         @Override
