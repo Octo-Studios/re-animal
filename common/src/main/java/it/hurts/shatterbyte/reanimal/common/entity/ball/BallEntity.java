@@ -254,8 +254,11 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
         this.markHurt();
         this.footKickCooldown = 8;
 
-        if (this.tickCount > 0)
+        if (this.tickCount > 0) {
             this.impact(movement);
+
+            this.playSound(ReAnimalSoundEvents.BALL_BOUNCE, (float) Math.min(movement.length(), 1D), 1F);
+        }
     }
 
     private void impact(Vec3 impulse) {
