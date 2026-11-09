@@ -20,6 +20,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -66,6 +67,7 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private long scaredTicks;
+    private boolean wasInWater;
 
     private int peckTicks;
     private int peckCooldown;
@@ -76,8 +78,6 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
         super(entityType, level);
 
         this.updateMoveControl();
-
-        this.getNavigation().setCanFloat(true);
 
         if (!level.isClientSide())
             this.setVariant(this.getRandom().nextInt(VARIANTS));
@@ -139,10 +139,18 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
+        if (this.wasInWater != this.isInWater()) {
+            this.wasInWater = this.isInWater();
+            this.updateMoveControl();
+        }
+
         this.tickScared(serverLevel);
 
-        if (!this.isScared() && !this.isPerched()) {
-
+        if (this.isScared()) {
+            if ((this.isInFluidDeeperThan(this.getFluidJumpThreshold(), FluidTags.ENTITY_FLOATABLE) || this.isInLava())
+                    && this.random.nextFloat() < 0.8F)
+                this.getJumpControl().jump();
+        } else if (!this.isPerched()) {
             ((Brain<PigeonEntity>) this.getBrain()).tick(serverLevel, this);
 
             PigeonAI.updateActivity(this);
@@ -291,13 +299,19 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
     }
 
     public void updateMoveControl() {
-        if (this.isBaby()) {
+        if (this.isBaby() || this.isInWater()) {
             this.moveControl = new MoveControl(this);
             this.navigation = new GroundPathNavigation(this, this.level());
         } else {
             this.moveControl = new FlyingMoveControl(this, 10, false);
             this.navigation = new FlyingPathNavigation(this, this.level());
         }
+
+        this.setNoGravity(false);
+        this.setYya(0F);
+        this.setZza(0F);
+        this.setXRot(0F);
+        this.getNavigation().setCanFloat(true);
     }
 
     @Override

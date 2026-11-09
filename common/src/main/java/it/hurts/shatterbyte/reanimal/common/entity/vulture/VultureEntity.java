@@ -55,6 +55,7 @@ public class VultureEntity extends Animal implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int eggTime = this.random.nextInt(6000) + 6000;
+    private boolean wasInWater;
     private float bank;
     private float previousBank;
 
@@ -62,8 +63,6 @@ public class VultureEntity extends Animal implements GeoEntity {
         super(entityType, level);
 
         this.updateMoveControl();
-
-        this.getNavigation().setCanFloat(true);
     }
 
     @Override
@@ -118,6 +117,11 @@ public class VultureEntity extends Animal implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
+        if (this.wasInWater != this.isInWater()) {
+            this.wasInWater = this.isInWater();
+            this.updateMoveControl();
+        }
+
         ((Brain<VultureEntity>) this.getBrain()).tick(serverLevel, this);
 
         VultureAI.updateActivity(this);
@@ -209,13 +213,19 @@ public class VultureEntity extends Animal implements GeoEntity {
     }
 
     public void updateMoveControl() {
-        if (this.isBaby()) {
+        if (this.isBaby() || this.isInWater()) {
             this.moveControl = new MoveControl(this);
             this.navigation = new GroundPathNavigation(this, this.level());
         } else {
             this.moveControl = new FlyingMoveControl(this, 10, false);
             this.navigation = new FlyingPathNavigation(this, this.level());
         }
+
+        this.setNoGravity(false);
+        this.setYya(0F);
+        this.setZza(0F);
+        this.setXRot(0F);
+        this.getNavigation().setCanFloat(true);
     }
 
     private void tickEggLaying() {
