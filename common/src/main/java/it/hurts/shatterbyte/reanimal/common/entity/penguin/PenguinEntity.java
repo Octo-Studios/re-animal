@@ -498,7 +498,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
     }
 
     private void tickEggLaying() {
-        if (this.level().isClientSide() || this.isBaby())
+        if (this.level().isClientSide() || this.isBaby() || this.isInWater() || !this.onGround())
             return;
 
         if (--this.eggTime > 0)
