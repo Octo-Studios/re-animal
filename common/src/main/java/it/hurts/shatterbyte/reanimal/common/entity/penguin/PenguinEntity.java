@@ -17,21 +17,27 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
+import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -45,7 +51,13 @@ public class PenguinEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.penguin.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.penguin.walk");
     private static final RawAnimation SLIDE = RawAnimation.begin().thenLoop("animation.penguin.slide");
+    private static final RawAnimation DIVE = RawAnimation.begin().thenLoop("animation.penguin.dive");
+    private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.penguin.swim");
+    private static final RawAnimation SWIM_IDLE = RawAnimation.begin().thenLoop("animation.penguin.swim_idle");
     private static final EntityDataAccessor<Boolean> SLIDING = SynchedEntityData.defineId(PenguinEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DIVING = SynchedEntityData.defineId(PenguinEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> GLIDING = SynchedEntityData.defineId(PenguinEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final double DIVE_SPEED = 0.35D;
     private static final int SLIDE_COOLDOWN_TICKS = 100;
     private static final double SLIDE_SPEED = 0.28D;
     private static final double SLIDE_DECELERATION = 0.02D;
@@ -59,11 +71,18 @@ public class PenguinEntity extends Animal implements GeoEntity {
     private double slideStopDistance;
     private double slideSpeed;
     private int nextSlideTick;
+    private boolean clientDiving;
+    private float bodyPitch;
+    private float previousBodyPitch;
 
     public PenguinEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
-        this.getNavigation().setCanFloat(true);
+        this.moveControl = new SmoothSwimmingMoveControl<>(this, 85, 10, 0.4F, 1F, false);
+        this.lookControl = new SmoothSwimmingLookControl(this, 10);
+        this.navigation = new AmphibiousPathNavigation(this, level);
+
+        this.setPathfindingMalus(PathType.WATER, 0F);
     }
 
     @Override
@@ -71,17 +90,31 @@ public class PenguinEntity extends Animal implements GeoEntity {
         super.defineSynchedData(builder);
 
         builder.define(SLIDING, false);
+        builder.define(DIVING, false);
+        builder.define(GLIDING, false);
     }
 
     public boolean isSliding() {
         return this.getEntityData().get(SLIDING);
     }
 
+    public boolean isDiving() {
+        return this.getEntityData().get(DIVING) || this.clientDiving;
+    }
+
+    public boolean isGliding() {
+        return this.getEntityData().get(GLIDING);
+    }
+
+    public float getBodyPitch(float partialTick) {
+        return Mth.lerp(partialTick, this.previousBodyPitch, this.bodyPitch);
+    }
+
     @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         super.onSyncedDataUpdated(accessor);
 
-        if (SLIDING.equals(accessor))
+        if (SLIDING.equals(accessor) || DIVING.equals(accessor))
             this.refreshDimensions();
     }
 
@@ -89,7 +122,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
     protected EntityDimensions getDefaultDimensions(Pose pose) {
         var dimensions = super.getDefaultDimensions(pose);
 
-        return this.isSliding() ? dimensions.scale(1F, 0.5F) : dimensions;
+        return this.isSliding() || this.isDiving() ? dimensions.scale(1F, 0.5F) : dimensions;
     }
 
     @Override
@@ -97,6 +130,40 @@ public class PenguinEntity extends Animal implements GeoEntity {
         super.aiStep();
 
         this.tickEggLaying();
+
+        if (this.level().isClientSide()) {
+            var diving = this.getEntityData().get(DIVING) || this.clientDiving && !this.isInWater() && !this.onGround();
+
+            if (this.clientDiving != diving) {
+                this.clientDiving = diving;
+                this.refreshDimensions();
+            }
+
+            this.previousBodyPitch = this.bodyPitch;
+
+            var movement = this.position().subtract(this.xo, this.yo, this.zo);
+            var targetPitch = this.isDiving() || this.isInWater()
+                    ? (float) -Mth.atan2(movement.y, movement.horizontalDistance()) * Mth.RAD_TO_DEG
+                    : 0F;
+
+            if (this.isInWater() && this.isGliding() && !this.isDiving())
+                targetPitch *= (float) Math.min(movement.length() / this.getAttributeValue(Attributes.MOVEMENT_SPEED), 1D);
+
+            this.bodyPitch = this.isDiving() ? targetPitch : Mth.lerp(0.35F, this.bodyPitch, targetPitch);
+        } else if (this.isDiving()) {
+            this.syncPosition = true;
+
+            if (this.isInWater() || this.onGround() || this.isPassenger())
+                this.getEntityData().set(DIVING, false);
+            else {
+                var movement = this.getDeltaMovement();
+
+                this.setYRot((float) Mth.atan2(-movement.x, movement.z) * Mth.RAD_TO_DEG);
+                this.yBodyRot = this.getYRot();
+                this.yHeadRot = this.getYRot();
+                this.setXRot((float) -Mth.atan2(movement.y, movement.horizontalDistance()) * Mth.RAD_TO_DEG);
+            }
+        }
 
         if (this.isSliding()) {
             this.yBodyRot = this.getYRot();
@@ -145,14 +212,34 @@ public class PenguinEntity extends Animal implements GeoEntity {
     protected void customServerAiStep(ServerLevel serverLevel) {
         if (this.isSliding())
             this.tickSliding();
-        else {
+        else if (!this.isDiving()) {
             ((Brain<PenguinEntity>) this.getBrain()).tick(serverLevel, this);
 
             PenguinAI.updateActivity(this);
             this.tryStartSliding();
+            this.tryJumpIntoWater();
         }
 
         super.customServerAiStep(serverLevel);
+    }
+
+    private void tryJumpIntoWater() {
+        if (!this.onGround() || this.isInWater() || !this.getNavigation().isInProgress())
+            return;
+
+        var nextNode = this.getNavigation().getPath().getNextNodePos();
+
+        if (!this.level().getFluidState(nextNode).is(FluidTags.WATER))
+            return;
+
+        var direction = Vec3.atBottomCenterOf(nextNode).subtract(this.position()).multiply(1D, 0D, 1D).normalize();
+
+        this.getEntityData().set(DIVING, true);
+        this.getNavigation().stop();
+        this.getBrain().eraseMemory(MemoryModuleType.PATH);
+        this.setJumping(false);
+        this.jumpFromGround();
+        this.setDeltaMovement(direction.x * DIVE_SPEED, this.getDeltaMovement().y, direction.z * DIVE_SPEED);
     }
 
     private void tryStartSliding() {
@@ -223,8 +310,39 @@ public class PenguinEntity extends Animal implements GeoEntity {
     }
 
     @Override
+    public boolean shouldDiscardFriction() {
+        return this.isDiving() || super.shouldDiscardFriction();
+    }
+
+    @Override
     public void travel(Vec3 input) {
-        if (this.isSliding()) {
+        if (this.isDiving() && !this.isInWater())
+            super.travel(Vec3.ZERO);
+        else if (this.isEffectiveAi() && this.isInWater()) {
+            var target = this.getNavigation().getTargetPos();
+            var leavingWater = this.getNavigation().isInProgress() && target != null
+                    && target.getY() > this.getY() && !this.level().getFluidState(target).is(FluidTags.WATER);
+            var gliding = input.lengthSqr() == 0D;
+
+            this.getEntityData().set(GLIDING, gliding);
+
+            this.moveRelative((float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.375F, input);
+
+            if (gliding) {
+                var buoyancy = (Math.min(this.getFluidHeight(FluidTags.WATER), this.getBbWidth()) - this.getBbWidth() * 0.5D) * 0.02D;
+
+                this.setDeltaMovement(this.getDeltaMovement().add(0D, buoyancy, 0D));
+            }
+
+            this.move(MoverType.SELF, this.getDeltaMovement());
+
+            var drag = gliding && this.getFluidHeight(FluidTags.WATER) > this.getBbWidth() ? 0.98D : 0.9D;
+
+            this.setDeltaMovement(this.getDeltaMovement().multiply(drag, 0.9D, drag));
+
+            if (this.horizontalCollision && leavingWater)
+                this.setDeltaMovement(this.getDeltaMovement().x, 0.3D, this.getDeltaMovement().z);
+        } else if (this.isSliding()) {
             var remaining = this.slideTarget.subtract(this.position()).dot(this.slideDirection) - this.slideStopDistance;
 
             var targetSpeed = Math.min(SLIDE_SPEED, Math.sqrt(2D * SLIDE_DECELERATION * remaining));
@@ -240,6 +358,22 @@ public class PenguinEntity extends Animal implements GeoEntity {
         } else
             super.travel(input);
     }
+
+    @Override
+    public void updateSwimming() {
+        this.setSwimming(this.isEffectiveAi() && this.isInWater());
+    }
+
+    @Override
+    public void calculateEntityAnimation(boolean useY) {
+        super.calculateEntityAnimation(useY || this.isInWater());
+    }
+
+    @Override
+    public boolean canBreatheUnderwater() {
+        return true;
+    }
+
     protected Brain.Provider<PenguinEntity> brainProvider() {
         return PenguinAI.brainProvider();
     }
@@ -301,6 +435,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
             if (this.isSliding())
                 this.stopSliding();
 
+            this.getEntityData().set(DIVING, false);
             this.getBrain().setMemory(MemoryModuleType.IS_PANICKING, true);
 
             PenguinAI.updateActivity(this);
@@ -322,7 +457,11 @@ public class PenguinEntity extends Animal implements GeoEntity {
     private PlayState mainPredicate(AnimationTest<PenguinEntity> state) {
         var controller = state.controller();
 
-        if (state.animatable().isSliding())
+        if (this.isDiving())
+            controller.setAnimation(DIVE);
+        else if (this.isInWater())
+            controller.setAnimation(this.isGliding() ? SWIM_IDLE : SWIM);
+        else if (this.isSliding())
             controller.setAnimation(SLIDE);
         else if (state.isMoving())
             controller.setAnimation(WALK);
@@ -351,6 +490,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 8D)
                 .add(Attributes.MOVEMENT_SPEED, 0.175D)
-                .add(Attributes.FOLLOW_RANGE, 8D);
+                .add(Attributes.FOLLOW_RANGE, 16D)
+                .add(Attributes.ATTACK_DAMAGE, 4D);
     }
 }

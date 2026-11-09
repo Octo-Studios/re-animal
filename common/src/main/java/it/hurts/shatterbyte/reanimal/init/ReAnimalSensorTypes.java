@@ -12,6 +12,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.kiwi.KiwiAI;
 import it.hurts.shatterbyte.reanimal.common.entity.meerkat.MeerkatAI;
 import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichAI;
 import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonAI;
+import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinAI;
 import it.hurts.shatterbyte.reanimal.common.entity.toucan.ToucanAI;
 import it.hurts.shatterbyte.reanimal.common.entity.red_panda.RedPandaAI;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealAI;
@@ -30,6 +31,7 @@ public class ReAnimalSensorTypes {
     public static SensorType<TemptingSensor> OSTRICH_TEMPTATIONS;
     public static SensorType<TemptingSensor> KIWI_TEMPTATIONS;
     public static SensorType<TemptingSensor> PIGEON_TEMPTATIONS;
+    public static SensorType<TemptingSensor> PENGUIN_TEMPTATIONS;
     public static SensorType<TemptingSensor> TOUCAN_TEMPTATIONS;
     public static SensorType<TemptingSensor> CAPYBARA_TEMPTATIONS;
     public static SensorType<TemptingSensor> MEERKAT_TEMPTATIONS;
@@ -47,6 +49,7 @@ public class ReAnimalSensorTypes {
         OSTRICH_TEMPTATIONS = register("ostrich_temptations", new SensorType<>(() -> new TemptingSensor(OstrichAI.getTemptations())));
         KIWI_TEMPTATIONS = register("kiwi_temptations", new SensorType<>(() -> new TemptingSensor(KiwiAI.getTemptations())));
         PIGEON_TEMPTATIONS = register("pigeon_temptations", new SensorType<>(() -> new TemptingSensor(PigeonAI.getTemptations())));
+        PENGUIN_TEMPTATIONS = register("penguin_temptations", new SensorType<>(() -> new TemptingSensor(PenguinAI.getTemptations())));
         TOUCAN_TEMPTATIONS = register("toucan_temptations", new SensorType<>(() -> new TemptingSensor(ToucanAI.getTemptations())));
         CAPYBARA_TEMPTATIONS = register("capybara_temptations", new SensorType<>(() -> new TemptingSensor(CapybaraAI.getTemptations())));
         MEERKAT_TEMPTATIONS = register("meerkat_temptations", new SensorType<>(() -> new TemptingSensor(MeerkatAI.getTemptations())));
