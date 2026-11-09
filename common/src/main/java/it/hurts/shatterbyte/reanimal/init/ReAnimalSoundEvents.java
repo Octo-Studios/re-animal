@@ -21,6 +21,12 @@ public class ReAnimalSoundEvents {
     public static SoundEvent KIWI_HURT;
     public static SoundEvent KIWI_DEATH;
 
+    public static SoundEvent TOUCAN_IDLE_ADULT;
+    public static SoundEvent TOUCAN_IDLE_BABY;
+    public static SoundEvent TOUCAN_HURT;
+    public static SoundEvent TOUCAN_DEATH_ADULT;
+    public static SoundEvent TOUCAN_DEATH_BABY;
+
     public static SoundEvent PIGEON_IDLE;
     public static SoundEvent PIGEON_HURT;
     public static SoundEvent PIGEON_DEATH;
@@ -98,6 +104,12 @@ public class ReAnimalSoundEvents {
         KIWI_IDLE = register("entity.kiwi.idle");
         KIWI_HURT = register("entity.kiwi.hurt");
         KIWI_DEATH = register("entity.kiwi.death");
+
+        TOUCAN_IDLE_ADULT = register("entity.toucan.idle_adult");
+        TOUCAN_IDLE_BABY = register("entity.toucan.idle_baby");
+        TOUCAN_HURT = register("entity.toucan.hurt");
+        TOUCAN_DEATH_ADULT = register("entity.toucan.death_adult");
+        TOUCAN_DEATH_BABY = register("entity.toucan.death_baby");
 
         PIGEON_IDLE = register("entity.pigeon.idle");
         PIGEON_HURT = register("entity.pigeon.hurt");

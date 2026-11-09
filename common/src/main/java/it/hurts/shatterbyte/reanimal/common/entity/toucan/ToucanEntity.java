@@ -10,12 +10,14 @@ import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -312,6 +314,21 @@ public class ToucanEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.TOUCAN_FOOD);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return this.isBaby() ? ReAnimalSoundEvents.TOUCAN_IDLE_BABY : ReAnimalSoundEvents.TOUCAN_IDLE_ADULT;
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.TOUCAN_HURT;
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return this.isBaby() ? ReAnimalSoundEvents.TOUCAN_DEATH_BABY : ReAnimalSoundEvents.TOUCAN_DEATH_ADULT;
     }
 
     @Override

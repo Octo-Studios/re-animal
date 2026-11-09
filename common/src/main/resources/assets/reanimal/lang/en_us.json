@@ -255,6 +255,10 @@
   "subtitles.reanimal.entity.seal.death": "Seal dies",
   "subtitles.reanimal.entity.seal.slap": "Seal slaps belly",
 
+  "subtitles.reanimal.entity.toucan.idle": "Toucan calls",
+  "subtitles.reanimal.entity.toucan.hurt": "Toucan hurt",
+  "subtitles.reanimal.entity.toucan.death": "Toucan dies",
+
   "subtitles.reanimal.entity.vulture.idle": "Vulture grunts",
   "subtitles.reanimal.entity.vulture.hurt": "Vulture hurt",
   "subtitles.reanimal.entity.vulture.death": "Vulture dies"

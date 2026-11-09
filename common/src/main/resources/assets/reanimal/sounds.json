@@ -464,6 +464,50 @@
       "reanimal:entity/seal/idle3"
     ]
   },
+  "entity.toucan.death_adult": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.toucan.death",
+    "sounds": [
+      "reanimal:entity/toucan/death_adult"
+    ]
+  },
+  "entity.toucan.death_baby": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.toucan.death",
+    "sounds": [
+      "reanimal:entity/toucan/death_baby"
+    ]
+  },
+  "entity.toucan.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.toucan.hurt",
+    "sounds": [
+      "reanimal:entity/toucan/hurt1",
+      "reanimal:entity/toucan/hurt2",
+      "reanimal:entity/toucan/hurt3"
+    ]
+  },
+  "entity.toucan.idle_adult": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.toucan.idle",
+    "sounds": [
+      "reanimal:entity/toucan/idle_adult1",
+      "reanimal:entity/toucan/idle_adult2",
+      "reanimal:entity/toucan/idle_adult3",
+      "reanimal:entity/toucan/idle_adult4",
+      "reanimal:entity/toucan/idle_adult5"
+    ]
+  },
+  "entity.toucan.idle_baby": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.toucan.idle",
+    "sounds": [
+      "reanimal:entity/toucan/idle_baby1",
+      "reanimal:entity/toucan/idle_baby2",
+      "reanimal:entity/toucan/idle_baby3",
+      "reanimal:entity/toucan/idle_baby4"
+    ]
+  },
   "entity.vulture.death": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.vulture.death",
