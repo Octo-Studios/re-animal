@@ -11,6 +11,7 @@ import com.geckolib.util.RenderUtil;
 import com.mojang.blaze3d.vertex.PoseStack;
 import it.hurts.shatterbyte.reanimal.common.entity.PerchingAnimalEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
+import it.hurts.shatterbyte.reanimal.common.network.PerchTakeoffPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.model.geom.ModelPart;
@@ -21,6 +22,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.UvMapping;
+import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -39,6 +41,7 @@ import java.util.WeakHashMap;
 
 public final class MobPerch {
     public static final DataTicket<Matrix4f> TRANSFORM = DataTicket.create("reanimal_mob_perch", Matrix4f.class);
+    private static final float MIN_PERCH_UPWARD = Mth.cos(45F * Mth.DEG_TO_RAD);
     private static final Map<Entity, Attachment> ATTACHMENTS = new WeakHashMap<>();
 
     private MobPerch() {
@@ -152,6 +155,12 @@ public final class MobPerch {
                 attachment.transform = null;
                 renderer.submit(state, poseStack, collector, new CameraRenderState());
             }
+        }
+
+        if (attachment.tilted && !attachment.takeoffRequested && animal instanceof PerchingAnimalEntity perching) {
+            Minecraft.getInstance().getConnection().send(new ServerboundCustomPayloadPacket(
+                    new PerchTakeoffPayload(animal.getId(), host.getId(), perching.getPerchSeed())));
+            attachment.takeoffRequested = true;
         }
 
         if (attachment.transform == null) {
@@ -328,6 +337,8 @@ public final class MobPerch {
         private float bodyYaw;
         private Vector3f referencePosition;
         private boolean bound;
+        private boolean tilted;
+        private boolean takeoffRequested;
         private String bone;
         private Object cube;
         private int priority = -1;
@@ -354,6 +365,15 @@ public final class MobPerch {
 
             if (span == 0F)
                 return;
+
+            var up = pose.normal().transform(normal, new Vector3f()).normalize();
+
+            if (this.randomized && up.y < MIN_PERCH_UPWARD) {
+                if (!this.bound)
+                    return;
+
+                this.tilted = true;
+            }
 
             var position = pose.pose().transformPosition(center, new Vector3f());
             var name = bone.substring(bone.lastIndexOf('/') + 1).toLowerCase(Locale.ROOT);
@@ -432,7 +452,6 @@ public final class MobPerch {
                     return;
             }
 
-            var up = pose.normal().transform(normal, new Vector3f()).normalize();
             var rotation = new Quaternionf().rotationTo(new Vector3f(0F, 1F, 0F), normal);
             var forward = pose.pose().transformDirection(new Vector3f(0F, 0F, 1F).rotate(rotation)).normalize();
             var right = up.cross(forward, new Vector3f()).normalize();

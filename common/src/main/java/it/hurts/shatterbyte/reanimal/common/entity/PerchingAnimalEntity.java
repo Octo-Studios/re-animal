@@ -181,7 +181,7 @@ public abstract class PerchingAnimalEntity extends Animal {
         }
     }
 
-    protected void leavePerch(LivingEntity host) {
+    public void leavePerch(LivingEntity host) {
         var position = this.getPerchPosition(host);
         var away = Vec3.directionFromRotation(0F, host.yBodyRot + (this.random.nextBoolean() ? 90F : -90F));
         var target = this.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(position.add(away.scale(6D))));
