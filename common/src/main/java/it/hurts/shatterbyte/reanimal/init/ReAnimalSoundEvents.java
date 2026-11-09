@@ -81,6 +81,9 @@ public class ReAnimalSoundEvents {
     public static SoundEvent SEA_URCHIN_HURT;
     public static SoundEvent SEA_URCHIN_DEATH;
 
+    public static SoundEvent BALL_BOUNCE;
+    public static SoundEvent BALL_SPLASH;
+
     public static void init() {
         HEDGEHOG_IDLE = register("entity.hedgehog.idle");
         HEDGEHOG_HURT = register("entity.hedgehog.hurt");
@@ -155,6 +158,9 @@ public class ReAnimalSoundEvents {
         SEA_URCHIN_IDLE = register("entity.sea_urchin.idle");
         SEA_URCHIN_HURT = register("entity.sea_urchin.hurt");
         SEA_URCHIN_DEATH = register("entity.sea_urchin.death");
+
+        BALL_BOUNCE = register("entity.ball.bounce");
+        BALL_SPLASH = register("entity.ball.splash");
     }
 
     private static SoundEvent register(String name) {

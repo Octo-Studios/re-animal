@@ -185,6 +185,9 @@
   "death.attack.reanimal.jellyfish_sting": "%1$s was stung by a jellyfish",
   "death.attack.reanimal.jellyfish_sting.player": "%1$s was stung by %2$s",
 
+  "subtitles.reanimal.entity.ball.bounce": "Ball bounces",
+  "subtitles.reanimal.entity.ball.splash": "Ball splashes",
+
   "subtitles.reanimal.entity.capybara.idle": "Capybara grunts",
   "subtitles.reanimal.entity.capybara.hurt": "Capybara hurt",
   "subtitles.reanimal.entity.capybara.death": "Capybara dies",

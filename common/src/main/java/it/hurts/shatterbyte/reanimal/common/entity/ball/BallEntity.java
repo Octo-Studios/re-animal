@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.ball;
 
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailProvider;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -15,7 +16,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -90,12 +90,12 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
 
     @Override
     protected SoundEvent getSwimSplashSound() {
-        return SoundEvents.EMPTY;
+        return ReAnimalSoundEvents.BALL_SPLASH;
     }
 
     @Override
     protected SoundEvent getSwimHighSpeedSplashSound() {
-        return SoundEvents.EMPTY;
+        return ReAnimalSoundEvents.BALL_SPLASH;
     }
 
     @Override
@@ -153,8 +153,12 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
                     hitZ ? -movement.z * BOUNCE_DAMPING : movement.z * friction
             );
 
-            if (hitX || bounceY || hitZ)
-                this.impact(new Vec3(hitX ? -movement.x : 0D, bounceY ? -movement.y : 0D, hitZ ? -movement.z : 0D));
+            if (hitX || bounceY || hitZ) {
+                var impulse = new Vec3(hitX ? -movement.x : 0D, bounceY ? -movement.y : 0D, hitZ ? -movement.z : 0D);
+
+                this.impact(impulse);
+                this.playSound(ReAnimalSoundEvents.BALL_BOUNCE, (float) Math.min(impulse.length(), 1D), 1F);
+            }
         }
 
         if (this.returnTicks > 0)

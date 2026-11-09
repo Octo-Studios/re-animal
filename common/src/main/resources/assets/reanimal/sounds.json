@@ -1,4 +1,22 @@
 {
+  "entity.ball.bounce": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.ball.bounce",
+    "sounds": [
+      "reanimal:entity/ball/solid1",
+      "reanimal:entity/ball/solid2",
+      "reanimal:entity/ball/solid3"
+    ]
+  },
+  "entity.ball.splash": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.ball.splash",
+    "sounds": [
+      "reanimal:entity/ball/water1",
+      "reanimal:entity/ball/water2",
+      "reanimal:entity/ball/water3"
+    ]
+  },
   "entity.butterfly.death": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.butterfly.death",
