@@ -19,6 +19,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -117,7 +118,8 @@ public class PenguinAI {
                                         ),
                                         ImmutableList.of(
                                                 Pair.of(RandomStroll.stroll(1F, false), 1),
-                                                Pair.of(RandomStroll.swim(1.2F), 1),
+                                                Pair.of(BehaviorBuilder.triggerIf(PenguinEntity::wantsToSwim,
+                                                        (OneShot<? super PenguinEntity>) RandomStroll.swim(1.2F)), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
                                         )
@@ -167,7 +169,8 @@ public class PenguinAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, PenguinEntity penguin) {
-            if (penguin.isPassenger() || penguin.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING))
+            if (penguin.isBaby() || penguin.isPassenger() || penguin.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                    || penguin.isInWater() && !penguin.wantsToSwim())
                 return false;
 
             this.target = null;
@@ -176,7 +179,7 @@ public class PenguinAI {
             var nearestDistance = range * range;
 
             for (var item : level.getEntitiesOfClass(ItemEntity.class, penguin.getBoundingBox().inflate(range),
-                    item -> item.isAlive() && penguin.isFood(item.getItem()))) {
+                    item -> item.isAlive() && penguin.isFood(item.getItem()) && (penguin.wantsToSwim() || !item.isInWater()))) {
                 var distance = penguin.distanceToSqr(item);
 
                 if (distance <= nearestDistance) {
@@ -188,7 +191,7 @@ public class PenguinAI {
             if (this.target != null)
                 return true;
 
-            if (penguin.isBaby() || level.getGameTime() < this.nextHunt
+            if (!penguin.wantsToSwim() || level.getGameTime() < this.nextHunt
                     || penguin.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER))
                 return false;
 
@@ -210,6 +213,7 @@ public class PenguinAI {
         @Override
         protected boolean canStillUse(ServerLevel level, PenguinEntity penguin, long gameTime) {
             return this.target.isAlive() && penguin.closerThan(this.target, penguin.getAttributeValue(Attributes.FOLLOW_RANGE))
+                    && (penguin.wantsToSwim() || !penguin.isInWater() && this.target instanceof ItemEntity && !this.target.isInWater())
                     && !penguin.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                     && !penguin.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET)
                     && (this.target instanceof ItemEntity || this.target.isInWater()
@@ -254,7 +258,7 @@ public class PenguinAI {
     }
 
     public static class SwitchEnvironment extends Behavior<PenguinEntity> {
-        private static final UniformInt SWITCH_COOLDOWN = UniformInt.of(400, 800);
+        private static final int SEARCH_COOLDOWN_TICKS = 20;
         private BlockPos target;
         private boolean toWater;
         private long nextSwitch;
@@ -270,11 +274,11 @@ public class PenguinAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, PenguinEntity penguin) {
-            if (penguin.isPassenger() || level.getGameTime() < this.nextSwitch
+            if (penguin.isInWater() == penguin.wantsToSwim() || penguin.isPassenger() || level.getGameTime() < this.nextSwitch
                     || penguin.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING))
                 return false;
 
-            this.nextSwitch = level.getGameTime() + SWITCH_COOLDOWN.sample(penguin.getRandom());
+            this.nextSwitch = level.getGameTime() + SEARCH_COOLDOWN_TICKS;
             this.toWater = !penguin.isInWater();
             var radius = Mth.ceil(penguin.getAttributeValue(Attributes.FOLLOW_RANGE));
 
@@ -321,7 +325,7 @@ public class PenguinAI {
         protected void stop(ServerLevel level, PenguinEntity penguin, long gameTime) {
             penguin.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
             penguin.getNavigation().stop();
-            this.nextSwitch = gameTime + SWITCH_COOLDOWN.sample(penguin.getRandom());
+            this.nextSwitch = gameTime + SEARCH_COOLDOWN_TICKS;
         }
     }
 }

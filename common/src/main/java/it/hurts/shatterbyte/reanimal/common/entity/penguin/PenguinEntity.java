@@ -19,6 +19,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
@@ -62,10 +63,15 @@ public class PenguinEntity extends Animal implements GeoEntity {
     private static final double SLIDE_SPEED = 0.28D;
     private static final double SLIDE_DECELERATION = 0.02D;
     private static final double MIN_SLIDE_DISTANCE = 3D;
+    private static final UniformInt LAND_REST_DURATION = UniformInt.of(1200, 2400);
+    private static final UniformInt SWIM_DURATION = UniformInt.of(600, 1200);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int eggTime = this.random.nextInt(6000) + 6000;
+    private int landRestTicks = LAND_REST_DURATION.sample(this.random);
+    private int swimTicks = SWIM_DURATION.sample(this.random);
+    private boolean wasInWater;
     private Vec3 slideTarget;
     private Vec3 slideDirection;
     private double slideStopDistance;
@@ -104,6 +110,10 @@ public class PenguinEntity extends Animal implements GeoEntity {
 
     public boolean isGliding() {
         return this.getEntityData().get(GLIDING);
+    }
+
+    public boolean wantsToSwim() {
+        return !this.isBaby() && this.landRestTicks == 0 && this.swimTicks > 0;
     }
 
     public float getBodyPitch(float partialTick) {
@@ -210,6 +220,22 @@ public class PenguinEntity extends Animal implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
+        if (this.isInWater()) {
+            if (this.swimTicks > 0)
+                --this.swimTicks;
+        } else {
+            if (this.wasInWater) {
+                this.landRestTicks = LAND_REST_DURATION.sample(this.random);
+                this.swimTicks = SWIM_DURATION.sample(this.random);
+            }
+
+            if (this.landRestTicks > 0)
+                --this.landRestTicks;
+        }
+
+        this.wasInWater = this.isInWater();
+        this.setPathfindingMalus(PathType.WATER, this.wantsToSwim() ? 0F : PathType.WATER.getMalus());
+
         if (this.isSliding())
             this.tickSliding();
         else if (!this.isDiving()) {
@@ -224,7 +250,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
     }
 
     private void tryJumpIntoWater() {
-        if (!this.onGround() || this.isInWater() || !this.getNavigation().isInProgress())
+        if (!this.wantsToSwim() || !this.onGround() || this.isInWater() || !this.getNavigation().isInProgress())
             return;
 
         var nextNode = this.getNavigation().getPath().getNextNodePos();
