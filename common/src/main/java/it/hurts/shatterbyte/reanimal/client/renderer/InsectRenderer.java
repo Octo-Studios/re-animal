@@ -34,7 +34,7 @@ public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> e
         geoState.addGeckolibData(RESTING_FACE, entity.getRenderRestingFace().get3DDataValue());
         geoState.addGeckolibData(REST_PROGRESS, entity.getRestProgress(partialTick));
         geoState.addGeckolibData(REST_YAW, entity.getRestYaw(partialTick));
-        geoState.addGeckolibData(MobPerch.TRANSFORM, MobPerch.extract(entity, renderState, partialTick, 3F / 16F));
+        geoState.addGeckolibData(MobPerch.TRANSFORM, MobPerch.extract(entity, renderState, partialTick, entity.getPerchFootSpan()));
     }
 
     @Override

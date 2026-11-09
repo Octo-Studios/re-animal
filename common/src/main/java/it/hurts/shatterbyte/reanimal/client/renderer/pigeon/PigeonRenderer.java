@@ -40,7 +40,7 @@ public class PigeonRenderer extends GeoEntityRenderer<PigeonEntity, EntityRender
     public void extractRenderState(PigeonEntity entity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(entity, renderState, partialTick);
 
-        var transform = MobPerch.extract(entity, renderState, partialTick, 5.5F / 16F);
+        var transform = MobPerch.extract(entity, renderState, partialTick, entity.getPerchFootSpan());
 
         ((GeoRenderState) renderState).addGeckolibData(MobPerch.TRANSFORM, transform);
         HeadTracking.setMode(renderState, entity.isPerched() ? HeadTracking.RESET : entity.isPecking() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);

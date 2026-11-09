@@ -18,9 +18,12 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3f;
+import org.joml.Vector3fc;
 
 public abstract class PerchingAnimalEntity extends Animal {
     private static final EntityDataAccessor<Integer> PERCH_SEED = SynchedEntityData.defineId(PerchingAnimalEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Vector3fc> PERCH_OFFSET = SynchedEntityData.defineId(PerchingAnimalEntity.class, EntityDataSerializers.VECTOR3);
     private static final double MAX_PERCH_SPEED = 0.3D;
     private static final double MAX_PERCH_VERTICAL_SPEED = 0.2D;
     private static final float MAX_PERCH_TURN = 35F;
@@ -37,6 +40,7 @@ public abstract class PerchingAnimalEntity extends Animal {
         super.defineSynchedData(builder);
 
         builder.define(PERCH_SEED, 0);
+        builder.define(PERCH_OFFSET, new Vector3f());
     }
 
     public int getPerchSeed() {
@@ -58,7 +62,7 @@ public abstract class PerchingAnimalEntity extends Animal {
     }
 
     public boolean canPerchOn(LivingEntity host) {
-        return this.canStayPerched(host) && !isPerchOccupied(host);
+        return this.canStayPerched(host) && this.findPerchOffset(host) != null;
     }
 
     public static boolean isPerchOccupied(LivingEntity host) {
@@ -74,11 +78,20 @@ public abstract class PerchingAnimalEntity extends Animal {
     }
 
     public Vec3 getPerchPosition(LivingEntity host) {
-        return new Vec3(host.getX(), host.getBoundingBox().maxY, host.getZ());
+        var offset = this.getVehicle() == host ? this.getEntityData().get(PERCH_OFFSET) : this.findPerchOffset(host);
+
+        return new Vec3(host.getX(), host.getBoundingBox().maxY, host.getZ()).add(
+                new Vec3(offset.x(), 0D, offset.z()).yRot(-host.yBodyRot * Mth.DEG_TO_RAD));
     }
 
     public void perchOn(LivingEntity host) {
+        var offset = this.findPerchOffset(host);
+
+        if (offset == null)
+            return;
+
         this.getEntityData().set(PERCH_SEED, this.random.nextInt());
+        this.getEntityData().set(PERCH_OFFSET, offset);
 
         if (this.startRiding(host, true, true)) {
             this.perchTicks = 400 + this.random.nextInt(400);
@@ -89,6 +102,41 @@ public abstract class PerchingAnimalEntity extends Animal {
             this.setDeltaMovement(Vec3.ZERO);
             this.setPos(this.getPerchPosition(host));
         }
+    }
+
+    public abstract float getPerchFootSpan();
+
+    private Vector3fc findPerchOffset(LivingEntity host) {
+        if (host.hasPassenger(passenger -> passenger instanceof HedgehogEntity))
+            return null;
+
+        var width = this.getBbWidth();
+        var columns = Mth.floor((host.getBbWidth() - this.getPerchFootSpan() * this.getScale()) / width) + 1;
+        var count = columns * columns;
+
+        for (var i = 0; i < count; i++) {
+            var index = (Math.floorMod(this.getPerchSeed(), count) + i) % count;
+            var x = (index % columns - (columns - 1) * 0.5F) * width;
+            var z = (index / columns - (columns - 1) * 0.5F) * width;
+            var occupied = false;
+
+            for (var passenger : host.getPassengers()) {
+                if (passenger instanceof PerchingAnimalEntity perched) {
+                    var offset = perched.getEntityData().get(PERCH_OFFSET);
+                    var spacing = (width + perched.getBbWidth()) * 0.5F;
+
+                    if (Math.abs(x - offset.x()) < spacing && Math.abs(z - offset.z()) < spacing) {
+                        occupied = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!occupied)
+                return new Vector3f(x, 0F, z);
+        }
+
+        return null;
     }
 
     public void delayPerching() {
@@ -175,6 +223,8 @@ public abstract class PerchingAnimalEntity extends Animal {
         super.addAdditionalSaveData(output);
 
         output.putInt("perch_seed", this.getPerchSeed());
+        var offset = this.getEntityData().get(PERCH_OFFSET);
+        output.store("perch_offset", Vec3.CODEC, new Vec3(offset.x(), offset.y(), offset.z()));
     }
 
     @Override
@@ -182,6 +232,8 @@ public abstract class PerchingAnimalEntity extends Animal {
         super.readAdditionalSaveData(input);
 
         this.getEntityData().set(PERCH_SEED, input.getIntOr("perch_seed", 0));
+        input.read("perch_offset", Vec3.CODEC).ifPresent(offset -> this.getEntityData().set(PERCH_OFFSET,
+                new Vector3f((float) offset.x, (float) offset.y, (float) offset.z)));
 
         this.perchTicks = 400 + this.random.nextInt(400);
     }

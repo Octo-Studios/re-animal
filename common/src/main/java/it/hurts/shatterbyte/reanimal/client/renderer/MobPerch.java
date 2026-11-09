@@ -31,6 +31,8 @@ import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -75,6 +77,26 @@ public final class MobPerch {
         var offset = renderer.getRenderOffset(state);
         poseStack.translate(offset.x, offset.y, offset.z);
         var attachment = getAttachment(animal, host, partialTick);
+        attachment.bodyYaw = Mth.rotLerp(partialTick, host.yBodyRotO, host.yBodyRot) * Mth.DEG_TO_RAD;
+
+        if (animal instanceof PerchingAnimalEntity && !attachment.bound) {
+            attachment.occupied.clear();
+
+            for (var passenger : host.getPassengers()) {
+                if (passenger == animal)
+                    break;
+
+                if (passenger instanceof PerchingAnimalEntity perched) {
+                    var occupied = getAttachment(perched, host, partialTick);
+
+                    if (!occupied.bound)
+                        extract(perched, host, new EntityRenderState(), partialTick, perched.getPerchFootSpan() * perched.getScale(), null);
+
+                    if (occupied.bound)
+                        attachment.occupied.add(occupied);
+                }
+            }
+        }
 
         if (renderer instanceof GeoEntityRenderer<?, ?> geoRenderer) {
             var geo = (GeoRenderer) geoRenderer;
@@ -152,7 +174,7 @@ public final class MobPerch {
         if (attachment == null || attachment.hostId != host.getId() || attachment.seed != seed) {
             var point = animal.getPosition(partialTick).subtract(host.getPosition(partialTick));
             attachment = new Attachment(host.getId(), seed, animal instanceof PerchingAnimalEntity,
-                    animal instanceof GlowStickEntity ? new Vector3f((float) point.x, (float) point.y, (float) point.z) : null);
+                    animal instanceof GlowStickEntity ? new Vector3f((float) point.x, (float) point.y, (float) point.z) : null, animal.getBbWidth());
 
             ATTACHMENTS.put(animal, attachment);
         }
@@ -198,7 +220,7 @@ public final class MobPerch {
                 return;
 
             for (var i = 0; i < cube.polygons.length; i++) {
-                if (attachment.point == null && i != face)
+                if (attachment.point == null && i != (attachment.bound && attachment.randomized ? attachment.face : face))
                     continue;
 
                 var polygon = cube.polygons[i];
@@ -262,7 +284,7 @@ public final class MobPerch {
                 }
 
                 for (var i = 0; i < cube.quads().length; i++) {
-                    if (attachment.point == null && i != face)
+                    if (attachment.point == null && i != (attachment.bound && attachment.randomized ? attachment.face : face))
                         continue;
 
                     var quad = cube.quads()[i];
@@ -301,6 +323,10 @@ public final class MobPerch {
         private final boolean randomized;
         private final float yaw;
         private final Vector3f point;
+        private final float spacing;
+        private final List<Attachment> occupied = new ArrayList<>();
+        private float bodyYaw;
+        private Vector3f referencePosition;
         private boolean bound;
         private String bone;
         private Object cube;
@@ -312,12 +338,13 @@ public final class MobPerch {
         private Vector3f anchor;
         private float distance = Float.POSITIVE_INFINITY;
 
-        private Attachment(int hostId, int seed, boolean randomized, Vector3f point) {
+        private Attachment(int hostId, int seed, boolean randomized, Vector3f point, float spacing) {
             this.hostId = hostId;
             this.seed = seed;
             this.randomized = randomized;
             this.yaw = randomized ? RandomSource.create(seed).nextFloat() * Mth.TWO_PI : 0F;
             this.point = point;
+            this.spacing = spacing;
         }
 
         private void offer(String bone, Object cube, PoseStack.Pose pose, Vector3f center, Vector3f normal, Vector3f edge, Vector3f otherEdge, float footSpan, int face) {
@@ -354,13 +381,55 @@ public final class MobPerch {
                 }
 
                 position = pose.pose().transformPosition(this.anchor, new Vector3f());
+            } else if (this.randomized) {
+                if (!this.bound) {
+                    var columns = Mth.floor((worldEdge.length() - footSpan) / this.spacing) + 1;
+                    var rows = Mth.floor((worldOtherEdge.length() - footSpan) / this.spacing) + 1;
+                    var selected = false;
+
+                    for (var x = 0; x < columns; x++) {
+                        for (var z = 0; z < rows; z++) {
+                            var anchor = new Vector3f(center)
+                                    .fma((x - (columns - 1) * 0.5F) * this.spacing / worldEdge.length(), edge)
+                                    .fma((z - (rows - 1) * 0.5F) * this.spacing / worldOtherEdge.length(), otherEdge);
+                            var candidate = pose.pose().transformPosition(anchor, new Vector3f());
+                            var reference = new Vector3f(candidate).rotateY(this.bodyYaw);
+                            var occupied = false;
+
+                            for (var other : this.occupied) {
+                                var spacing = (this.spacing + other.spacing) * 0.5F;
+
+                                if (reference.distanceSquared(other.referencePosition) < spacing * spacing) {
+                                    occupied = true;
+                                    break;
+                                }
+                            }
+
+                            if (occupied)
+                                continue;
+
+                            var rank = RandomSupport.mixStafford13(((long) this.seed << 32) ^ bone.hashCode() ^ (x * rows + z));
+
+                            if (priority < this.priority || priority == this.priority && (rank < this.rank || rank == this.rank && candidate.y <= this.height))
+                                continue;
+
+                            this.priority = priority;
+                            this.rank = rank;
+                            this.height = candidate.y;
+                            this.anchor = anchor;
+                            this.referencePosition = reference;
+                            selected = true;
+                        }
+                    }
+
+                    if (!selected)
+                        return;
+                }
+
+                position = pose.pose().transformPosition(this.anchor, new Vector3f());
             } else if (!this.bound) {
-                var rank = this.randomized ? RandomSupport.mixStafford13(((long) this.seed << 32) ^ bone.hashCode()) : 0L;
-
-                if (priority < this.priority || priority == this.priority && (rank < this.rank || rank == this.rank && position.y <= this.height))
+                if (priority < this.priority || priority == this.priority && position.y <= this.height)
                     return;
-
-                this.rank = rank;
             }
 
             var up = pose.normal().transform(normal, new Vector3f()).normalize();
@@ -371,6 +440,7 @@ public final class MobPerch {
 
             this.bone = bone;
             this.cube = cube;
+            this.face = face;
             this.priority = priority;
             this.height = position.y;
             this.transform = new Matrix4f(new Matrix3f(right, up, forward)).setTranslation(position).rotateY(this.yaw);

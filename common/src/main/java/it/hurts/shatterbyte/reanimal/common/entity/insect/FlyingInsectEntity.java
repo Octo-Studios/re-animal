@@ -73,6 +73,11 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     }
 
     @Override
+    public float getPerchFootSpan() {
+        return 3F / 16F;
+    }
+
+    @Override
     protected void onPerchTakeoff() {
         this.delayLanding();
     }

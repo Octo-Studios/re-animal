@@ -112,6 +112,11 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
     }
 
     @Override
+    public float getPerchFootSpan() {
+        return 5.5F / 16F;
+    }
+
+    @Override
     protected boolean canStayPerched(LivingEntity host) {
         return super.canStayPerched(host) && !this.isScared();
     }
