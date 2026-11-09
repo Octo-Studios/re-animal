@@ -18,6 +18,12 @@
     ],
     "client": [
       "it.hurts.shatterbyte.reanimal.fabric.ReAnimalFabricClient"
+    ],
+    "jei_mod_plugin": [
+      "it.hurts.shatterbyte.reanimal.client.compat.jei.ReAnimalJeiPlugin"
+    ],
+    "rei_client": [
+      "it.hurts.shatterbyte.reanimal.client.compat.rei.ReAnimalReiPlugin"
     ]
   },
   "mixins": [

@@ -122,29 +122,7 @@
         ],
         "fallback": {
           "type": "minecraft:model",
-          "model": "reanimal:item/ball/part_0",
-          "tints": [
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 0,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 1,
-              "default": 16701501
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 2,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 3,
-              "default": 16701501
-            }
-          ]
+          "model": "reanimal:item/ball/pink_0"
         }
       },
       {
@@ -267,29 +245,7 @@
         ],
         "fallback": {
           "type": "minecraft:model",
-          "model": "reanimal:item/ball/part_1",
-          "tints": [
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 0,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 1,
-              "default": 16701501
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 2,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 3,
-              "default": 16701501
-            }
-          ]
+          "model": "reanimal:item/ball/yellow_1"
         }
       },
       {
@@ -412,29 +368,7 @@
         ],
         "fallback": {
           "type": "minecraft:model",
-          "model": "reanimal:item/ball/part_2",
-          "tints": [
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 0,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 1,
-              "default": 16701501
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 2,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 3,
-              "default": 16701501
-            }
-          ]
+          "model": "reanimal:item/ball/pink_2"
         }
       },
       {
@@ -557,29 +491,7 @@
         ],
         "fallback": {
           "type": "minecraft:model",
-          "model": "reanimal:item/ball/part_3",
-          "tints": [
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 0,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 1,
-              "default": 16701501
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 2,
-              "default": 15961002
-            },
-            {
-              "type": "minecraft:custom_model_data",
-              "index": 3,
-              "default": 16701501
-            }
-          ]
+          "model": "reanimal:item/ball/yellow_3"
         }
       }
     ]

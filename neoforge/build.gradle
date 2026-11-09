@@ -9,6 +9,8 @@ dependencies {
 
     implementation "com.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
     implementation "it.hurts.shatterbyte.shatterlib:shatterlib-neoforge:${shatterlib_version}"
+
+    compileOnly("me.shedaniel:RoughlyEnoughItems-api-neoforge:${rei_version}") { transitive = false }
 }
 
 neoForge {

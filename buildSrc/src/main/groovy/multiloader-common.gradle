@@ -54,6 +54,14 @@ repositories {
         name = 'GeckoLib'
         url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
     }
+    maven {
+        name = 'JEI'
+        url = 'https://maven.blamejared.com'
+    }
+    maven {
+        name = 'Shedaniel'
+        url = 'https://maven.shedaniel.me'
+    }
 }
 
 jar {

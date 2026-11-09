@@ -17,6 +17,8 @@ import org.joml.Matrix4f;
 public class CapybaraRenderer extends GeoEntityRenderer<CapybaraEntity, EntityRenderState> {
     public CapybaraRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new CapybaraModel());
+
+        this.withRenderLayer(new CapybaraBallLayer(renderManager, this));
     }
 
     @Override

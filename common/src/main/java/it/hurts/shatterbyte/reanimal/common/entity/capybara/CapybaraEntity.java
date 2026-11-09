@@ -1,8 +1,10 @@
 package it.hurts.shatterbyte.reanimal.common.entity.capybara;
 
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,6 +18,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -23,6 +26,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.storage.ValueInput;
@@ -159,6 +163,33 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
         var level = this.level();
         var held = player.getItemInHand(hand);
+        var ball = this.getMainHandItem();
+
+        if (!ball.isEmpty()) {
+            if (!level.isClientSide()) {
+                this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
+
+                if (!player.addItem(ball))
+                    this.spawnAtLocation((ServerLevel) level, ball);
+            }
+
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+        }
+
+        var data = held.get(DataComponents.CUSTOM_MODEL_DATA);
+
+        if (held.is(ReAnimalItems.BALL) && data != null && data.strings().size() == 4
+                && data.strings().stream().allMatch(color -> color.equals(DyeColor.ORANGE.getName()))) {
+            if (!level.isClientSide()) {
+                this.setItemSlot(EquipmentSlot.MAINHAND, held.copyWithCount(1));
+                this.setGuaranteedDrop(EquipmentSlot.MAINHAND);
+
+                if (!player.getAbilities().instabuild)
+                    held.shrink(1);
+            }
+
+            return level.isClientSide() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
+        }
 
         if (this.isFood(held)) {
             if (!this.isTame()) {

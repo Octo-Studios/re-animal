@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.common.item;
 
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -11,11 +12,16 @@ import net.minecraft.world.item.BowItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.level.Level;
 
+import java.util.List;
+
 public class BallItem extends Item {
+    public static final CustomModelData DEFAULT_MODEL_DATA = new CustomModelData(List.of(), List.of(), List.of("pink", "yellow", "pink", "yellow"), List.of());
+
     public BallItem(Properties properties) {
-        super(properties);
+        super(properties.component(DataComponents.CUSTOM_MODEL_DATA, DEFAULT_MODEL_DATA));
     }
 
     @Override

@@ -10,7 +10,6 @@ import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -55,8 +54,6 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
     private static final double BOUNCE_DAMPING = 0.55D;
     private static final double GROUND_BOUNCE_DAMPING = 0.75D;
     private static final double FOOT_KICK_SPEED = 0.28D;
-
-    private static final int[] DEFAULT_COLORS = {15961002, 16701501, 15961002, 16701501};
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final Quaternionf rotation = new Quaternionf();
@@ -311,13 +308,6 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
         var time = Math.max(0F, this.impactAge - 1F + partialTick);
 
         return time < 10F ? (float) (this.getImpact().length() * 0.34D * Math.exp(-time * 0.35D) * Math.cos(time * 0.7D)) : 0F;
-    }
-
-    public int getPanelColor(int part) {
-        var data = this.getItem().get(DataComponents.CUSTOM_MODEL_DATA);
-        var color = data == null ? null : data.getColor(part);
-
-        return color == null ? DEFAULT_COLORS[part] : color;
     }
 
     public void setThrower(Player player) {

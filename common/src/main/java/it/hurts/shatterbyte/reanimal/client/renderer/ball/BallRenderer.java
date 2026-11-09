@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.client.model.ball.BallModel;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
+import it.hurts.shatterbyte.reanimal.common.item.BallItem;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -47,13 +48,8 @@ public class BallRenderer extends GeoEntityRenderer<BallEntity, EntityRenderStat
             renderState.z = position.z;
         }
 
-        var colors = new int[4];
-
-        for (var part = 0; part < 4; part++)
-            colors[part] = entity.getPanelColor(part);
-
         ((GeoRenderState) renderState).addGeckolibData(BALL, new BallRenderData(entity.getRenderRotation(partialTick),
-                entity.getImpact().normalize(), entity.getSquash(partialTick), entity.getItem(), colors));
+                entity.getImpact().normalize(), entity.getSquash(partialTick), entity.getItem()));
     }
 
     @Override
@@ -81,10 +77,10 @@ public class BallRenderer extends GeoEntityRenderer<BallEntity, EntityRenderStat
         }
 
         poseStack.rotate(data.rotation());
-        poseStack.scale(0.5F, 0.5F, 0.5F);
+        poseStack.scale(0.75F, 0.75F, 0.75F);
     }
 
-    private record BallRenderData(Quaternionf rotation, Vec3 normal, float squash, ItemStack item, int[] colors) {
+    private record BallRenderData(Quaternionf rotation, Vec3 normal, float squash, ItemStack item) {
     }
 
     private static class PanelLayer extends CustomBoneTextureGeoLayer {
@@ -101,8 +97,7 @@ public class BallRenderer extends GeoEntityRenderer<BallEntity, EntityRenderStat
             var data = (BallRenderData) renderPassInfo.getGeckolibData(BALL);
             var modelData = data.item().get(DataComponents.CUSTOM_MODEL_DATA);
             var name = modelData == null ? null : modelData.getString(this.part);
-            var texture = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/item/ball/" + (name == null ? "white" : name) + ".png");
-            var color = name == null ? 0xFF000000 | data.colors()[this.part] : 0xFFFFFFFF;
+            var texture = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/item/ball/" + (name == null ? BallItem.DEFAULT_MODEL_DATA.getString(this.part) : name) + ".png");
             var light = renderPassInfo.packedLight();
             var overlay = renderPassInfo.packedOverlay();
 
@@ -114,7 +109,7 @@ public class BallRenderer extends GeoEntityRenderer<BallEntity, EntityRenderStat
 
                 for (var cube : ((CuboidGeoBone) bone).cubes) {
                     poseStack.pushPose();
-                    cube.render(poseStack, buffer, light, overlay, color);
+                    cube.render(poseStack, buffer, light, overlay, 0xFFFFFFFF);
                     poseStack.popPose();
                 }
             });

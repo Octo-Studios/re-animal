@@ -42,10 +42,8 @@ public class BallRecipe extends CustomRecipe {
     public ItemStack assemble(CraftingInput input) {
         var ball = new ItemStack(ReAnimalItems.BALL);
         var dyes = List.of(0, 2, 8, 6).stream().map(slot -> input.getItem(slot).get(DataComponents.DYE)).toList();
-        var colors = dyes.stream().map(dye -> dye.getTextureDiffuseColor() & 0xFFFFFF)
-                .toList();
 
-        ball.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), dyes.stream().map(DyeColor::getName).toList(), colors));
+        ball.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(), dyes.stream().map(DyeColor::getName).toList(), List.of()));
 
         return ball;
     }
