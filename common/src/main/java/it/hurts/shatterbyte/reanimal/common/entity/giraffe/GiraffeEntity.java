@@ -56,6 +56,7 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     public int grazeTime;
     public int grazeCooldown;
+    public boolean eatingLeaves;
 
     public GiraffeEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);

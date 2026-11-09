@@ -10,6 +10,7 @@ import net.minecraft.world.level.block.Block;
 public class ReAnimalTags {
     public static final class Blocks {
         public static final TagKey<Block> RED_PANDA_CLIMBABLE = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "red_panda_climbable"));
+        public static final TagKey<Block> GIRAFFE_FOOD = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "giraffe_food"));
     }
 
     public static final class Items {
