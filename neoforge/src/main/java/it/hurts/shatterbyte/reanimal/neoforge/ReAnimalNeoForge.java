@@ -1,7 +1,9 @@
 package it.hurts.shatterbyte.reanimal.neoforge;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
+import it.hurts.shatterbyte.reanimal.common.network.PerchTakeoffPayload;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntityDataSerializers;
+import it.hurts.shatterbyte.shatterlib.module.network.ShatterLibNetwork;
 import net.minecraft.network.syncher.EntityDataSerializer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
@@ -17,8 +19,11 @@ public class ReAnimalNeoForge {
         var initialized = new java.util.concurrent.atomic.AtomicBoolean();
 
         modBus.addListener(RegisterEvent.class, event -> {
-            if (initialized.compareAndSet(false, true))
+            if (initialized.compareAndSet(false, true)) {
                 ReAnimal.init();
+
+                ShatterLibNetwork.registerC2SReceiver(PerchTakeoffPayload.TYPE, PerchTakeoffPayload.STREAM_CODEC, PerchTakeoffPayload::handle);
+            }
         });
 
         var serializers = DeferredRegister.<EntityDataSerializer<?>>create(NeoForgeRegistries.ENTITY_DATA_SERIALIZERS, ReAnimal.MODID);

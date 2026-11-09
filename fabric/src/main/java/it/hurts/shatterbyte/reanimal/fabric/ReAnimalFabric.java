@@ -6,6 +6,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
+import it.hurts.shatterbyte.reanimal.common.network.PerchTakeoffPayload;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntityDataSerializers;
 import net.fabricmc.api.ModInitializer;
@@ -13,6 +14,8 @@ import net.fabricmc.fabric.api.biome.v1.BiomeModifications;
 import net.fabricmc.fabric.api.biome.v1.BiomeSelectors;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricEntityDataRegistry;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
@@ -31,6 +34,9 @@ public class ReAnimalFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         ReAnimal.init();
+
+        PayloadTypeRegistry.serverboundPlay().register(PerchTakeoffPayload.TYPE, PerchTakeoffPayload.STREAM_CODEC);
+        ServerPlayNetworking.registerGlobalReceiver(PerchTakeoffPayload.TYPE, (payload, context) -> payload.handle(context.player()));
 
         FabricEntityDataRegistry.register(Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog_state"), ReAnimalEntityDataSerializers.HEDGEHOG_STATE);
 

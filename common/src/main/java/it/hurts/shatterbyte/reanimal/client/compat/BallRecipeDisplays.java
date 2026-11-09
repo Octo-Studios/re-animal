@@ -27,8 +27,8 @@ public final class BallRecipeDisplays {
     private BallRecipeDisplays() {
     }
 
-    public static List<RecipeHolder<CraftingRecipe>> createRecipes() {
-        var recipes = new ArrayList<RecipeHolder<CraftingRecipe>>();
+    public static List<RecipeHolder<ShapedRecipe>> createRecipes() {
+        var recipes = new ArrayList<RecipeHolder<ShapedRecipe>>();
 
         for (var color : DyeColor.values())
             recipes.add(createRecipe(color.getName(), List.of(color, color, color, color)));
@@ -38,7 +38,7 @@ public final class BallRecipeDisplays {
         return recipes;
     }
 
-    private static RecipeHolder<CraftingRecipe> createRecipe(String name, List<DyeColor> colors) {
+    private static RecipeHolder<ShapedRecipe> createRecipe(String name, List<DyeColor> colors) {
         var dyes = colors.stream()
                 .map(color -> new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.withDefaultNamespace(color.getName() + "_dye"))))
                 .toList();

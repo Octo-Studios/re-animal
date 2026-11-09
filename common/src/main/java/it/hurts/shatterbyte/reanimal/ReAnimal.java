@@ -1,8 +1,6 @@
 package it.hurts.shatterbyte.reanimal;
 
-import it.hurts.shatterbyte.reanimal.common.network.PerchTakeoffPayload;
 import it.hurts.shatterbyte.reanimal.init.*;
-import it.hurts.shatterbyte.shatterlib.module.network.ShatterLibNetwork;
 
 public class ReAnimal {
     public static final String MODID = "reanimal";
@@ -20,7 +18,5 @@ public class ReAnimal {
         ReAnimalSensorTypes.init();
         ReAnimalEntityDataSerializers.init();
         ReAnimalCreativeTabs.init();
-
-        ShatterLibNetwork.registerC2SReceiver(PerchTakeoffPayload.TYPE, PerchTakeoffPayload.STREAM_CODEC, PerchTakeoffPayload::handle);
     }
 }
