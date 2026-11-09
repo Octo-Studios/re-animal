@@ -5,6 +5,8 @@ import com.geckolib.renderer.base.GeoRenderState;
 import it.hurts.shatterbyte.reanimal.client.model.seal.SealModel;
 import it.hurts.shatterbyte.reanimal.client.renderer.MobPerch;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
@@ -44,6 +46,8 @@ public class SealRenderer extends GeoEntityRenderer<SealEntity, EntityRenderStat
 
     @Override
     public void extractRenderState(SealEntity entity, EntityRenderState renderState, float partialTick) {
+        ((GeoRenderState) renderState).addGeckolibData(SealEntity.SLAP_PARTICLE, false);
+
         super.extractRenderState(entity, renderState, partialTick);
 
         ((GeoRenderState) renderState).addGeckolibData(SWIM_PITCH, entity.getSwimPitch(partialTick));
@@ -74,6 +78,11 @@ public class SealRenderer extends GeoEntityRenderer<SealEntity, EntityRenderStat
 
         if (renderPassInfo.renderState().getGeckolibData(MobPerch.TRANSFORM) != null)
             return;
+
+        if (renderPassInfo.renderState().getOrDefaultGeckolibData(SealEntity.SLAP_PARTICLE, false))
+            renderPassInfo.addLocatorPositionListener("slap", (worldPos, modelPos, localPos) ->
+                    Minecraft.getInstance().level.addParticle(ReAnimalParticleTypes.BALL_IMPACT,
+                            worldPos.x, worldPos.y, worldPos.z, 0D, 0.25D, 0D));
 
         var pitch = (float) renderPassInfo.renderState().getGeckolibData(SWIM_PITCH);
         var roll = (float) renderPassInfo.renderState().getGeckolibData(SWIM_ROLL) * Mth.DEG_TO_RAD;

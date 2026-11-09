@@ -581,6 +581,16 @@
 		"animation.seal.lay_slap": {
 			"loop": true,
 			"animation_length": 0.75,
+			"particle_effects": {
+				"0.125": {"effect": "reanimal:ball_impact", "locator": "slap"},
+				"0.375": {"effect": "reanimal:ball_impact", "locator": "slap"},
+				"0.625": {"effect": "reanimal:ball_impact", "locator": "slap"}
+			},
+			"sound_effects": {
+				"0.125": {"effect": "reanimal:entity.seal.slap"},
+				"0.375": {"effect": "reanimal:entity.seal.slap"},
+				"0.625": {"effect": "reanimal:entity.seal.slap"}
+			},
 			"bones": {
 				"head": {
 					"rotation": [2.34941, 0.85481, -19.98247],

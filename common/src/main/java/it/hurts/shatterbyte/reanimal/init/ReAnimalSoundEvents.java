@@ -50,6 +50,7 @@ public class ReAnimalSoundEvents {
     public static SoundEvent SEAL_IDLE;
     public static SoundEvent SEAL_HURT;
     public static SoundEvent SEAL_DEATH;
+    public static SoundEvent SEAL_SLAP;
 
     public static SoundEvent HIPPOPOTAMUS_IDLE;
     public static SoundEvent HIPPOPOTAMUS_HURT;
@@ -124,6 +125,7 @@ public class ReAnimalSoundEvents {
         SEAL_IDLE = register("entity.seal.idle");
         SEAL_HURT = register("entity.seal.hurt");
         SEAL_DEATH = register("entity.seal.death");
+        SEAL_SLAP = register("entity.seal.slap");
 
         HIPPOPOTAMUS_IDLE = register("entity.hippopotamus.idle");
         HIPPOPOTAMUS_HURT = register("entity.hippopotamus.hurt");

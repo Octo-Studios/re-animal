@@ -412,6 +412,15 @@
       "reanimal:entity/sea_urchin/idle2"
     ]
   },
+  "entity.seal.slap": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.seal.slap",
+    "sounds": [
+      "reanimal:entity/seal/slap1",
+      "reanimal:entity/seal/slap2",
+      "reanimal:entity/seal/slap3"
+    ]
+  },
   "entity.seal.death": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.seal.death",

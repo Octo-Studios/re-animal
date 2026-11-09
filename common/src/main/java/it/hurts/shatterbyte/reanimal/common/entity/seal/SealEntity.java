@@ -5,9 +5,11 @@ import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.AnimationController;
 import com.geckolib.animation.RawAnimation;
+import com.geckolib.animation.keyframehandler.AutoPlayingSoundKeyframeHandler;
 import com.geckolib.animation.object.LoopType;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
+import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallPlay;
@@ -51,6 +53,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class SealEntity extends TamableAnimal implements GeoEntity {
+    public static final DataTicket<Boolean> SLAP_PARTICLE = DataTicket.create("reanimal_seal_slap_particle", Boolean.class);
+
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.seal.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.seal.walk");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.seal.swim");
@@ -476,7 +480,9 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
+        controllers.add(new AnimationController<>("main", 5, this::mainPredicate)
+                .setSoundKeyframeHandler(new AutoPlayingSoundKeyframeHandler<>())
+                .setParticleKeyframeHandler(event -> event.renderState().addGeckolibData(SLAP_PARTICLE, true)));
     }
 
     private PlayState mainPredicate(AnimationTest<SealEntity> state) {
