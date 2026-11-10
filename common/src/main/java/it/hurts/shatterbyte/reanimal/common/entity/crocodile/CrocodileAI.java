@@ -19,6 +19,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -130,7 +131,8 @@ public class CrocodileAI {
                                         ImmutableList.of(
                                                 Pair.of(new CrocodileAmbush(), 2),
                                                 Pair.of(new CrocodileBask(), 1),
-                                                Pair.of(new CrocodileSwim(1.2F), 1),
+                                                Pair.of(BehaviorBuilder.triggerIf(crocodile -> !crocodile.hasEnvironmentTarget(),
+                                                        (OneShot<? super CrocodileEntity>) RandomStroll.swim(1.2F)), 1),
                                                 Pair.of(new CrocodileLandStroll(1F, 50, 100, 100, 200), 1))
                                 )
                         )
@@ -244,8 +246,12 @@ public class CrocodileAI {
     @Nullable
     private static ShoreSpot findShore(ServerLevel level, CrocodileEntity crocodile, boolean toLand) {
         var range = Mth.ceil(crocodile.getAttributeValue(Attributes.FOLLOW_RANGE));
+        var origin = crocodile.blockPosition();
 
-        for (var pos : BlockPos.withinBoxByManhattanDistance(crocodile.blockPosition(), range, 4, range)) {
+        while (level.getFluidState(origin.above()).is(FluidTags.WATER))
+            origin = origin.above();
+
+        for (var pos : BlockPos.withinBoxByManhattanDistance(origin, range, 4, range)) {
             if (!level.getFluidState(pos).is(FluidTags.WATER) || !level.getFluidState(pos.above()).isEmpty())
                 continue;
 
@@ -602,51 +608,6 @@ public class CrocodileAI {
         @Override
         protected void tick(ServerLevel level, CrocodileEntity crocodile, long gameTime) {
 
-        }
-    }
-
-    public static class CrocodileSwim extends Behavior<CrocodileEntity> {
-        private final float speed;
-
-        public CrocodileSwim(float speed) {
-            super(ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT));
-
-            this.speed = speed;
-        }
-
-        @Override
-        protected boolean checkExtraStartConditions(ServerLevel level, CrocodileEntity crocodile) {
-            if (crocodile.hasEnvironmentTarget())
-                return false;
-
-            return crocodile.isInWater();
-        }
-
-        @Override
-        protected void start(ServerLevel level, CrocodileEntity crocodile, long gameTime) {
-            var random = crocodile.getRandom();
-
-            for (int i = 0; i < 10; i++) {
-                var dx = crocodile.getX() + (random.nextDouble() * 2.0D - 1.0D) * 6.0D;
-                var dy = crocodile.getY() + (random.nextDouble() * 2.0D - 1.0D);
-                var dz = crocodile.getZ() + (random.nextDouble() * 2.0D - 1.0D) * 6.0D;
-
-                var pos = BlockPos.containing(dx, dy, dz);
-
-                if (level.getFluidState(pos).is(FluidTags.WATER)) {
-                    crocodile.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(pos, this.speed, 0));
-
-                    return;
-                }
-            }
-        }
-
-        @Override
-        protected boolean canStillUse(ServerLevel level, CrocodileEntity crocodile, long gameTime) {
-            if (crocodile.hasEnvironmentTarget())
-                return false;
-
-            return crocodile.isInWater();
         }
     }
 
