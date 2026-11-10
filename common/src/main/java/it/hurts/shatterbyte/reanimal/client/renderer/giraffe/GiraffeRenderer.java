@@ -16,6 +16,13 @@ public class GiraffeRenderer extends GeoEntityRenderer<GiraffeEntity, EntityRend
     }
 
     @Override
+    public void extractRenderState(GiraffeEntity entity, EntityRenderState renderState, float partialTick) {
+        super.extractRenderState(entity, renderState, partialTick);
+
+        HeadTracking.setMode(renderState, entity.isKicking() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
+    }
+
+    @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
         boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
         if (isBaby) {

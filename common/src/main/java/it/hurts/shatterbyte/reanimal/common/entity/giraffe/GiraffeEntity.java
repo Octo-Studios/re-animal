@@ -2,8 +2,6 @@ package it.hurts.shatterbyte.reanimal.common.entity.giraffe;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-import com.google.common.collect.ImmutableMap;
-import it.hurts.shatterbyte.reanimal.common.entity.ostrich.OstrichAI;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
@@ -12,22 +10,21 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
-import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animation.*;
@@ -44,15 +41,29 @@ public class GiraffeEntity extends Animal implements GeoEntity {
     private static final RawAnimation GRAZING = RawAnimation.begin().then("animation.giraffe.grazing", LoopType.PLAY_ONCE);
     private static final RawAnimation IDLE_GRAZE = RawAnimation.begin().thenLoop("animation.giraffe.idle_graze");
     private static final RawAnimation GETTING_UP = RawAnimation.begin().then("animation.giraffe.getting_up", LoopType.PLAY_ONCE);
+    private static final RawAnimation KICK_FRONT_LEFT = RawAnimation.begin().then("animation.giraffe.kick_front_left", LoopType.PLAY_ONCE);
+    private static final RawAnimation KICK_FRONT_RIGHT = RawAnimation.begin().then("animation.giraffe.kick_front_right", LoopType.PLAY_ONCE);
+    private static final RawAnimation KICK_REAR_LEFT = RawAnimation.begin().then("animation.giraffe.kick_rear_left", LoopType.PLAY_ONCE);
+    private static final RawAnimation KICK_REAR_RIGHT = RawAnimation.begin().then("animation.giraffe.kick_rear_right", LoopType.PLAY_ONCE);
 
     private static final EntityDataAccessor<Integer> GRAZE_STATE = SynchedEntityData.defineId(GiraffeEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Boolean> KICKING = SynchedEntityData.defineId(GiraffeEntity.class, EntityDataSerializers.BOOLEAN);
 
     private static final int GRAZE_TRANSITION_TICKS = 15;
+    private static final int KICK_DURATION_TICKS = 22;
+    private static final int KICK_HIT_TICK = 8;
+    private static final int KICK_COOLDOWN_TICKS = 40;
 
     public static final UniformInt GRAZE_DURATION = UniformInt.of(200, 400);
     public static final UniformInt GRAZE_COOLDOWN = UniformInt.of(200, 400);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
+    private LivingEntity kickTarget;
+    private int kickTicks;
+    private int nextKickTick;
+    private float kickYaw;
+    private boolean rearKick;
 
     public int grazeTime;
     public int grazeCooldown;
@@ -80,14 +91,75 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        var level = this.level();
-
         ((Brain<GiraffeEntity>) this.getBrain()).tick(serverLevel, this);
 
         GiraffeAI.updateActivity(this);
+        this.tickKick(serverLevel);
 
         super.customServerAiStep(serverLevel);
     }
+
+    private void tickKick(ServerLevel level) {
+        if (this.kickTicks == 0) {
+            if (!this.isPanicking() || this.tickCount < this.nextKickTick || this.isBaby() || this.isGrazing()
+                    || this.isVehicle() || this.isPassenger() || !this.onGround() || this.isInWater())
+                return;
+
+            var attacker = this.getLastHurtByMob();
+
+            if (attacker == null || attacker instanceof GiraffeEntity || !this.canAttack(attacker) || this.isAlliedTo(attacker)
+                    || !this.isWithinMeleeAttackRange(attacker) || !this.hasLineOfSight(attacker))
+                return;
+
+            this.kickTarget = attacker;
+            var offset = attacker.position().subtract(this.position());
+            this.rearKick = Vec3.directionFromRotation(0F, this.yBodyRot).dot(offset) < 0D;
+            var left = Vec3.directionFromRotation(0F, this.yBodyRot - 90F).dot(offset) > 0D;
+            this.kickYaw = (float) Mth.atan2(-offset.x, offset.z) * Mth.RAD_TO_DEG + (this.rearKick ? 180F : 0F);
+            this.kickTicks = KICK_DURATION_TICKS + 1;
+            this.nextKickTick = this.tickCount + KICK_COOLDOWN_TICKS;
+            this.entityData.set(KICKING, true);
+            this.triggerAnim("kick", (this.rearKick ? "rear_" : "front_") + (left ? "left" : "right"));
+        }
+
+        this.getNavigation().stop();
+        this.getMoveControl().setWait();
+        this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        this.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+        this.setJumping(false);
+        this.setYRot(Mth.approachDegrees(this.getYRot(), this.kickYaw, 20F));
+
+        if (--this.kickTicks == KICK_DURATION_TICKS - KICK_HIT_TICK) {
+            var direction = Vec3.directionFromRotation(0F, this.getYRot()).dot(this.kickTarget.position().subtract(this.position()));
+
+            if ((direction < 0D) == this.rearKick && this.canAttack(this.kickTarget)
+                    && this.isWithinMeleeAttackRange(this.kickTarget) && this.hasLineOfSight(this.kickTarget)
+                    && this.doHurtTarget(level, this.kickTarget))
+                this.kickTarget.knockback(1.5D, this.getX() - this.kickTarget.getX(), this.getZ() - this.kickTarget.getZ(),
+                        this.damageSources().mobAttack(this), (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE), true);
+        }
+
+        if (this.kickTicks == 0) {
+            this.entityData.set(KICKING, false);
+            this.kickTarget = null;
+        }
+    }
+
+    public boolean isKicking() {
+        return this.entityData.get(KICKING);
+    }
+
+    @Override
+    public void travel(Vec3 travelVector) {
+        if (this.isKicking()) {
+            if (this.hurtTime == 0)
+                this.setDeltaMovement(0D, this.getDeltaMovement().y, 0D);
+
+            super.travel(Vec3.ZERO);
+        } else
+            super.travel(travelVector);
+    }
+
     protected Brain.Provider<GiraffeEntity> brainProvider() {
         return GiraffeAI.brainProvider();
     }
@@ -132,15 +204,19 @@ public class GiraffeEntity extends Animal implements GeoEntity {
         super.defineSynchedData(buidler);
 
         buidler.define(GRAZE_STATE, GrazeState.STANDING.ordinal());
+        buidler.define(KICKING, false);
     }
 
     @Override
     public void aiStep() {
         super.aiStep();
 
-        if (this.isGrazing()) {
+        if (this.isGrazing() || this.isKicking()) {
             this.setXRot(0);
             this.xRotO = 0;
+
+            if (this.isKicking())
+                this.yBodyRot = this.getYRot();
 
             this.yHeadRot = this.yBodyRot;
             this.yHeadRotO = this.yBodyRotO;
@@ -188,7 +264,7 @@ public class GiraffeEntity extends Animal implements GeoEntity {
         return new BodyRotationControl(this) {
             @Override
             public void clientTick() {
-                if (GiraffeEntity.this.isGrazing())
+                if (GiraffeEntity.this.isGrazing() || GiraffeEntity.this.isKicking())
                     return;
 
                 super.clientTick();
@@ -204,10 +280,18 @@ public class GiraffeEntity extends Animal implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
+        controllers.add(new AnimationController<>("kick", 0, state -> PlayState.STOP)
+                .triggerableAnim("front_left", KICK_FRONT_LEFT)
+                .triggerableAnim("front_right", KICK_FRONT_RIGHT)
+                .triggerableAnim("rear_left", KICK_REAR_LEFT)
+                .triggerableAnim("rear_right", KICK_REAR_RIGHT));
     }
 
     private PlayState mainPredicate(AnimationTest<GiraffeEntity> state) {
         var controller = state.controller();
+
+        if (this.isKicking())
+            return state.setAndContinue(IDLE);
 
         switch (this.getGrazeState()) {
             case GRAZING_DOWN -> controller.setAnimation(GRAZING);
@@ -228,6 +312,7 @@ public class GiraffeEntity extends Animal implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 100D)
+                .add(Attributes.ATTACK_DAMAGE, 12D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.FOLLOW_RANGE, 8D)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 0.6D)
