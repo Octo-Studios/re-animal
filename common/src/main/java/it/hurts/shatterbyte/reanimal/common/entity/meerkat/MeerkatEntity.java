@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.meerkat;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.nbt.CompoundTag;
@@ -12,7 +13,9 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -22,6 +25,8 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
 import com.geckolib.animatable.manager.AnimatableManager;
@@ -66,6 +71,36 @@ public class MeerkatEntity extends Animal implements GeoEntity {
         this.getNavigation().setCanFloat(true);
 
         this.standCooldownTicks = Mth.randomBetweenInclusive(this.random, STAND_COOLDOWN_MIN, STAND_COOLDOWN_MAX);
+    }
+
+    @Override
+    protected AABB makeBoundingBox(Vec3 position) {
+        var bounds = super.makeBoundingBox(position);
+
+        return (this.getStandState() != StandState.STANDING) ? BodyBounds.fitAlongYaw(this, bounds, 1.35D) : bounds;
+    }
+
+    @Override
+    public void setYRot(float yaw) {
+        var previous = this.getYRot();
+
+        super.setYRot(yaw);
+
+        if (this.getYRot() != previous)
+            this.setBoundingBox(this.makeBoundingBox());
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+
+        if (STAND_STATE.equals(accessor))
+            this.refreshDimensions();
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return super.getDefaultDimensions(pose).scale(1F, this.getStandState() == StandState.STANDING ? 1.5F : 1F);
     }
 
     @Override

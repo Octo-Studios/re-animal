@@ -63,7 +63,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         return false;
     }
 
-    protected boolean canClimbWithoutSupport(Vec3 position) {
+    protected boolean canClimbWithoutSupport(AABB bounds) {
         return false;
     }
 
@@ -112,7 +112,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
 
         for (var cell : BlockPos.betweenClosed(this.climber.blockPosition().offset(-1, -1, -1), this.climber.blockPosition().offset(1, 1, 1))) {
             for (var point : pointsByCell.computeIfAbsent(cell.immutable(), this::getPoints)) {
-                if (this.isConnected(this.climber.position(), point.position())) {
+                if (this.isConnected(this.climber.position(), this.climber.getClimbingSide(), point)) {
                     var entry = new Entry(point, null, this.climber.position().distanceTo(point.position()), null);
 
                     entries.put(point, entry);
@@ -138,7 +138,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             }
 
             var cells = new ArrayList<BlockPos>();
-            var unsupported = this.canClimbWithoutSupport(current.point().position());
+            var unsupported = this.canClimbWithoutSupport(this.getBoundingBox(current.point().position(), current.point().side()));
 
             cells.add(current.point().cell());
 
@@ -158,7 +158,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
                     if (closed.contains(point))
                         continue;
 
-                    var connected = this.isConnected(current.point().position(), point.position());
+                    var connected = this.isConnected(current.point().position(), current.point().side(), point);
                     var corner = connected ? null : this.getCorner(current.point(), point);
 
                     if (!connected && corner == null)
@@ -260,8 +260,14 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             return;
         }
 
-        while (!this.path.isDone() && this.climber.position().distanceToSqr(((SurfaceNode) this.path.getNextNode()).point.position()) <= MoveControl.MIN_SPEED_SQR)
+        while (!this.path.isDone() && this.climber.position().distanceToSqr(((SurfaceNode) this.path.getNextNode()).point.position()) <= MoveControl.MIN_SPEED_SQR) {
+            var side = ((SurfaceNode) this.path.getNextNode()).point.side();
+
+            if (side != this.climber.getClimbingSide() && this.isClear(this.climber.position(), this.climber.position(), side))
+                this.climber.setClimbingSide(side, Vec3.ZERO);
+
             this.path.advance();
+        }
 
         if (this.path.isDone()) {
             this.climber.setDeltaMovement(Vec3.ZERO);
@@ -274,22 +280,32 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         var delta = point.position().subtract(this.climber.position());
         var speed = this.climber.getAttributeValue(Attributes.MOVEMENT_SPEED) * this.speedModifier * this.speedMultiplier;
         var movement = delta.normalize().scale(Math.min(speed, delta.length()));
-        var canMove = this.isConnected(this.climber.position(), this.climber.position().add(movement));
+        var side = point.side();
 
-        if (!canMove && (node.corner || this.path.getPreviousNode() instanceof SurfaceNode previous && previous.corner))
-            canMove = this.isClear(this.climber.position(), this.climber.position().add(movement));
-
-        if ((!this.canSupport(point.cell().relative(point.side()), point.side()) && !this.canClimbWithoutSupport(point.position())) || !canMove) {
+        if (!this.canSupport(point.cell().relative(side), side)
+                && !this.canClimbWithoutSupport(this.getBoundingBox(point.position(), side))) {
             this.stop();
 
             return;
         }
 
-        var side = point.side();
         var attachedSide = this.climber.getClimbingSide();
+        var from = this.climber.position();
+        var to = from.add(movement);
+        var corner = node.corner || this.path.getPreviousNode() instanceof SurfaceNode previous && previous.corner;
+        var canMove = this.isConnected(from, to, side) || corner && this.isClear(from, to, side);
 
-        if (side != attachedSide && !this.hasSupport(this.climber.position(), side) && this.hasSupport(this.climber.position(), attachedSide))
+        if (side != attachedSide && (!canMove || !this.hasSupport(from, side) && this.hasSupport(from, attachedSide))
+                && (this.isConnected(from, to, attachedSide) || corner && this.isClear(from, to, attachedSide))) {
             side = attachedSide;
+            canMove = true;
+        }
+
+        if (!canMove) {
+            this.stop();
+
+            return;
+        }
 
         this.motion = movement;
         this.climber.setClimbingSide(side, movement);
@@ -323,11 +339,16 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
                 continue;
 
             var center = Vec3.atCenterOf(cell);
-            var halfHeight = this.climber.getBbHeight() * 0.5D;
-            var extent = side.getAxis() == Direction.Axis.Y ? halfHeight : this.climber.getBbWidth() * 0.5D;
+            var bounds = this.getBoundingBox(center, side);
+            var halfHeight = bounds.getYsize() * 0.5D;
+            var extent = switch (side.getAxis()) {
+                case X -> bounds.getXsize() * 0.5D;
+                case Y -> halfHeight;
+                case Z -> bounds.getZsize() * 0.5D;
+            };
             var position = center.add(Vec3.atLowerCornerOf(side.getUnitVec3i()).scale(0.5D - extent)).subtract(0D, halfHeight, 0D);
 
-            if (this.isClear(position, position) && ((side == Direction.DOWN && passable) || this.hasSupport(position, side))
+            if (this.isClear(position, position, side) && ((side == Direction.DOWN && passable) || this.hasSupport(position, side))
                     && this.canOccupy(cell))
                 points.add(new Point(cell.immutable(), position, side));
         }
@@ -350,15 +371,20 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     }
 
     public boolean canRest(Vec3 position) {
-        return this.hasSupport(position, Direction.DOWN) && this.isClear(position, position) && !this.canClimbWithoutSupport(position);
+        return this.hasSupport(position, Direction.DOWN) && this.isClear(position, position, Direction.DOWN)
+                && !this.canClimbWithoutSupport(this.getBoundingBox(position, Direction.DOWN));
     }
 
     public boolean hasSupport(Vec3 position, Direction side) {
-        var box = this.getBoundingBox(position).deflate(Shapes.EPSILON);
+        return this.hasSupport(this.getBoundingBox(position, side), side);
+    }
+
+    private boolean hasSupport(AABB bounds, Direction side) {
+        var box = bounds.deflate(Shapes.EPSILON);
         var offset = Vec3.atLowerCornerOf(side.getUnitVec3i()).scale(GRIP_REACH);
         var probe = box.move(offset);
         var collisions = new BlockCollisions<>(this.climber.level(), CollisionContext.empty(), probe, false,
-                (pos, shape) -> this.canSupport(pos, side) && (side != Direction.DOWN || shape.max(Direction.Axis.Y) <= position.y + Shapes.EPSILON)
+                (pos, shape) -> this.canSupport(pos, side) && (side != Direction.DOWN || shape.max(Direction.Axis.Y) <= bounds.minY + Shapes.EPSILON)
                         ? shape : Shapes.empty());
 
         while (collisions.hasNext()) {
@@ -369,22 +395,27 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         return false;
     }
 
-    private boolean isConnected(Vec3 from, Vec3 to) {
-        if (!this.isClear(from, to))
+    private boolean isConnected(Vec3 from, Direction fromSide, Point to) {
+        return this.isConnected(from, to.position(), to.side())
+                || fromSide.getAxis() != to.side().getAxis() && this.isConnected(from, to.position(), fromSide);
+    }
+
+    private boolean isConnected(Vec3 from, Vec3 to, Direction orientation) {
+        if (!this.isClear(from, to, orientation))
             return false;
 
         var steps = Math.max(1, Mth.ceil(from.distanceTo(to) / GRIP_REACH));
 
         for (var i = 0; i <= steps; i++) {
-            var position = from.lerp(to, (double) i / steps);
+            var bounds = this.getBoundingBox(from.lerp(to, (double) i / steps), orientation);
 
-            if (this.canClimbWithoutSupport(position))
+            if (this.canClimbWithoutSupport(bounds))
                 continue;
 
             var supported = false;
 
             for (var side : Direction.values()) {
-                if (this.hasSupport(position, side)) {
+                if (this.hasSupport(bounds, side)) {
                     supported = true;
 
                     break;
@@ -411,19 +442,19 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             case Z -> new Vec3(first.x, first.y, second.z);
         };
 
-        if (this.isClear(first, corner) && this.isClear(corner, second)
+        if (this.isClear(first, corner, from.side()) && this.isClear(corner, second, to.side())
                 && (sharedSupport || this.hasSupport(corner, from.side()) && this.hasSupport(corner, to.side())))
             return corner;
 
         corner = first.add(second).subtract(corner);
 
-        return this.isClear(first, corner) && this.isClear(corner, second)
+        return this.isClear(first, corner, from.side()) && this.isClear(corner, second, to.side())
                 && (sharedSupport || this.hasSupport(corner, from.side()) && this.hasSupport(corner, to.side())) ? corner : null;
     }
 
-    private boolean isClear(Vec3 from, Vec3 to) {
+    private boolean isClear(Vec3 from, Vec3 to, Direction side) {
         var level = this.climber.level();
-        var box = this.getBoundingBox(from).expandTowards(to.subtract(from)).deflate(Shapes.EPSILON);
+        var box = this.getBoundingBox(from, side).expandTowards(to.subtract(from)).deflate(Shapes.EPSILON);
         var collisions = new BlockCollisions<>(level, this.climber, box, false, (pos, shape) -> !this.isPassable(pos));
 
         while (collisions.hasNext()) {
@@ -434,8 +465,12 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         return level.noEntityCollision(this.climber, box) && level.noBorderCollision(this.climber, box);
     }
 
-    private AABB getBoundingBox(Vec3 position) {
-        return this.climber.getBoundingBox().move(position.subtract(this.climber.position()));
+    private AABB getBoundingBox(Vec3 position, Direction side) {
+        var halfWidth = this.climber.getBbWidth() * 0.5D;
+        var bounds = new AABB(position.x - halfWidth, position.y, position.z - halfWidth,
+                position.x + halfWidth, position.y + this.climber.getBbHeight(), position.z + halfWidth);
+
+        return this.climber.getSurfaceBounds(bounds, side);
     }
 
     public record Point(BlockPos cell, Vec3 position, Direction side) {

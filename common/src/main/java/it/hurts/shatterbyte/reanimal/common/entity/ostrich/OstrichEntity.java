@@ -111,6 +111,19 @@ public class OstrichEntity extends TamableAnimal implements GeoEntity, PlayerRid
     }
 
     @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+
+        if (SIT_STATE.equals(accessor))
+            this.refreshDimensions();
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return super.getDefaultDimensions(pose).scale(1F, this.getSitState() == SitState.SITTING ? 0.7F : 1F);
+    }
+
+    @Override
     public void aiStep() {
         super.aiStep();
 

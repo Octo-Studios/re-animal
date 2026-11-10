@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.penguin;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -78,6 +80,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
     private double slideSpeed;
     private int nextSlideTick;
     private boolean clientDiving;
+    private boolean swimmingDimensions;
     private float bodyPitch;
     private float previousBodyPitch;
 
@@ -89,6 +92,23 @@ public class PenguinEntity extends Animal implements GeoEntity {
         this.navigation = new AmphibiousPathNavigation(this, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
+    }
+
+    @Override
+    protected AABB makeBoundingBox(Vec3 position) {
+        var bounds = super.makeBoundingBox(position);
+
+        return (this.swimmingDimensions || this.isSliding() || this.isDiving()) ? BodyBounds.fitAlongYaw(this, bounds, 1.75D) : bounds;
+    }
+
+    @Override
+    public void setYRot(float yaw) {
+        var previous = this.getYRot();
+
+        super.setYRot(yaw);
+
+        if (this.getYRot() != previous)
+            this.setBoundingBox(this.makeBoundingBox());
     }
 
     @Override
@@ -132,11 +152,19 @@ public class PenguinEntity extends Animal implements GeoEntity {
     protected EntityDimensions getDefaultDimensions(Pose pose) {
         var dimensions = super.getDefaultDimensions(pose);
 
-        return this.isSliding() || this.isDiving() ? dimensions.scale(1F, 0.5F) : dimensions;
+        if (this.isSliding() || this.isDiving())
+            return dimensions.scale(1F, 0.5F);
+
+        return this.swimmingDimensions ? dimensions.scale(1F, 0.625F) : dimensions;
     }
 
     @Override
     public void aiStep() {
+        if (this.swimmingDimensions != this.isInWater()) {
+            this.swimmingDimensions = this.isInWater();
+            this.refreshDimensions();
+        }
+
         super.aiStep();
 
         this.tickEggLaying();
@@ -284,24 +312,31 @@ public class PenguinEntity extends Animal implements GeoEntity {
         if (distance - stopDistance < MIN_SLIDE_DISTANCE)
             return;
 
-        var route = offset.scale((distance - stopDistance) / distance);
+        var direction = offset.scale(1D / distance);
+        var yaw = (float) Mth.atan2(-direction.x, direction.z) * Mth.RAD_TO_DEG;
+        var slideBounds = BodyBounds.alongYaw(this.getDimensions(this.getPose()).scale(1F, 0.5F).makeBoundingBox(this.position()), 1.75D, yaw);
+        var route = direction.scale(distance - stopDistance);
+
+        if (!this.level().noCollision(this, this.getBoundingBox().move(route)))
+            return;
         var steps = Mth.ceil(route.length() / (this.getBbWidth() * 0.5D));
 
         for (var step = 0; step <= steps; step++) {
             var movement = route.scale((double) step / steps);
 
-            if (!this.isSlideSurface(this.position().add(movement)) || !this.level().noCollision(this, this.getBoundingBox().move(movement)))
+            if (!this.isSlideSurface(this.position().add(movement)) || !this.level().noCollision(this, slideBounds.move(movement)))
                 return;
         }
 
         this.slideTarget = this.position().add(offset);
-        this.slideDirection = offset.scale(1D / distance);
+        this.slideDirection = direction;
         this.slideStopDistance = stopDistance;
         this.slideSpeed = SLIDE_SPEED;
         this.getNavigation().stop();
         this.getBrain().eraseMemory(MemoryModuleType.PATH);
         this.setJumping(false);
         this.setDeltaMovement(0D, this.getDeltaMovement().y, 0D);
+        this.setYRot(yaw);
         this.getEntityData().set(SLIDING, true);
     }
 

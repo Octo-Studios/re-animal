@@ -26,9 +26,11 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -103,6 +105,11 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
         super(entityType, level);
 
         this.getNavigation().setCanFloat(true);
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return super.getDefaultDimensions(pose).scale(this.getState() == HedgehogState.SCARED ? 0.8F : 1F, 1F);
     }
 
     @Override
@@ -371,6 +378,9 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
             this.inStateTicks = 0L;
 
         super.onSyncedDataUpdated(data);
+
+        if (STATE.equals(data))
+            this.refreshDimensions();
     }
     protected Brain.Provider<HedgehogEntity> brainProvider() {
         return HedgehogAI.brainProvider();

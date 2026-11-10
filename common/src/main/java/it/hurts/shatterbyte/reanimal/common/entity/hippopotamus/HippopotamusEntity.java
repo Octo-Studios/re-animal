@@ -17,8 +17,10 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -65,6 +67,19 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     public HippopotamusEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+
+        if (LAY_STATE.equals(accessor))
+            this.refreshDimensions();
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return super.getDefaultDimensions(pose).scale(1F, this.getLayState() == LayState.LAYING ? 0.72F : 1F);
     }
 
     @Override

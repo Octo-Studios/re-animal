@@ -34,9 +34,9 @@ public class StarfishRenderer extends GeoEntityRenderer<StarfishEntity, EntityRe
         var up = rotation.transformPositiveY(new Vector3f());
         var scale = nativeScale * (state.isBaby ? 0.5F : 1F);
         var halfHeight = state.boundingBoxHeight * 0.5F / scale;
-        var extent = halfHeight * Math.abs(up.y) + state.boundingBoxWidth * 0.5F / scale * (1F - Math.abs(up.y));
+        var centerHeight = halfHeight * Math.abs(up.y) + state.boundingBoxWidth * 0.5F / scale * (1F - Math.abs(up.y));
 
-        poseStack.translate(-up.x * extent, halfHeight - up.y * extent, -up.z * extent);
+        poseStack.translate(-up.x * halfHeight, centerHeight - up.y * halfHeight, -up.z * halfHeight);
         poseStack.rotate(rotation);
 
         super.applyRotations(renderPassInfo, poseStack, nativeScale);

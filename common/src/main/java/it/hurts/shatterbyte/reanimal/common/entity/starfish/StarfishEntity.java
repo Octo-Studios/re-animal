@@ -4,6 +4,7 @@ import lombok.Setter;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
 import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -68,6 +70,24 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
 
         if (!level.isClientSide())
             this.setVariant(this.getRandom().nextInt(5));
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+
+        if (CLIMBING_SIDE.equals(accessor))
+            this.setBoundingBox(this.makeBoundingBox());
+    }
+
+    @Override
+    protected AABB makeBoundingBox(Vec3 position) {
+        return this.getSurfaceBounds(super.makeBoundingBox(position), this.getClimbingSide());
+    }
+
+    @Override
+    public AABB getSurfaceBounds(AABB bounds, Direction side) {
+        return BodyBounds.onSurface(bounds, side);
     }
 
     @Override

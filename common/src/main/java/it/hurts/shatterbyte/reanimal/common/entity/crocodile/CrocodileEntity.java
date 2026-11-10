@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.crocodile;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.common.block.CrocodileEggBlock;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
@@ -39,6 +40,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -117,6 +119,23 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         this.navigation = new AmphibiousPathNavigation(this, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
+    }
+
+    @Override
+    protected AABB makeBoundingBox(Vec3 position) {
+        var bounds = super.makeBoundingBox(position);
+
+        return BodyBounds.fitAlongYaw(this, bounds, 1.4D);
+    }
+
+    @Override
+    public void setYRot(float yaw) {
+        var previous = this.getYRot();
+
+        super.setYRot(yaw);
+
+        if (this.getYRot() != previous)
+            this.setBoundingBox(this.makeBoundingBox());
     }
 
     @Override

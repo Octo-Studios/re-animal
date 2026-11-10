@@ -24,10 +24,12 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Bucketable;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -78,6 +80,7 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     private int brightenTicks;
     private float glowStrength;
     private float previousGlowStrength;
+    private boolean beached;
     private float landProgress;
     private float previousLandProgress;
 
@@ -285,11 +288,22 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     }
 
     @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return super.getDefaultDimensions(pose).scale(1F, this.beached ? 0.65F : 1F);
+    }
+
+    @Override
     public void aiStep() {
         super.aiStep();
 
+        var beached = this.onGround() && !this.isInWater();
+        if (this.beached != beached) {
+            this.beached = beached;
+            this.refreshDimensions();
+        }
+
         this.previousLandProgress = this.landProgress;
-        this.landProgress = Mth.approach(this.landProgress, this.onGround() && !this.isInWater() ? 1F : 0F, 0.2F);
+        this.landProgress = Mth.approach(this.landProgress, this.beached ? 1F : 0F, 0.2F);
 
         this.tentacleMovement += this.getTentacleSpeed();
 
@@ -443,7 +457,7 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (entity.onGround() && !entity.isInWater())
+        if (entity.beached)
             controller.setAnimation(LAND);
         else if (entity.isInWater() && entity.tentacleMovement < (float) Math.PI)
             controller.setAnimation(SWIM);

@@ -8,6 +8,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Set;
@@ -28,8 +29,8 @@ public class RedPandaNavigation extends SurfaceNavigation<RedPandaEntity> {
     }
 
     @Override
-    protected boolean canClimbWithoutSupport(Vec3 position) {
-        return this.climber.isInLeaves(position);
+    protected boolean canClimbWithoutSupport(AABB bounds) {
+        return this.climber.isInLeaves(bounds);
     }
 
     @Override

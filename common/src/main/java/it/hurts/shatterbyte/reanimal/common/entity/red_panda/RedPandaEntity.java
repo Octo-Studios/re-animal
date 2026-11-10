@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.red_panda;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -16,8 +17,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -28,6 +31,7 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.util.Mth;
@@ -78,6 +82,31 @@ public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber 
     }
 
     @Override
+    protected AABB makeBoundingBox(Vec3 position) {
+        return this.getSurfaceBounds(super.makeBoundingBox(position), this.getClimbingSide());
+    }
+
+    @Override
+    public AABB getSurfaceBounds(AABB bounds, Direction side) {
+        return BodyBounds.onSurface(bounds, side);
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
+        super.onSyncedDataUpdated(accessor);
+
+        if (STAND_STATE.equals(accessor))
+            this.refreshDimensions();
+        else if (CLIMBING_SIDE.equals(accessor))
+            this.setBoundingBox(this.makeBoundingBox());
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return super.getDefaultDimensions(pose).scale(1F, this.getStandState() == StandState.STANDING ? 1.5F : 1F);
+    }
+
+    @Override
     protected PathNavigation createNavigation(Level level) {
         return new RedPandaNavigation(this, level);
     }
@@ -91,7 +120,11 @@ public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber 
     }
 
     public boolean isInLeaves(Vec3 position) {
-        var box = this.getBoundingBox().move(position.subtract(this.position())).deflate(Shapes.EPSILON);
+        return this.isInLeaves(this.getBoundingBox().move(position.subtract(this.position())));
+    }
+
+    public boolean isInLeaves(AABB bounds) {
+        var box = bounds.deflate(Shapes.EPSILON);
 
         for (var pos : BlockPos.betweenClosed(BlockPos.containing(box.minX, box.minY, box.minZ), BlockPos.containing(box.maxX, box.maxY, box.maxZ))) {
             if (this.level().getBlockState(pos).is(BlockTags.LEAVES))

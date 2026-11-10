@@ -36,9 +36,9 @@ public class RedPandaRenderer extends GeoEntityRenderer<RedPandaEntity, EntityRe
         var rotation = new Quaternionf((Quaternionf) ((GeoRenderState) state).getGeckolibData(SURFACE_ROTATION));
         var up = rotation.transform(new Vector3f(0F, 1F, 0F));
         var halfHeight = state.boundingBoxHeight * 0.5F;
-        var extent = halfHeight * Math.abs(up.y) + state.boundingBoxWidth * 0.5F * (1F - Math.abs(up.y));
+        var centerHeight = halfHeight * Math.abs(up.y) + state.boundingBoxWidth * 0.5F * (1F - Math.abs(up.y));
 
-        renderPassInfo.poseStack().translate(-up.x * extent, halfHeight - up.y * extent, -up.z * extent);
+        renderPassInfo.poseStack().translate(-up.x * halfHeight, centerHeight - up.y * halfHeight, -up.z * halfHeight);
         renderPassInfo.poseStack().rotate(rotation.rotateY(-(180F - state.bodyRot) * Mth.DEG_TO_RAD));
 
         super.adjustRenderPose(renderPassInfo);
