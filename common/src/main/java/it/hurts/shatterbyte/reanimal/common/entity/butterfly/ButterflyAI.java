@@ -64,7 +64,10 @@ public class ButterflyAI {
         initCoreActivity(brain);
         initIdleActivity(brain);
         initPanicActivity(brain);
-        BrainUtil.addActivity(brain, Activity.HIDE, 0, ImmutableList.of());
+        BrainUtil.<ButterflyEntity>addActivity(brain, Activity.HIDE, 0, ImmutableList.of(
+                new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F),
+                new RestOnSurface()
+        ));
 
         brain.setCoreActivities(Set.of(Activity.CORE));
         brain.setDefaultActivity(Activity.IDLE);

@@ -74,6 +74,9 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
             }
         }
 
+        if (!insect.canFly() && candidates.size() > 1)
+            candidates.removeIf(spot -> spot.face() == Direction.UP);
+
         if (!candidates.isEmpty()) {
             this.landing = candidates.get(insect.getRandom().nextInt(candidates.size()));
 
@@ -116,7 +119,8 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
     }
 
     private boolean hasClearApproach(ServerLevel level, FlyingInsectEntity insect, Vec3 target) {
-        return level.noCollision(insect, insect.getBoundingBox().expandTowards(target.subtract(insect.position())));
+        return !level.isRainingAt(BlockPos.containing(target))
+                && level.noCollision(insect, insect.getBoundingBox().expandTowards(target.subtract(insect.position())));
     }
 
     private record LandingSpot(BlockPos support, Direction face, Vec3 target) {

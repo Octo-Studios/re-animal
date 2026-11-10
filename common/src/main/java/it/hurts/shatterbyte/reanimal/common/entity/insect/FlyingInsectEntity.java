@@ -98,7 +98,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     }
 
     public boolean canFly() {
-        return !this.level().isRaining();
+        return !this.level().isRaining() || !this.level().getBiome(this.blockPosition()).value().hasPrecipitation();
     }
 
     protected boolean updateRainNavigation(ServerLevel level) {
@@ -135,6 +135,17 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         if (this.shelterSearchTicks > 0)
             --this.shelterSearchTicks;
 
+        if (!level.isRainingAt(this.blockPosition())) {
+            if (this.navigation != this.flightNavigation) {
+                this.getNavigation().stop();
+                this.navigation = this.flightNavigation;
+                this.moveControl = this.flightMoveControl;
+                this.setNoGravity(true);
+            }
+
+            return;
+        }
+
         if (this.navigation == this.flightNavigation) {
             if (!this.landForRain(level))
                 return;
@@ -151,13 +162,6 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
             this.setDeltaMovement(Vec3.ZERO);
             this.rainLandingTarget = null;
             this.shelterSearchTicks = 0;
-        }
-
-        if (!level.isRainingAt(this.blockPosition())) {
-            this.getNavigation().stop();
-            this.getMoveControl().setWait();
-
-            return;
         }
 
         if (!this.onGround() || !this.getNavigation().isDone() || this.shelterSearchTicks > 0)
@@ -288,7 +292,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     }
 
     boolean canLand() {
-        return this.canFly() && this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
+        return !this.level().isRainingAt(this.blockPosition()) && this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER);

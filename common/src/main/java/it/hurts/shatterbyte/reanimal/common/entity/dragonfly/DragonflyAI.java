@@ -60,7 +60,10 @@ public class DragonflyAI {
         initIdleActivity(brain);
         initPanicActivity(brain);
         initFightActivity(brain);
-        BrainUtil.addActivity(brain, Activity.HIDE, 0, ImmutableList.of());
+        BrainUtil.<DragonflyEntity>addActivity(brain, Activity.HIDE, 0, ImmutableList.of(
+                new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F),
+                new RestOnSurface()
+        ));
 
         brain.setCoreActivities(Set.of(Activity.CORE));
         brain.setDefaultActivity(Activity.IDLE);
