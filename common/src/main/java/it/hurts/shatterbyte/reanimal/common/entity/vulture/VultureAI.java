@@ -204,7 +204,10 @@ public class VultureAI {
 
         @Override
         protected boolean canStillUse(ServerLevel level, VultureEntity entity, long gameTime) {
-            return !entity.isBaby() && !entity.isInWater() && entity.getTarget() == null
+            var target = entity.getTarget();
+
+            return !entity.isBaby() && !entity.isInWater()
+                    && (target == null || isValidPrey(entity, target) && entity.getY() > target.getBoundingBox().maxY + entity.getBbHeight())
                     && !entity.horizontalCollision && (!descending || !entity.onGround())
                     && !entity.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
                     && !entity.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
@@ -213,7 +216,16 @@ public class VultureAI {
 
         @Override
         protected void tick(ServerLevel level, VultureEntity entity, long gameTime) {
-            if (!descending && gameTime % 20L == 0L) {
+            var prey = entity.getTarget();
+
+            if (prey != null) {
+                if (!descending)
+                    beginDescent(entity, prey.position());
+                else
+                    center = prey.position();
+            }
+
+            if (!descending && prey == null && gameTime % 20L == 0L) {
                 var food = level.getEntitiesOfClass(ItemEntity.class, entity.getBoundingBox().inflate(32D),
                                 item -> item.onGround() && item.getItem().is(ReAnimalTags.Items.VULTURE_FOOD) && entity.hasLineOfSight(item))
                         .stream().min(Comparator.comparingDouble(entity::distanceToSqr)).orElse(null);
@@ -261,6 +273,9 @@ public class VultureAI {
             entity.setGliding(false);
             nextStartTime = gameTime + 200 + entity.getRandom().nextInt(401);
 
+            if (entity.getTarget() != null && !isValidPrey(entity, entity.getTarget()))
+                entity.setTarget(null);
+
             if (!entity.onGround() && !entity.isInWater() && entity.getTarget() == null
                     && !entity.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
                     && !entity.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
@@ -298,6 +313,7 @@ public class VultureAI {
 
     static class VultureHuntWoundedTask extends Behavior<VultureEntity> {
         private static final double SEARCH_RADIUS_SQR = 16D * 16D;
+        private static final double CIRCLING_SEARCH_RADIUS = 48D;
         private static final float HEALTH_RATIO_THRESHOLD = 0.25F;
 
         VultureHuntWoundedTask() {
@@ -313,14 +329,25 @@ public class VultureAI {
 
         @Override
         protected void start(ServerLevel level, VultureEntity entity, long gameTime) {
+            if (entity.isCircling() && entity.isGliding()) {
+                level.getEntitiesOfClass(LivingEntity.class, entity.getBoundingBox().inflate(CIRCLING_SEARCH_RADIUS),
+                                candidate -> isWounded(entity, candidate)
+                                        && entity.distanceToSqr(candidate) <= CIRCLING_SEARCH_RADIUS * CIRCLING_SEARCH_RADIUS
+                                        && !candidate.isInvisible() && entity.hasLineOfSight(candidate))
+                        .stream().min(Comparator.comparingDouble(entity::distanceToSqr))
+                        .ifPresent(entity::setTarget);
+
+                return;
+            }
+
             entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-                    .flatMap(visible -> visible.findClosest(candidate -> isWounded(entity, candidate)))
+                    .flatMap(visible -> visible.findClosest(candidate -> entity.distanceToSqr(candidate) <= SEARCH_RADIUS_SQR
+                            && isWounded(entity, candidate)))
                     .ifPresent(entity::setTarget);
         }
 
         private static boolean isWounded(VultureEntity entity, LivingEntity candidate) {
-            return entity.distanceToSqr(candidate) <= SEARCH_RADIUS_SQR
-                    && isValidPrey(entity, candidate)
+            return isValidPrey(entity, candidate)
                     && candidate.getHealth() / candidate.getMaxHealth() < HEALTH_RATIO_THRESHOLD;
         }
     }
@@ -334,14 +361,14 @@ public class VultureAI {
         protected boolean checkExtraStartConditions(ServerLevel level, VultureEntity entity) {
             var target = entity.getTarget();
 
-            return target != null && isValidPrey(entity, target);
+            return !entity.isCircling() && target != null && isValidPrey(entity, target);
         }
 
         @Override
         protected boolean canStillUse(ServerLevel level, VultureEntity entity, long gameTime) {
             var target = entity.getTarget();
 
-            return target != null && isValidPrey(entity, target);
+            return !entity.isCircling() && target != null && isValidPrey(entity, target);
         }
 
         @Override
