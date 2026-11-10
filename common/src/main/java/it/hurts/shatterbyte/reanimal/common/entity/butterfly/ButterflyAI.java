@@ -9,9 +9,15 @@ import it.hurts.shatterbyte.reanimal.common.entity.insect.RestOnSurface;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
@@ -19,7 +25,9 @@ import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -100,6 +108,7 @@ public class ButterflyAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
+                                                Pair.of(new HoverNearFlower(), 5),
                                                 Pair.of(RandomStroll.fly(1F), 1),
                                                 Pair.of(new RestOnSurface(), 1),
                                                 Pair.of(new PerchOnMob(), 1),
@@ -135,5 +144,101 @@ public class ButterflyAI {
 
     public static Predicate<ItemStack> getTemptations() {
         return stack -> stack.is(ReAnimalTags.Items.BUTTERFLY_FOOD);
+    }
+
+    private static class HoverNearFlower extends Behavior<ButterflyEntity> {
+        private BlockPos flower;
+        private Vec3 flowerCenter;
+        private Vec3 hoverPos;
+        private float hoverAngle;
+        private long nextSearchTick;
+
+        public HoverNearFlower() {
+            super(Map.of(
+                    MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT
+            ), 400, 600);
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, ButterflyEntity butterfly) {
+            if (!butterfly.canFly() || butterfly.isInWater() || butterfly.isPassenger() || butterfly.hurtTime > 0
+                    || !butterfly.getNavigation().isDone() || level.getGameTime() < this.nextSearchTick)
+                return false;
+
+            var range = Mth.ceil(butterfly.getAttributeValue(Attributes.FOLLOW_RANGE));
+
+            for (var pos : BlockPos.withinManhattan(butterfly.blockPosition(), range)) {
+                var state = level.getBlockState(pos);
+
+                if (!state.is(BlockTags.FLOWERS) || !state.getFluidState().isEmpty() || level.getBlockState(pos.above()).is(BlockTags.FLOWERS))
+                    continue;
+
+                var shape = state.getShape(level, pos).bounds();
+                var target = Vec3.atLowerCornerOf(pos).add(shape.getCenter().with(Direction.Axis.Y, shape.maxY));
+
+                if (!level.noCollision(butterfly, butterfly.getBoundingBox().expandTowards(target.subtract(butterfly.position()))))
+                    continue;
+
+                this.flower = pos.immutable();
+                this.flowerCenter = target;
+                this.hoverPos = target;
+
+                return true;
+            }
+
+            this.nextSearchTick = level.getGameTime() + 100 + butterfly.getRandom().nextInt(100);
+
+            return false;
+        }
+
+        @Override
+        protected void start(ServerLevel level, ButterflyEntity butterfly, long timestamp) {
+            butterfly.stopResting();
+            butterfly.getNavigation().stop();
+            butterfly.setHoveringNearFlower(true);
+            this.hoverAngle = butterfly.getRandom().nextFloat() * Mth.TWO_PI;
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, ButterflyEntity butterfly, long timestamp) {
+            return butterfly.canFly() && !butterfly.isInWater() && !butterfly.isPassenger() && butterfly.hurtTime == 0
+                    && butterfly.getNavigation().isDone() && this.hasRequiredMemories(butterfly)
+                    && level.getBlockState(this.flower).is(BlockTags.FLOWERS) && level.getFluidState(this.flower).isEmpty()
+                    && level.noCollision(butterfly, butterfly.getBoundingBox().expandTowards(this.hoverPos.subtract(butterfly.position())));
+        }
+
+        @Override
+        protected void tick(ServerLevel level, ButterflyEntity butterfly, long timestamp) {
+            butterfly.getLookControl().setLookAt(this.flowerCenter.x, this.flowerCenter.y, this.flowerCenter.z);
+
+            if (butterfly.position().distanceToSqr(this.hoverPos) <= 0.01D) {
+                this.hoverAngle += Mth.HALF_PI;
+
+                var target = this.flowerCenter.add(
+                        Mth.cos(this.hoverAngle) / 3D,
+                        (1D + Mth.sin(this.hoverAngle * 2F)) * butterfly.getBbHeight() / 8D,
+                        Mth.sin(this.hoverAngle) / 3D
+                );
+
+                if (!level.noCollision(butterfly, butterfly.getBoundingBox().expandTowards(target.subtract(butterfly.position())))) {
+                    this.doStop(level, butterfly, timestamp);
+                    return;
+                }
+
+                this.hoverPos = target;
+            }
+
+            butterfly.getMoveControl().setWantedPosition(this.hoverPos.x, this.hoverPos.y, this.hoverPos.z, 1D);
+        }
+
+        @Override
+        protected void stop(ServerLevel level, ButterflyEntity butterfly, long timestamp) {
+            butterfly.setHoveringNearFlower(false);
+            butterfly.getMoveControl().setWait();
+            this.nextSearchTick = timestamp + 100 + butterfly.getRandom().nextInt(100);
+        }
     }
 }

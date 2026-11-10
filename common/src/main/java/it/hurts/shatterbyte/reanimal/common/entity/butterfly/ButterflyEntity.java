@@ -30,6 +30,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.LookControl;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.player.Player;
@@ -46,7 +47,7 @@ import net.minecraft.world.phys.Vec3;
 public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final int WATER_DAMAGE_DELAY = 100;
     private static final int WATER_DAMAGE_INTERVAL = 20;
-    
+
     private static final TagKey<Biome> IS_SNOWY = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_snowy"));
     private static final TagKey<Biome> IS_DESERT = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_desert"));
     private static final TagKey<Biome> IS_SWAMP = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_swamp"));
@@ -58,6 +59,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int ticksInWater;
+    private boolean hoveringNearFlower;
 
     public int getVariant() {
         return this.getEntityData().get(VARIANT);
@@ -67,8 +69,24 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
         this.getEntityData().set(VARIANT, variant);
     }
 
+    public void setHoveringNearFlower(boolean hoveringNearFlower) {
+        this.hoveringNearFlower = hoveringNearFlower;
+    }
+
     public ButterflyEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
+
+        this.lookControl = new LookControl(this) {
+            @Override
+            public void tick() {
+                super.tick();
+
+                if (ButterflyEntity.this.hoveringNearFlower) {
+                    ButterflyEntity.this.setYRot(ButterflyEntity.this.yHeadRot);
+                    ButterflyEntity.this.yBodyRot = ButterflyEntity.this.yHeadRot;
+                }
+            }
+        };
 
         if (!level.isClientSide())
             this.setVariant(this.getRandom().nextInt(5));

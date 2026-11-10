@@ -33,6 +33,8 @@ import net.minecraft.world.phys.Vec3;
 public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     private static final EntityDataAccessor<Integer> RESTING_FACE = SynchedEntityData.defineId(FlyingInsectEntity.class, EntityDataSerializers.INT);
     private static final int REST_TRANSITION_TICKS = 10;
+    private static final double FLIGHT_ACCELERATION = 0.02D;
+    private static final double FLIGHT_DRAG = 0.91D;
 
     private final MoveControl flightMoveControl;
     private final PathNavigation flightNavigation;
@@ -54,8 +56,22 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         this.moveControl = new FlyingMoveControl<>(this, 10, true) {
             @Override
             public void tick() {
-                if (!FlyingInsectEntity.this.isResting() && !FlyingInsectEntity.this.isPerched())
-                    super.tick();
+                if (FlyingInsectEntity.this.isResting() || FlyingInsectEntity.this.isPerched())
+                    return;
+
+                var moving = this.hasWanted();
+
+                super.tick();
+
+                if (moving) {
+                    var movement = new Vec3(this.wantedX, this.wantedY, this.wantedZ).subtract(FlyingInsectEntity.this.position());
+                    var distance = movement.length();
+                    var speed = FlyingInsectEntity.this.getSpeed() * FLIGHT_ACCELERATION / (1D - FLIGHT_DRAG);
+
+                    FlyingInsectEntity.this.setYya(0F);
+                    FlyingInsectEntity.this.setZza(0F);
+                    FlyingInsectEntity.this.setDeltaMovement(distance < MIN_SPEED ? Vec3.ZERO : movement.scale(Math.min(speed, distance) / distance));
+                }
             }
         };
         this.navigation = new FlyingPathNavigation(this, level);
@@ -330,7 +346,8 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
             this.tickRainShelter(level);
 
         if (this.takeoffTarget != null) {
-            if (!this.canFly() || this.position().distanceToSqr(this.takeoffTarget) <= Math.max(this.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR)
+            if (!this.canFly() || !this.getNavigation().isDone() || this.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
+                    || this.position().distanceToSqr(this.takeoffTarget) <= Math.max(this.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR)
                     || !level.noCollision(this, this.getBoundingBox().expandTowards(this.takeoffTarget.subtract(this.position()))))
                 this.takeoffTarget = null;
             else
