@@ -1,6 +1,8 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.jellyfish;
 
 import com.mojang.math.Axis;
+import com.geckolib.constant.dataticket.DataTicket;
+import com.geckolib.renderer.base.GeoRenderState;
 import it.hurts.shatterbyte.reanimal.client.light.GlowColors;
 import it.hurts.shatterbyte.reanimal.client.model.jellyfish.JellyfishModel;
 import it.hurts.shatterbyte.reanimal.client.renderer.SoftGlowLayer;
@@ -13,10 +15,13 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.ARGB;
+import net.minecraft.util.Mth;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.RenderPassInfo;
 
 public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, EntityRenderState> {
+    private static final DataTicket<Float> LAND_PROGRESS = DataTicket.create("reanimal_jellyfish_land_progress", Float.class);
+
     public JellyfishRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new JellyfishModel());
 
@@ -41,6 +46,8 @@ public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, Entity
         super.extractRenderState(entity, renderState, partialTick);
 
         renderState.lightCoords = LightCoordsUtil.FULL_BRIGHT;
+
+        ((GeoRenderState) renderState).addGeckolibData(LAND_PROGRESS, entity.getLandProgress(partialTick));
     }
 
     @Override
@@ -60,9 +67,11 @@ public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, Entity
     public void adjustRenderPose(RenderPassInfo renderPassInfo) {
         super.adjustRenderPose(renderPassInfo);
 
-        renderPassInfo.poseStack().translate(0, 0.5F, 0);
+        var landProgress = (float) renderPassInfo.renderState().getGeckolibData(LAND_PROGRESS);
+
+        renderPassInfo.poseStack().translate(0, Mth.lerp(landProgress, 0.5F, 0F), 0);
 
         if (renderPassInfo.renderState() instanceof LivingEntityRenderState les)
-            renderPassInfo.poseStack().rotateDegrees(Axis.XP, -les.xRot - 90F);
+            renderPassInfo.poseStack().rotateDegrees(Axis.XP, (-les.xRot - 90F) * (1F - landProgress));
     }
 }

@@ -320,6 +320,57 @@
 					}
 				}
 			}
+		},
+		"animation.jellyfish.land": {
+			"loop": true,
+			"animation_length": 4,
+			"bones": {
+				"jellyfish": {
+					"position": [0, 0, 0]
+				},
+				"body": {
+					"rotation": [4, 0, -3],
+					"position": [0, 0.8, 0],
+					"scale": [1, 1, 1]
+				},
+				"tentacles": {
+					"rotation": [90, 0, 0],
+					"position": [0, 0.5, 0],
+					"scale": [1, 1, 0.06]
+				},
+				"main_tentacles": {
+					"rotation": [0, 0, "-18 + 0.5 * math.sin(query.anim_time * 90)"],
+					"scale": [1.1, 0.75, 1]
+				},
+				"short_tentacle_1": {
+					"rotation": [0, 0, "-110 + 0.5 * math.sin(query.anim_time * 90)"]
+				},
+				"short_tentacle_2": {
+					"rotation": [0, 0, "-55 + 0.5 * math.sin(query.anim_time * 90 - 45)"]
+				},
+				"short_tentacle_3": {
+					"rotation": [0, 0, "35 + 0.5 * math.sin(query.anim_time * 90 - 90)"]
+				},
+				"short_tentacle_4": {
+					"rotation": [0, 0, "100 + 0.5 * math.sin(query.anim_time * 90 - 135)"]
+				},
+				"long_tentacle_1": {
+					"rotation": [0, 0, "-65 + 0.75 * math.sin(query.anim_time * 90 - 30)"],
+					"scale": [1, 0.85, 1]
+				},
+				"long_tentacle_2": {
+					"rotation": [0, 0, "-25 + 0.75 * math.sin(query.anim_time * 90 - 60)"],
+					"scale": [1, 0.9, 1]
+				},
+				"long_tentacle_3": {
+					"rotation": [0, 0, "20 + 0.75 * math.sin(query.anim_time * 90 - 90)"],
+					"scale": [1, 0.8, 1]
+				},
+				"long_tentacle_4": {
+					"rotation": [0, 0, "55 + 0.75 * math.sin(query.anim_time * 90 - 120)"],
+					"scale": [1, 0.75, 1]
+				}
+			}
 		}
 	}
 }

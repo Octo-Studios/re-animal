@@ -48,6 +48,7 @@ import com.geckolib.util.GeckoLibUtil;
 public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketable {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.jellyfish.idle");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.jellyfish.swim");
+    private static final RawAnimation LAND = RawAnimation.begin().thenLoop("animation.jellyfish.land");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.BOOLEAN);
@@ -77,6 +78,8 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     private int brightenTicks;
     private float glowStrength;
     private float previousGlowStrength;
+    private float landProgress;
+    private float previousLandProgress;
 
     public JellyfishEntity(EntityType<? extends WaterAnimal> entityType, Level level) {
         super(entityType, level);
@@ -110,6 +113,10 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
 
     public int getLightLevel() {
         return Math.round(15F * this.getGlowIntensity(1F));
+    }
+
+    public float getLandProgress(float partialTick) {
+        return Mth.lerp(partialTick, this.previousLandProgress, this.landProgress);
     }
 
     private void brighten() {
@@ -281,6 +288,9 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     public void aiStep() {
         super.aiStep();
 
+        this.previousLandProgress = this.landProgress;
+        this.landProgress = Mth.approach(this.landProgress, this.onGround() && !this.isInWater() ? 1F : 0F, 0.2F);
+
         this.tentacleMovement += this.getTentacleSpeed();
 
         if (this.tentacleMovement > Math.PI * 2) {
@@ -433,7 +443,9 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (entity.isInWater() && entity.tentacleMovement < (float) Math.PI)
+        if (entity.onGround() && !entity.isInWater())
+            controller.setAnimation(LAND);
+        else if (entity.isInWater() && entity.tentacleMovement < (float) Math.PI)
             controller.setAnimation(SWIM);
         else
             controller.setAnimation(IDLE);
