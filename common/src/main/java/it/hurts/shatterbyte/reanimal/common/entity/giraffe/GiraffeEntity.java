@@ -49,7 +49,8 @@ public class GiraffeEntity extends Animal implements GeoEntity {
     private static final EntityDataAccessor<Integer> GRAZE_STATE = SynchedEntityData.defineId(GiraffeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> KICKING = SynchedEntityData.defineId(GiraffeEntity.class, EntityDataSerializers.BOOLEAN);
 
-    private static final int GRAZE_TRANSITION_TICKS = 15;
+    private static final int GRAZING_DOWN_TICKS = 48;
+    private static final int GETTING_UP_TICKS = 40;
     private static final int KICK_DURATION_TICKS = 22;
     private static final int KICK_HIT_TICK = 8;
     private static final int KICK_COOLDOWN_TICKS = 40;
@@ -279,7 +280,7 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
+        controllers.add(new AnimationController<>("main", 8, this::mainPredicate));
         controllers.add(new AnimationController<>("kick", 0, state -> PlayState.STOP)
                 .triggerableAnim("front_left", KICK_FRONT_LEFT)
                 .triggerableAnim("front_right", KICK_FRONT_RIGHT)
@@ -336,13 +337,13 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
         this.setGrazeState(GrazeState.GRAZING_DOWN);
 
-        this.grazeTime = GRAZE_TRANSITION_TICKS;
+        this.grazeTime = GRAZING_DOWN_TICKS;
     }
 
     public void startGettingUp() {
         this.setGrazeState(GrazeState.GETTING_UP);
 
-        this.grazeTime = GRAZE_TRANSITION_TICKS;
+        this.grazeTime = GETTING_UP_TICKS;
     }
 
     public void finishGettingUp() {

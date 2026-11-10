@@ -19,7 +19,7 @@ public class GiraffeRenderer extends GeoEntityRenderer<GiraffeEntity, EntityRend
     public void extractRenderState(GiraffeEntity entity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(entity, renderState, partialTick);
 
-        HeadTracking.setMode(renderState, entity.isKicking() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
+        HeadTracking.setMode(renderState, entity.isGrazing() || entity.isKicking() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
     }
 
     @Override
