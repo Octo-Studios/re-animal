@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.sea_urchin;
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
 import it.hurts.shatterbyte.reanimal.common.entity.SurfaceMoveToTargetSink;
 import it.hurts.shatterbyte.reanimal.common.entity.SurfaceStroll;
+import it.hurts.shatterbyte.reanimal.common.entity.starfish.StarfishEntity;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -21,8 +22,10 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.*;
+import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
@@ -56,6 +59,7 @@ public class SeaUrchinAI {
             MemoryModuleType.TEMPTATION_COOLDOWN_TICKS,
             MemoryModuleType.GAZE_COOLDOWN_TICKS,
             MemoryModuleType.BREED_TARGET,
+            MemoryModuleType.AVOID_TARGET,
             MemoryModuleType.NEAREST_VISIBLE_ADULT,
             MemoryModuleType.DANGER_DETECTED_RECENTLY
     );
@@ -67,6 +71,7 @@ public class SeaUrchinAI {
     public static Brain<?> makeBrain(Brain<SeaUrchinEntity> brain) {
         initCoreActivity(brain);
         initIdleActivity(brain);
+        initAvoidActivity(brain);
         BrainUtil.addActivity(brain, Activity.WORK, 0, ImmutableList.of());
 
         brain.setCoreActivities(Set.of(Activity.CORE));
@@ -120,12 +125,65 @@ public class SeaUrchinAI {
         );
     }
 
+    private static void initAvoidActivity(Brain<SeaUrchinEntity> brain) {
+        BrainUtil.<SeaUrchinEntity>addActivityAndRemoveMemoryWhenStopped(brain,
+                Activity.AVOID,
+                10,
+                ImmutableList.of(fleeStarfish()),
+                MemoryModuleType.AVOID_TARGET
+        );
+    }
+
     public static void updateActivity(SeaUrchinEntity entity) {
-        entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, entity.isEating() ? Activity.WORK : Activity.IDLE));
+        var brain = entity.getBrain();
+
+        brain.setMemory(MemoryModuleType.AVOID_TARGET, brain.getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+                .flatMap(visible -> visible.findClosest(target -> target instanceof StarfishEntity starfish && !starfish.isBaby()
+                        && entity.closerThan(target, entity.getAttributeValue(Attributes.FOLLOW_RANGE)))));
+        brain.setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.AVOID, entity.isEating() ? Activity.WORK : Activity.IDLE));
     }
 
     public static Predicate<ItemStack> getTemptations() {
         return stack -> stack.is(ReAnimalTags.Items.SEA_URCHIN_FOOD);
+    }
+
+    private static OneShot<SeaUrchinEntity> fleeStarfish() {
+        return BehaviorBuilder.create(instance -> instance.group(
+                instance.present(MemoryModuleType.AVOID_TARGET),
+                instance.registered(MemoryModuleType.WALK_TARGET)
+        ).apply(instance, (avoidTarget, walkTarget) -> (level, entity, gameTime) -> {
+            var target = instance.get(avoidTarget);
+
+            if (entity.isPassenger() || instance.tryGet(walkTarget).filter(walk -> walk.getSpeedModifier() == 1.5F
+                    && walk.getTarget().currentPosition().distanceToSqr(target.position()) > entity.distanceToSqr(target)).isPresent())
+                return false;
+
+            var navigation = (SeaUrchinNavigation) entity.getNavigation();
+            walkTarget.erase();
+            navigation.stop();
+
+            var radius = Mth.ceil(entity.getAttributeValue(Attributes.FOLLOW_RANGE));
+            var random = entity.getRandom();
+
+            for (var i = 0; i < 10; i++) {
+                var cell = entity.blockPosition().offset(random.nextInt(radius * 2 + 1) - radius,
+                        random.nextInt(radius * 2 + 1) - radius, random.nextInt(radius * 2 + 1) - radius);
+
+                if (cell.equals(entity.blockPosition()) || Vec3.atCenterOf(cell).distanceToSqr(target.position()) <= entity.distanceToSqr(target)
+                        || navigation.getPoints(cell).isEmpty())
+                    continue;
+
+                var path = navigation.createSurfacePath(Set.of(cell), 0, radius * 2F);
+
+                if (path != null) {
+                    walkTarget.set(new WalkTarget(path.getTarget(), 1.5F, 0));
+                    navigation.moveTo(path, 1.5D);
+                    return true;
+                }
+            }
+
+            return false;
+        }));
     }
 
     private static class EatAlgae extends Behavior<SeaUrchinEntity> {
@@ -142,6 +200,7 @@ public class SeaUrchinAI {
         private EatAlgae() {
             super(ImmutableMap.of(
                     MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.AVOID_TARGET, MemoryStatus.VALUE_ABSENT,
                     MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT,
                     MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT,
                     MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT
@@ -196,6 +255,7 @@ public class SeaUrchinAI {
 
             return entity.isEating() && this.eatTime < this.eatDuration
                     && entity.isInWater() && !entity.isPassenger() && !entity.isRolling()
+                    && !brain.hasMemoryValue(MemoryModuleType.AVOID_TARGET)
                     && !brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
                     && !brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
                     && !brain.hasMemoryValue(MemoryModuleType.BREED_TARGET)

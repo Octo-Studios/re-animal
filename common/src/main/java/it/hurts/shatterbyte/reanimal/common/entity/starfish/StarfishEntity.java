@@ -5,6 +5,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
+import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
@@ -119,7 +120,8 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
             return;
 
         if (!this.isBaby()) {
-            var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), candidate -> !(candidate instanceof StarfishEntity));
+            var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(),
+                    candidate -> !(candidate instanceof StarfishEntity) && !(candidate instanceof SeaUrchinEntity));
 
             for (var target : targets)
                 if (target.hurtOrSimulate(ReAnimalDamageTypes.source(this, ReAnimalDamageTypes.SEA_URCHIN_SPIKES), 5F))
@@ -151,6 +153,9 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
 
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
+        if (source.is(ReAnimalDamageTypes.SEA_URCHIN_SPIKES))
+            return false;
+
         var result = super.hurtServer(level, source, amount);
 
         if (result) {
@@ -306,6 +311,7 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 4D)
                 .add(Attributes.MOVEMENT_SPEED, 0.025D)
+                .add(Attributes.ATTACK_DAMAGE, 2D)
                 .add(Attributes.FOLLOW_RANGE, 4D)
                 .add(Attributes.STEP_HEIGHT, 1.1D);
     }
