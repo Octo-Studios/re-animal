@@ -4,10 +4,15 @@ import it.hurts.shatterbyte.reanimal.ReAnimal;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
 public class ReAnimalTags {
+    public static final class EntityTypes {
+        public static final TagKey<EntityType<?>> HEDGEHOG_PREY = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog_prey"));
+    }
+
     public static final class Blocks {
         public static final TagKey<Block> RED_PANDA_CLIMBABLE = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "red_panda_climbable"));
         public static final TagKey<Block> GIRAFFE_FOOD = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "giraffe_food"));

@@ -220,7 +220,7 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
 
                 var damaged = target.hurtOrSimulate(ReAnimalDamageTypes.source(this, ReAnimalDamageTypes.HEDGEHOG_SPIKES), this.getState() == HedgehogState.SCARED ? 5 : 1);
 
-                damagedSomeone = damagedSomeone || damaged;
+                damagedSomeone = damagedSomeone || damaged && !target.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.HEDGEHOG_PREY);
             }
 
             if (damagedSomeone)
@@ -473,7 +473,8 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 10.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.2D)
-                .add(Attributes.FOLLOW_RANGE, 8D);
+                .add(Attributes.FOLLOW_RANGE, 8D)
+                .add(Attributes.ATTACK_DAMAGE, 2D);
     }
 
     public boolean canStayRolledUp() {
@@ -486,7 +487,7 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
         else if (entity.getType().builtInRegistryHolder().is(EntityTypeTags.UNDEAD))
             return true;
         else if (this.getLastHurtByMob() == entity)
-            return true;
+            return this.isBaby() || !entity.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.HEDGEHOG_PREY);
         else if (entity instanceof Player player) {
             if (player.isSpectator())
                 return false;

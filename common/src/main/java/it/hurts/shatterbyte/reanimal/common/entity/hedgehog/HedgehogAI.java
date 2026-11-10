@@ -16,6 +16,7 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
@@ -31,6 +32,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -53,7 +55,9 @@ public class HedgehogAI {
             MemoryModuleType.GAZE_COOLDOWN_TICKS,
             MemoryModuleType.BREED_TARGET,
             MemoryModuleType.NEAREST_VISIBLE_ADULT,
-            MemoryModuleType.DANGER_DETECTED_RECENTLY
+            MemoryModuleType.DANGER_DETECTED_RECENTLY,
+            MemoryModuleType.ATTACK_TARGET,
+            MemoryModuleType.ATTACK_COOLING_DOWN
     );
 
     public static Brain.Provider<HedgehogEntity> brainProvider() {
@@ -76,6 +80,7 @@ public class HedgehogAI {
         initCoreActivity(brain);
         initIdleActivity(brain);
         initScaredActivity(brain);
+        initFightActivity(brain);
         BrainUtil.addActivity(brain, Activity.DIG, 0, ImmutableList.of());
 
         brain.setCoreActivities(Set.of(Activity.CORE));
@@ -116,9 +121,10 @@ public class HedgehogAI {
                 ImmutableList.of(
                         Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
                         Pair.of(1, new AnimalMakeLove(ReAnimalEntities.HEDGEHOG, 1F, 1)),
-                        Pair.of(2, new HedgehogPickupItem()),
+                        Pair.of(2, StartAttacking.create((level, entity) -> canHunt(entity), HedgehogAI::findNearestPrey)),
+                        Pair.of(3, new HedgehogPickupItem()),
                         Pair.of(
-                                3,
+                                4,
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
@@ -126,11 +132,14 @@ public class HedgehogAI {
                                         )
                                 )
                         ),
-                        Pair.of(4, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(5, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                5,
+                                6,
                                 new RunOne<>(
-                                        ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
+                                        ImmutableMap.of(
+                                                MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                                                MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT
+                                        ),
                                         ImmutableList.of(
                                                 Pair.of(RandomStroll.stroll(1F), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
@@ -153,8 +162,45 @@ public class HedgehogAI {
         );
     }
 
+    private static void initFightActivity(Brain<HedgehogEntity> brain) {
+        BrainUtil.<HedgehogEntity>addActivityAndRemoveMemoryWhenStopped(brain,
+                Activity.FIGHT,
+                10,
+                ImmutableList.of(
+                        StopAttackingIfTargetInvalid.create(),
+                        SetWalkTargetFromAttackTargetIfTargetOutOfReach.create(1.2F),
+                        MeleeAttack.create(HedgehogAI::canHunt, 20)
+                ),
+                MemoryModuleType.ATTACK_TARGET
+        );
+    }
+
     public static void updateActivity(HedgehogEntity entity) {
-        entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, entity.isDigging() ? Activity.DIG : Activity.IDLE));
+        var brain = entity.getBrain();
+
+        if (brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET) && !canHunt(entity)) {
+            brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
+            brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+            brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
+            entity.getNavigation().stop();
+        }
+
+        brain.setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, entity.isDigging() ? Activity.DIG : Activity.FIGHT, Activity.IDLE));
+    }
+
+    private static boolean canHunt(HedgehogEntity entity) {
+        var brain = entity.getBrain();
+
+        return !entity.isBaby() && !entity.isPassenger() && !entity.isScared() && !entity.isDigging() && !entity.isInLove()
+                && !brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                && !brain.hasMemoryValue(MemoryModuleType.DANGER_DETECTED_RECENTLY)
+                && !brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER);
+    }
+
+    private static Optional<LivingEntity> findNearestPrey(ServerLevel level, HedgehogEntity entity) {
+        return entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
+                .flatMap(visible -> visible.findClosest(target -> target.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.HEDGEHOG_PREY)
+                        && Sensor.isEntityAttackable(level, entity, target)));
     }
 
     public static Predicate<ItemStack> getTemptations() {
@@ -174,6 +220,7 @@ public class HedgehogAI {
         public HedgehogDigging() {
             super(Map.of(
                     MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.ATTACK_TARGET, MemoryStatus.VALUE_ABSENT,
                     MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT,
                     MemoryModuleType.DANGER_DETECTED_RECENTLY, MemoryStatus.VALUE_ABSENT,
                     MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT,
@@ -336,6 +383,9 @@ public class HedgehogAI {
             if (entity.isBaby())
                 return false;
 
+            if (entity.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET))
+                return false;
+
             if (!entity.getStack().isEmpty())
                 return false;
 
@@ -354,7 +404,7 @@ public class HedgehogAI {
 
         @Override
         protected boolean canStillUse(ServerLevel level, HedgehogEntity entity, long gameTime) {
-            if (entity.isBaby() || !entity.getStack().isEmpty())
+            if (entity.isBaby() || !entity.getStack().isEmpty() || entity.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET))
                 return false;
 
             var opt = entity.getBrain().getMemory(MemoryModuleType.WALK_TARGET);
