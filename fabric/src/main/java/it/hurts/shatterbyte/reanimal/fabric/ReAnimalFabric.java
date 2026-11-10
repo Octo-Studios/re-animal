@@ -4,6 +4,7 @@ import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.effect.QuillMobEffect;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.common.network.PerchTakeoffPayload;
@@ -81,7 +82,7 @@ public class ReAnimalFabric implements ModInitializer {
         SpawnPlacements.register(ReAnimalEntities.CROCODILE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.GIRAFFE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.DRAGONFLY, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
-        SpawnPlacements.register(ReAnimalEntities.PENGUIN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules);
+        SpawnPlacements.register(ReAnimalEntities.PENGUIN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PenguinEntity::checkPenguinSpawnRules);
         SpawnPlacements.register(ReAnimalEntities.SEA_URCHIN, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR, (type, level, spawnType, pos, random) -> true);
         SpawnPlacements.register(ReAnimalEntities.STARFISH, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR, (type, level, spawnType, pos, random) -> true);
         SpawnPlacements.register(ReAnimalEntities.JELLYFISH, SpawnPlacementTypes.IN_WATER, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, spawnType, pos, random) -> true);
@@ -100,7 +101,7 @@ public class ReAnimalFabric implements ModInitializer {
         addSpawn("minecraft:is_jungle", ReAnimalEntities.TOUCAN, 10, 2, 4);
         addSpawn("minecraft:is_savanna", ReAnimalEntities.OSTRICH, 10, 1, 3);
         addSpawn("minecraft:is_savanna", ReAnimalEntities.MEERKAT, 8, 1, 3);
-        addSpawn("c:is_cold/overworld", ReAnimalEntities.PENGUIN, 10, 3, 7);
+        addSpawn("reanimal:spawns_penguin", ReAnimalEntities.PENGUIN, 10, 3, 7);
         addSpawn("minecraft:is_overworld", ReAnimalEntities.PIGEON, 10, 4, 12);
         addSpawn("minecraft:is_jungle", ReAnimalEntities.RED_PANDA, 8, 1, 3);
         addSpawn("minecraft:is_beach", ReAnimalEntities.SEA_URCHIN, 25, 3, 5);

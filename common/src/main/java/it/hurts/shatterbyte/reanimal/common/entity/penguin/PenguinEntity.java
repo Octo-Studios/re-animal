@@ -20,11 +20,13 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
@@ -37,6 +39,7 @@ import net.minecraft.world.entity.ai.navigation.AmphibiousPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
@@ -548,6 +551,13 @@ public class PenguinEntity extends Animal implements GeoEntity {
         this.gameEvent(GameEvent.ENTITY_PLACE, this);
 
         this.eggTime = this.random.nextInt(6000) + 6000;
+    }
+
+    public static boolean checkPenguinSpawnRules(EntityType<PenguinEntity> type, ServerLevelAccessor level, EntitySpawnReason reason, BlockPos pos, RandomSource random) {
+        var ground = level.getBlockState(pos.below());
+        var brightEnoughToSpawn = EntitySpawnReason.ignoresLightRequirements(reason) || isBrightEnoughToSpawn(level, pos);
+
+        return brightEnoughToSpawn && (ground.is(BlockTags.ANIMALS_SPAWNABLE_ON) || ground.is(Blocks.SAND) || ground.is(Blocks.SNOW_BLOCK) || ground.is(Blocks.PACKED_ICE));
     }
 
     public static AttributeSupplier.Builder createAttributes() {

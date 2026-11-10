@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.neoforge.events;
 
 import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
+import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
@@ -37,7 +38,7 @@ public class ReAnimalNeoForgeModEvents {
         event.register(ReAnimalEntities.CROCODILE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ReAnimalEntities.GIRAFFE, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ReAnimalEntities.DRAGONFLY, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
-        event.register(ReAnimalEntities.PENGUIN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Animal::checkAnimalSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
+        event.register(ReAnimalEntities.PENGUIN, SpawnPlacementTypes.ON_GROUND, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, PenguinEntity::checkPenguinSpawnRules, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ReAnimalEntities.SEA_URCHIN, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR, (type, level, spawnType, pos, random) -> true, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ReAnimalEntities.STARFISH, SpawnPlacementTypes.IN_WATER, Heightmap.Types.OCEAN_FLOOR, (type, level, spawnType, pos, random) -> true, RegisterSpawnPlacementsEvent.Operation.REPLACE);
         event.register(ReAnimalEntities.JELLYFISH, SpawnPlacementTypes.IN_WATER, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, (type, level, spawnType, pos, random) -> true, RegisterSpawnPlacementsEvent.Operation.REPLACE);
