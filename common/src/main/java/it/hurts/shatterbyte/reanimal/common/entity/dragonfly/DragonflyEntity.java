@@ -1,4 +1,5 @@
 package it.hurts.shatterbyte.reanimal.common.entity.dragonfly;
+import lombok.Getter;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -6,7 +7,6 @@ import net.minecraft.world.level.storage.ValueOutput;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -42,6 +42,8 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(DragonflyEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    @Getter
+    private boolean scared;
 
     public int getVariant() {
         return this.getEntityData().get(VARIANT);
@@ -159,7 +161,9 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
             break;
         }
 
-        if (scary == null)
+        this.scared = scary != null;
+
+        if (!this.scared)
             return;
 
         this.stopResting();
@@ -213,6 +217,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 2D)
+                .add(Attributes.ATTACK_DAMAGE, 2D)
                 .add(Attributes.MOVEMENT_SPEED, 0.16D)
                 .add(Attributes.FLYING_SPEED, 0.4D)
                 .add(Attributes.FOLLOW_RANGE, 8D);

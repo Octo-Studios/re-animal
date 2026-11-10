@@ -290,6 +290,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     boolean canLand() {
         return this.canFly() && this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER);
     }
 

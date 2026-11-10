@@ -11,6 +11,7 @@ import net.minecraft.world.level.block.Block;
 public class ReAnimalTags {
     public static final class EntityTypes {
         public static final TagKey<EntityType<?>> HEDGEHOG_PREY = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "hedgehog_prey"));
+        public static final TagKey<EntityType<?>> DRAGONFLY_PREY = TagKey.create(Registries.ENTITY_TYPE, Identifier.fromNamespaceAndPath(ReAnimal.MODID, "dragonfly_prey"));
     }
 
     public static final class Blocks {
