@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceMoveToTargetSink;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
@@ -13,7 +14,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -82,28 +82,7 @@ public class RedPandaAI {
                 ImmutableList.of(
                         new Swim<>(0.8F),
                         new LookAtTargetSink(45, 90),
-                        new MoveToTargetSink() {
-                            private RedPandaNavigation navigation;
-
-                            @Override
-                            protected void start(ServerLevel level, Mob entity, long timestamp) {
-                                this.navigation = (RedPandaNavigation) entity.getNavigation();
-
-                                super.start(level, entity, timestamp);
-                            }
-
-                            @Override
-                            protected boolean timedOut(long timestamp) {
-                                return !this.navigation.isOnSurfacePath() && super.timedOut(timestamp);
-                            }
-
-                            @Override
-                            protected boolean canStillUse(ServerLevel level, Mob entity, long timestamp) {
-                                return this.navigation.isOnSurfacePath()
-                                        && entity.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
-                                        || super.canStillUse(level, entity, timestamp);
-                            }
-                        },
+                        new SurfaceMoveToTargetSink(),
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
                         new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)
                 )

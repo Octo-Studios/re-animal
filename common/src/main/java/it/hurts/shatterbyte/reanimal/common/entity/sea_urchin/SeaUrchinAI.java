@@ -1,6 +1,8 @@
 package it.hurts.shatterbyte.reanimal.common.entity.sea_urchin;
 
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceMoveToTargetSink;
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceStroll;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -69,7 +71,7 @@ public class SeaUrchinAI {
                 0,
                 ImmutableList.of(
                         new LookAtTargetSink(45, 90),
-                        new MoveToTargetSink(),
+                        new SurfaceMoveToTargetSink(),
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
                         new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)
                 )
@@ -97,7 +99,7 @@ public class SeaUrchinAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
-                                                Pair.of(RandomStroll.swim(1F), 1),
+                                                Pair.of(new SurfaceStroll(1F, 4), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
                                         )
                                 )

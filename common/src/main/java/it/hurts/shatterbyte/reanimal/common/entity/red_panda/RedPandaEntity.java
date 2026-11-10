@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.red_panda;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
@@ -43,7 +44,7 @@ import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.LoopType;
 import com.geckolib.util.GeckoLibUtil;
 
-public class RedPandaEntity extends Animal implements GeoEntity {
+public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber {
     private static final RawAnimation ADULT_IDLE = RawAnimation.begin().thenLoop("animation.red_panda.idle");
     private static final RawAnimation ADULT_WALK = RawAnimation.begin().thenLoop("animation.red_panda.walk");
     private static final RawAnimation ADULT_ASCEND = RawAnimation.begin().then("animation.red_panda.ascend", LoopType.PLAY_ONCE);
