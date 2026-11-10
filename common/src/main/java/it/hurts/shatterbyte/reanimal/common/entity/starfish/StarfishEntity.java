@@ -2,12 +2,13 @@ package it.hurts.shatterbyte.reanimal.common.entity.starfish;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -25,7 +26,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.navigation.WaterBoundPathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -41,13 +41,17 @@ import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.RawAnimation;
 import com.geckolib.util.GeckoLibUtil;
+import org.joml.Quaternionf;
 
-public class StarfishEntity extends Animal implements GeoEntity {
+public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.starfish.idle");
     private static final RawAnimation WOBBLE = RawAnimation.begin().thenLoop("animation.starfish.idle");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(StarfishEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Direction> CLIMBING_SIDE = SynchedEntityData.defineId(StarfishEntity.class, EntityDataSerializers.DIRECTION);
 
+    private final Quaternionf surfaceRotation = new Quaternionf();
+    private final Quaternionf previousSurfaceRotation = new Quaternionf();
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public StarfishEntity(EntityType<? extends Animal> entityType, Level level) {
@@ -62,7 +66,7 @@ public class StarfishEntity extends Animal implements GeoEntity {
 
     @Override
     protected PathNavigation createNavigation(Level level) {
-        return new WaterBoundPathNavigation(this, level);
+        return new StarfishNavigation(this, level);
     }
 
     public int getVariant() {
@@ -74,9 +78,21 @@ public class StarfishEntity extends Animal implements GeoEntity {
     }
 
     @Override
-    protected void customServerAiStep(ServerLevel serverLevel) {
-        var level = this.level();
+    public Direction getClimbingSide() {
+        return this.entityData.get(CLIMBING_SIDE);
+    }
 
+    @Override
+    public void setClimbingSide(Direction side, Vec3 movement) {
+        this.entityData.set(CLIMBING_SIDE, side);
+    }
+
+    public Quaternionf getSurfaceRotation(float partialTick) {
+        return new Quaternionf(this.previousSurfaceRotation).slerp(this.surfaceRotation, partialTick);
+    }
+
+    @Override
+    protected void customServerAiStep(ServerLevel serverLevel) {
         ((Brain<StarfishEntity>) this.getBrain()).tick(serverLevel, this);
 
         StarfishAI.updateActivity(this);
@@ -86,7 +102,11 @@ public class StarfishEntity extends Animal implements GeoEntity {
 
     @Override
     public void tick() {
+        this.previousSurfaceRotation.set(this.surfaceRotation);
+
         super.tick();
+
+        this.surfaceRotation.slerp(this.getClimbingSide().getOpposite().getRotation(), 0.25F);
 
         var level = this.level();
 
@@ -141,13 +161,21 @@ public class StarfishEntity extends Animal implements GeoEntity {
 
     @Override
     public void travel(Vec3 vec) {
-        if (this.isEffectiveAi() && this.isInWater() && this.onGround()) {
-            var speed = (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 25;
+        var navigation = (StarfishNavigation) this.getNavigation();
 
-            this.moveRelative(speed * 0.1F, vec);
+        if (this.isEffectiveAi() && !this.isNoAi() && this.isAlive() && !this.isPassenger() && !this.isInLava()
+                && (navigation.isOnSurfacePath() || this.getClimbingSide() != Direction.DOWN
+                && navigation.hasSupport(this.position(), this.getClimbingSide()))) {
+            this.setDeltaMovement(navigation.getMotion());
             this.move(MoverType.SELF, this.getDeltaMovement());
-        } else
+            this.setOnGround(this.getClimbingSide() == Direction.DOWN);
+            this.resetFallDistance();
+        } else {
+            if (!this.level().isClientSide())
+                this.setClimbingSide(Direction.DOWN, Vec3.ZERO);
+
             super.travel(vec);
+        }
     }
 
     @Override
@@ -192,6 +220,7 @@ public class StarfishEntity extends Animal implements GeoEntity {
         super.defineSynchedData(builder);
 
         builder.define(VARIANT, 0);
+        builder.define(CLIMBING_SIDE, Direction.DOWN);
     }
 
     @Override
@@ -199,6 +228,7 @@ public class StarfishEntity extends Animal implements GeoEntity {
         super.addAdditionalSaveData(tag);
 
         tag.putInt("variant", this.getVariant());
+        tag.putInt("ClimbingSide", this.getClimbingSide().get3DDataValue());
     }
 
     @Override
@@ -206,6 +236,7 @@ public class StarfishEntity extends Animal implements GeoEntity {
         super.readAdditionalSaveData(tag);
 
         this.setVariant(tag.getIntOr("variant", 0));
+        this.setClimbingSide(Direction.from3DDataValue(tag.getIntOr("ClimbingSide", Direction.DOWN.get3DDataValue())), Vec3.ZERO);
     }
 
     @Override

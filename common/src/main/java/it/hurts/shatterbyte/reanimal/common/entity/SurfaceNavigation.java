@@ -285,11 +285,17 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             return;
         }
 
+        var side = point.side();
+        var attachedSide = this.climber.getClimbingSide();
+
+        if (side != attachedSide && !this.hasSupport(this.climber.position(), side) && this.hasSupport(this.climber.position(), attachedSide))
+            side = attachedSide;
+
         this.motion = movement;
-        this.climber.setClimbingSide(point.side(), movement);
+        this.climber.setClimbingSide(side, movement);
         this.climber.setSpeed((float) speed);
 
-        if (point.side() == Direction.DOWN && movement.horizontalDistanceSqr() > 0D)
+        if (side == Direction.DOWN && movement.horizontalDistanceSqr() > 0D)
             this.climber.setYRot((float) Mth.atan2(-movement.x, movement.z) * Mth.RAD_TO_DEG);
 
         this.doStuckDetection(this.climber.position());

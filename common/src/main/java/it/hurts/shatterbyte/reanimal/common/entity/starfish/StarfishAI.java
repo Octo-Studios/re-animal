@@ -1,6 +1,8 @@
 package it.hurts.shatterbyte.reanimal.common.entity.starfish;
 
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceMoveToTargetSink;
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceStroll;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -9,7 +11,6 @@ import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
 import net.minecraft.world.entity.ai.behavior.BabyFollowAdult;
@@ -17,9 +18,7 @@ import net.minecraft.world.entity.ai.behavior.CountDownCooldownTicks;
 import net.minecraft.world.entity.ai.behavior.DoNothing;
 import net.minecraft.world.entity.ai.behavior.FollowTemptation;
 import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
-import net.minecraft.world.entity.ai.behavior.MoveToTargetSink;
 import net.minecraft.world.entity.ai.behavior.RandomLookAround;
-import net.minecraft.world.entity.ai.behavior.RandomStroll;
 import net.minecraft.world.entity.ai.behavior.RunOne;
 import net.minecraft.world.entity.ai.behavior.SetEntityLookTargetSometimes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -78,7 +77,7 @@ public class StarfishAI {
                 0,
                 ImmutableList.of(
                         new LookAtTargetSink(45, 90),
-                        new MoveToTargetSink(),
+                        new SurfaceMoveToTargetSink(),
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
                         new CountDownCooldownTicks(MemoryModuleType.GAZE_COOLDOWN_TICKS)
                 )
@@ -106,7 +105,7 @@ public class StarfishAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
-                                                Pair.of(RandomStroll.swim(1F), 1),
+                                                Pair.of(new SurfaceStroll(1F, 4), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
                                         )
                                 )
