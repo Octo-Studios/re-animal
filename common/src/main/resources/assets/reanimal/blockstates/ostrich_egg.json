@@ -1,10 +1,22 @@
 {
   "variants": {
-    "": [
+    "hatch=0": [
       { "model": "reanimal:block/ostrich_egg" },
       { "model": "reanimal:block/ostrich_egg", "y": 90 },
       { "model": "reanimal:block/ostrich_egg", "y": 180 },
       { "model": "reanimal:block/ostrich_egg", "y": 270 }
+    ],
+    "hatch=1": [
+      { "model": "reanimal:block/ostrich_egg_slightly_cracked" },
+      { "model": "reanimal:block/ostrich_egg_slightly_cracked", "y": 90 },
+      { "model": "reanimal:block/ostrich_egg_slightly_cracked", "y": 180 },
+      { "model": "reanimal:block/ostrich_egg_slightly_cracked", "y": 270 }
+    ],
+    "hatch=2": [
+      { "model": "reanimal:block/ostrich_egg_very_cracked" },
+      { "model": "reanimal:block/ostrich_egg_very_cracked", "y": 90 },
+      { "model": "reanimal:block/ostrich_egg_very_cracked", "y": 180 },
+      { "model": "reanimal:block/ostrich_egg_very_cracked", "y": 270 }
     ]
   }
 }

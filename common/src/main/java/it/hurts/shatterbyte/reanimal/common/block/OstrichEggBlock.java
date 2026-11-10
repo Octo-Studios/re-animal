@@ -22,12 +22,16 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class OstrichEggBlock extends Block {
+    public static final IntegerProperty HATCH = BlockStateProperties.HATCH;
     private static final VoxelShape SHAPE = Block.box(4.5D, 0.0D, 4.5D, 11.5D, 10.0D, 11.5D);
     private static final int HATCH_TICK_CHANCE = 3;
     private static final int STEP_BREAK_CHANCE = 100;
@@ -35,6 +39,12 @@ public class OstrichEggBlock extends Block {
 
     public OstrichEggBlock(BlockBehaviour.Properties properties) {
         super(properties);
+        this.registerDefaultState(this.stateDefinition.any().setValue(HATCH, 0));
+    }
+
+    @Override
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        builder.add(HATCH);
     }
 
     @Override
@@ -91,6 +101,16 @@ public class OstrichEggBlock extends Block {
     protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
         if (random.nextInt(HATCH_TICK_CHANCE) != 0)
             return;
+
+        var hatch = state.getValue(HATCH);
+
+        if (hatch < 2) {
+            level.playSound(null, pos, SoundEvents.TURTLE_EGG_CRACK, SoundSource.BLOCKS, 0.7F, 0.9F + random.nextFloat() * 0.2F);
+            level.setBlock(pos, state.setValue(HATCH, hatch + 1), 2);
+            level.gameEvent(GameEvent.BLOCK_CHANGE, pos, GameEvent.Context.of(state));
+
+            return;
+        }
 
         level.removeBlock(pos, false);
         level.gameEvent(GameEvent.BLOCK_DESTROY, pos, GameEvent.Context.of(state));

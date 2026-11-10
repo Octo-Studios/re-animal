@@ -1,0 +1,7 @@
+{
+  "parent": "reanimal:block/ostrich_egg",
+  "textures": {
+    "0": "reanimal:block/ostrich_egg_slightly_cracked",
+    "particle": "reanimal:block/ostrich_egg_slightly_cracked"
+  }
+}
