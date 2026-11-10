@@ -32,6 +32,7 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingMoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -72,6 +73,8 @@ public class PenguinEntity extends Animal implements GeoEntity {
     private static final UniformInt SWIM_DURATION = UniformInt.of(600, 1200);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private final MoveControl<?> landMoveControl;
+    private final SmoothSwimmingMoveControl<PenguinEntity> swimMoveControl;
 
     private int eggTime = this.random.nextInt(6000) + 6000;
     private int landRestTicks = LAND_REST_DURATION.sample(this.random);
@@ -90,7 +93,8 @@ public class PenguinEntity extends Animal implements GeoEntity {
     public PenguinEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
-        this.moveControl = new SmoothSwimmingMoveControl<>(this, 85, 10, 0.4F, 1F, false);
+        this.landMoveControl = this.moveControl;
+        this.swimMoveControl = new SmoothSwimmingMoveControl<>(this, 85, 10, 0.4F, 1F, false);
         this.lookControl = new SmoothSwimmingLookControl(this, 10);
         this.navigation = new AmphibiousPathNavigation(this, level);
 
@@ -165,6 +169,9 @@ public class PenguinEntity extends Animal implements GeoEntity {
     public void aiStep() {
         if (this.swimmingDimensions != this.isInWater()) {
             this.swimmingDimensions = this.isInWater();
+            this.moveControl = this.swimmingDimensions ? this.swimMoveControl : this.landMoveControl;
+            this.moveControl.setWait();
+            this.setYya(0F);
             this.refreshDimensions();
         }
 
@@ -273,15 +280,17 @@ public class PenguinEntity extends Animal implements GeoEntity {
             ((Brain<PenguinEntity>) this.getBrain()).tick(serverLevel, this);
 
             PenguinAI.updateActivity(this);
-            this.tryStartSliding();
             this.tryJumpIntoWater();
+
+            if (!this.isDiving())
+                this.tryStartSliding();
         }
 
         super.customServerAiStep(serverLevel);
     }
 
     private void tryJumpIntoWater() {
-        if (!this.wantsToSwim() || !this.onGround() || this.isInWater() || !this.getNavigation().isInProgress())
+        if (this.isBaby() || !this.onGround() || this.isInWater() || !this.getNavigation().isInProgress())
             return;
 
         var nextNode = this.getNavigation().getPath().getNextNodePos();
@@ -293,6 +302,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
 
         this.getEntityData().set(DIVING, true);
         this.getNavigation().stop();
+        this.moveControl.setWait();
         this.getBrain().eraseMemory(MemoryModuleType.PATH);
         this.setJumping(false);
         this.jumpFromGround();
@@ -336,6 +346,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
         this.slideStopDistance = stopDistance;
         this.slideSpeed = SLIDE_SPEED;
         this.getNavigation().stop();
+        this.moveControl.setWait();
         this.getBrain().eraseMemory(MemoryModuleType.PATH);
         this.setJumping(false);
         this.setDeltaMovement(0D, this.getDeltaMovement().y, 0D);
