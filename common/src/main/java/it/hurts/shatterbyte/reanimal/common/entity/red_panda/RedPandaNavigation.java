@@ -18,6 +18,8 @@ public class RedPandaNavigation extends SurfaceNavigation<RedPandaEntity> {
     public RedPandaNavigation(RedPandaEntity panda, Level level) {
         super(panda, level, (state, side) -> side == Direction.DOWN
                 || side != Direction.UP && !state.is(BlockTags.LEAVES) && state.is(ReAnimalTags.Blocks.RED_PANDA_CLIMBABLE), 0.4D);
+
+        this.setRequiredPathLength(16F);
     }
 
     @Override

@@ -111,7 +111,7 @@ public class RedPandaAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
-                                                Pair.of(RandomStroll.stroll(1F), 1),
+                                                Pair.of(RandomStroll.stroll(1F, 10, TREE_SEARCH_HEIGHT), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
                                         )
