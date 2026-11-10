@@ -44,6 +44,9 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
+    private static final int WATER_DAMAGE_DELAY = 100;
+    private static final int WATER_DAMAGE_INTERVAL = 20;
+    
     private static final TagKey<Biome> IS_SNOWY = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_snowy"));
     private static final TagKey<Biome> IS_DESERT = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_desert"));
     private static final TagKey<Biome> IS_SWAMP = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_swamp"));
@@ -54,6 +57,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ButterflyEntity.class, EntityDataSerializers.INT);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    private int ticksInWater;
 
     public int getVariant() {
         return this.getEntityData().get(VARIANT);
@@ -82,6 +86,14 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
+        if (this.isInWater()) {
+            ++this.ticksInWater;
+
+            if (this.ticksInWater >= WATER_DAMAGE_DELAY && this.ticksInWater % WATER_DAMAGE_INTERVAL == 0)
+                this.hurtServer(serverLevel, this.damageSources().drown(), 1F);
+        } else
+            this.ticksInWater = 0;
+
         if (this.updateRainNavigation(serverLevel))
             ButterflyAI.updateActivity(this);
 
