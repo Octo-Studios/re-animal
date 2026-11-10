@@ -1,6 +1,7 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.jellyfish;
 
 import com.mojang.math.Axis;
+import it.hurts.shatterbyte.reanimal.client.light.GlowColors;
 import it.hurts.shatterbyte.reanimal.client.model.jellyfish.JellyfishModel;
 import it.hurts.shatterbyte.reanimal.client.renderer.SoftGlowLayer;
 import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
@@ -11,6 +12,7 @@ import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.ARGB;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.RenderPassInfo;
 
@@ -39,6 +41,14 @@ public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, Entity
         super.extractRenderState(entity, renderState, partialTick);
 
         renderState.lightCoords = LightCoordsUtil.FULL_BRIGHT;
+    }
+
+    @Override
+    public int getRenderColor(JellyfishEntity entity, Void relatedObject, float partialTick) {
+        var color = ARGB.srgbLerp(0.35F, 0xFFFFFF, GlowColors.of(entity, partialTick));
+
+        return ARGB.color(ARGB.alpha(super.getRenderColor(entity, relatedObject, partialTick)),
+                ARGB.scaleRGB(color, 0.4F + 0.6F * entity.getGlowIntensity(partialTick)));
     }
 
     @Override

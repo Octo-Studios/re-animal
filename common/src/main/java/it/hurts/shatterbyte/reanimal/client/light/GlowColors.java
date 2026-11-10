@@ -3,6 +3,7 @@ package it.hurts.shatterbyte.reanimal.client.light;
 import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
 import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import net.minecraft.util.ARGB;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.Map;
 public final class GlowColors {
     private static final int FALLBACK = 0xF2F7FF;
     private static final int[] JELLYFISH_COLORS = {0xEEEEDC, 0x71D5E1, 0xE07664, 0x79E56D, 0xEB7FC3};
+    private static final int[] JELLYFISH_PULSE_COLORS = {0xA5DDEB, 0xA195EF, 0xF2C276, 0xA5F0BF, 0xAD9EEB};
 
     private static Map<GlowStickItem, Integer> table;
 
@@ -23,8 +25,9 @@ public final class GlowColors {
         return table.getOrDefault(item.getBase(), FALLBACK);
     }
 
-    public static int of(JellyfishEntity entity) {
-        return JELLYFISH_COLORS[entity.getVariant()];
+    public static int of(JellyfishEntity entity, float partialTick) {
+        return ARGB.srgbLerp(entity.getGlowPulse(partialTick),
+                JELLYFISH_COLORS[entity.getVariant()], JELLYFISH_PULSE_COLORS[entity.getVariant()]) & 0xFFFFFF;
     }
 
     private static Map<GlowStickItem, Integer> build() {

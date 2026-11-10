@@ -58,7 +58,7 @@ public final class ColoredGlow {
             if (entity instanceof GlowStickEntity stick && stick.getItem().getItem() instanceof GlowStickItem item)
                 found.add(new Candidate(stick.getId(), GlowSource.at(stick.position().add(0.0D, 0.12D, 0.0D), GlowColors.of(item))));
             else if (entity instanceof JellyfishEntity jellyfish)
-                found.add(new Candidate(jellyfish.getId(), GlowSource.at(jellyfish.getBoundingBox().getCenter(), GlowColors.of(jellyfish), JellyfishEntity.LIGHT_LEVEL)));
+                found.add(new Candidate(jellyfish.getId(), GlowSource.at(jellyfish.getBoundingBox().getCenter(), GlowColors.of(jellyfish, 1F), jellyfish.getLightLevel())));
 
         for (var player : level.players()) {
             var held = heldStick(player);
@@ -222,21 +222,25 @@ public final class ColoredGlow {
         var state = TRACKED.get(candidate.id());
 
         if (state == null) {
-            state = new Tracked(block, rgb, tick, GlowReach.flood(level, block, source.range()));
+            state = new Tracked(block, rgb, source.range(), tick, GlowReach.flood(level, block, source.range()));
 
             TRACKED.put(candidate.id(), state);
             markDirty(level, block);
-        } else if ((!state.pos.equals(block) || state.rgb != rgb) && tick - state.lastDirty >= REDIRTY_DELAY) {
+        } else if ((!state.pos.equals(block) || state.rgb != rgb || state.range != source.range()) && tick - state.lastDirty >= REDIRTY_DELAY) {
             markDirty(level, state.pos);
             markDirty(level, block);
 
+            if (!state.pos.equals(block) || state.range != source.range()) {
+                state.reach = GlowReach.flood(level, block, source.range());
+                state.lastFlood = tick;
+            }
+
             state.pos = block;
             state.rgb = rgb;
-            state.reach = GlowReach.flood(level, block, source.range());
+            state.range = source.range();
             state.lastDirty = tick;
-            state.lastFlood = tick;
         } else if (tick - state.lastFlood >= REFLOOD_INTERVAL) {
-            var reach = GlowReach.flood(level, state.pos, source.range());
+            var reach = GlowReach.flood(level, state.pos, state.range);
 
             if (!reach.equals(state.reach))
                 markDirty(level, state.pos);
@@ -299,15 +303,17 @@ public final class ColoredGlow {
     private static final class Tracked {
         private BlockPos pos;
         private int rgb;
+        private int range;
         private Long2ByteMap reach;
         private long lastDirty;
         private long lastFlood;
         private long lastSeen;
         private GlowSource last;
 
-        private Tracked(BlockPos pos, int rgb, long now, Long2ByteMap reach) {
+        private Tracked(BlockPos pos, int rgb, int range, long now, Long2ByteMap reach) {
             this.pos = pos;
             this.rgb = rgb;
+            this.range = range;
             this.reach = reach;
             this.lastDirty = now;
             this.lastFlood = now;

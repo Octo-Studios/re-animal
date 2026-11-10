@@ -28,6 +28,8 @@ import java.util.function.BiConsumer;
 
 public class SoftGlowLayer<R extends EntityRenderState & GeoRenderState> extends GeoRenderLayer<GeoAnimatable, Void, R> {
     private static final DataTicket<Integer> COLOR = DataTicket.create("reanimal_glow_color", Integer.class);
+    private static final DataTicket<Float> INTENSITY = DataTicket.create("reanimal_glow_intensity", Float.class);
+    private static final DataTicket<Float> RADIUS_SCALE = DataTicket.create("reanimal_glow_radius_scale", Float.class);
     private static final RenderType RENDER_TYPE = RenderTypes.eyes(Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/misc/soft_glow.png"));
 
     private final Glow[] glows;
@@ -40,10 +42,13 @@ public class SoftGlowLayer<R extends EntityRenderState & GeoRenderState> extends
 
     @Override
     public void addRenderData(GeoAnimatable animatable, Void relatedObject, R renderState, float partialTick) {
-        var color = animatable instanceof JellyfishEntity jellyfish ? GlowColors.of(jellyfish)
+        var color = animatable instanceof JellyfishEntity jellyfish ? GlowColors.of(jellyfish, partialTick)
                 : GlowColors.of((GlowStickItem) ((GlowStickEntity) animatable).getItem().getItem());
+        var intensity = animatable instanceof JellyfishEntity jellyfish ? jellyfish.getGlowIntensity(partialTick) : 1F;
 
         renderState.addGeckolibData(COLOR, color);
+        renderState.addGeckolibData(INTENSITY, intensity);
+        renderState.addGeckolibData(RADIUS_SCALE, animatable instanceof JellyfishEntity ? 0.25F + 2F * intensity : 1F);
     }
 
     @Override
@@ -60,9 +65,9 @@ public class SoftGlowLayer<R extends EntityRenderState & GeoRenderState> extends
         var poseStack = renderPassInfo.poseStack();
         var matrix = poseStack.last().pose();
         var center = matrix.transformPosition(0F, glow.y(), 0F, new Vector3f());
-        var radius = glow.radius() * matrix.getScale(new Vector3f()).x;
+        var radius = glow.radius() * matrix.getScale(new Vector3f()).x * renderPassInfo.getGeckolibData(RADIUS_SCALE);
         var rgb = renderPassInfo.getGeckolibData(COLOR);
-        var color = Math.round(glow.opacity() * 255F) << 24 | rgb;
+        var color = Math.round(glow.opacity() * renderPassInfo.getGeckolibData(INTENSITY) * 255F) << 24 | rgb;
 
         poseStack.pushPose();
         poseStack.last().pose().identity().translate(center).rotate(renderPassInfo.cameraState().orientation).scale(radius);

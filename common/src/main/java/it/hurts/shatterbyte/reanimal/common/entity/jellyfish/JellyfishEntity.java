@@ -46,13 +46,16 @@ import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 
 public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketable {
-    public static final int LIGHT_LEVEL = 8;
-
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.jellyfish.idle");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.jellyfish.swim");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> BRIGHTENING = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.BOOLEAN);
+
+    private static final int GLOW_PULSE_TICKS = 100;
+    private static final int BRIGHTEN_TICKS = 10;
+    private static final int GLOW_FADE_TICKS = 40;
 
     private static final float SWIM_PHASE_SPEED = (float) Math.PI / 40F;
     private static final float THRUST_START = 0.75F;
@@ -71,6 +74,9 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     private float tz;
     private boolean chooseHeading = true;
     private Vec3 heading;
+    private int brightenTicks;
+    private float glowStrength;
+    private float previousGlowStrength;
 
     public JellyfishEntity(EntityType<? extends WaterAnimal> entityType, Level level) {
         super(entityType, level);
@@ -91,12 +97,33 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         this.getEntityData().set(VARIANT, variant);
     }
 
+    public float getGlowPulse(float partialTick) {
+        return 0.5F + 0.5F * Mth.sin((this.level().getGameTime() % GLOW_PULSE_TICKS + this.getId() * 31 + partialTick) * Mth.TWO_PI / GLOW_PULSE_TICKS);
+    }
+
+    public float getGlowIntensity(float partialTick) {
+        var reaction = Mth.lerp(partialTick, this.previousGlowStrength, this.glowStrength);
+        reaction = reaction * reaction * (3F - 2F * reaction);
+
+        return Mth.lerp(reaction, 0.35F + 0.2F * this.getGlowPulse(partialTick), 1F);
+    }
+
+    public int getLightLevel() {
+        return Math.round(15F * this.getGlowIntensity(1F));
+    }
+
+    private void brighten() {
+        this.brightenTicks = BRIGHTEN_TICKS;
+        this.entityData.set(BRIGHTENING, true);
+    }
+
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder buidler) {
         super.defineSynchedData(buidler);
 
         buidler.define(VARIANT, this.getRandom().nextInt(5));
         buidler.define(FROM_BUCKET, false);
+        buidler.define(BRIGHTENING, false);
     }
 
     @Override
@@ -117,6 +144,9 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
 
     @Override
     public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (!this.level().isClientSide())
+            this.brighten();
+
         return Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
     }
 
@@ -189,15 +219,26 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         super.tick();
 
         var level = this.level();
+        var brightening = this.entityData.get(BRIGHTENING);
+
+        this.previousGlowStrength = this.glowStrength;
+        this.glowStrength = Mth.approach(this.glowStrength, brightening ? 1F : 0F,
+                brightening ? 1F / BRIGHTEN_TICKS : 1F / GLOW_FADE_TICKS);
 
         if (level.isClientSide())
             return;
 
-        GlowStickEntity.tryPlaceGlowLight(level, BlockPos.containing(this.getBoundingBox().getCenter()), LIGHT_LEVEL);
+        if (this.brightenTicks > 0 && --this.brightenTicks == 0)
+            this.entityData.set(BRIGHTENING, false);
+
+        var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), candidate -> !(candidate instanceof JellyfishEntity));
+
+        if (!targets.isEmpty())
+            this.brighten();
+
+        GlowStickEntity.tryPlaceGlowLight(level, BlockPos.containing(this.getBoundingBox().getCenter()), this.getLightLevel());
 
         if (!this.isBaby()) {
-            var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof JellyfishEntity));
-
             for (var target : targets)
                 if (target.hurtOrSimulate(ReAnimalDamageTypes.source(this, ReAnimalDamageTypes.JELLYFISH_STING), 3F))
                     target.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 200, 0));
@@ -209,6 +250,8 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         var result = super.hurtServer(level, source, amount);
 
         if (result) {
+            this.brighten();
+
             var attacker = source.getEntity();
 
             if (attacker instanceof LivingEntity entity && entity.getMainHandItem().isEmpty())
