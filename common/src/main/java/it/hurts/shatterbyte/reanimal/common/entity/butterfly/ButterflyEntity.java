@@ -108,10 +108,12 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
         if (this.isInWater()) {
             ++this.ticksInWater;
 
-            if (this.ticksInWater >= WATER_DAMAGE_DELAY && this.ticksInWater % WATER_DAMAGE_INTERVAL == 0)
+            if (this.ticksInWater >= WATER_DAMAGE_DELAY) {
                 this.hurtServer(serverLevel, this.damageSources().drown(), 1F);
-        } else
-            this.ticksInWater = 0;
+                this.ticksInWater -= WATER_DAMAGE_INTERVAL;
+            }
+        } else if (this.ticksInWater > 0)
+            --this.ticksInWater;
 
         if (this.updateRainNavigation(serverLevel))
             ButterflyAI.updateActivity(this);
