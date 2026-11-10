@@ -118,7 +118,7 @@ public class PenguinAI {
                                         ),
                                         ImmutableList.of(
                                                 Pair.of(RandomStroll.stroll(1F, false), 1),
-                                                Pair.of(BehaviorBuilder.triggerIf(PenguinEntity::wantsToSwim,
+                                                Pair.of(BehaviorBuilder.triggerIf(penguin -> !penguin.isBaby(),
                                                         (OneShot<? super PenguinEntity>) RandomStroll.swim(1.2F)), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)

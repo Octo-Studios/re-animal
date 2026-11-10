@@ -234,7 +234,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
         }
 
         this.wasInWater = this.isInWater();
-        this.setPathfindingMalus(PathType.WATER, this.wantsToSwim() ? 0F : PathType.WATER.getMalus());
+        this.setPathfindingMalus(PathType.WATER, this.isInWater() || this.wantsToSwim() ? 0F : PathType.WATER.getMalus());
 
         if (this.isSliding())
             this.tickSliding();
@@ -444,6 +444,8 @@ public class PenguinEntity extends Animal implements GeoEntity {
         super.addAdditionalSaveData(tag);
 
         tag.putInt("eggTime", this.eggTime);
+        tag.putInt("landRestTicks", this.landRestTicks);
+        tag.putInt("swimTicks", this.swimTicks);
     }
 
     @Override
@@ -451,6 +453,8 @@ public class PenguinEntity extends Animal implements GeoEntity {
         super.readAdditionalSaveData(tag);
 
         this.eggTime = tag.getIntOr("eggTime", this.random.nextInt(6000) + 6000);
+        this.landRestTicks = tag.getIntOr("landRestTicks", this.landRestTicks);
+        this.swimTicks = tag.getIntOr("swimTicks", this.swimTicks);
     }
 
     @Override
