@@ -8,6 +8,7 @@ import com.geckolib.animation.RawAnimation;
 import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -230,7 +231,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     public boolean isScaredBy(LivingEntity entity) {
         if (!this.getBoundingBox().inflate(5F, 2F, 5F).intersects(entity.getBoundingBox()))
             return false;
-        else if (entity instanceof Frog)
+        else if (entity instanceof Frog || entity instanceof HedgehogEntity)
             return true;
         else if (this.getLastHurtByMob() == entity)
             return true;

@@ -4,6 +4,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import net.minecraft.core.BlockPos;
@@ -189,7 +190,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
     public boolean isScaredBy(LivingEntity entity) {
         if (!this.getBoundingBox().inflate(5F, 2F, 5F).intersects(entity.getBoundingBox()))
             return false;
-        else if (entity instanceof Frog)
+        else if (entity instanceof Frog || entity instanceof HedgehogEntity)
             return true;
         else if (this.getLastHurtByMob() == entity)
             return true;
