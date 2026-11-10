@@ -42,6 +42,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -278,6 +279,11 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
     @Override
     public boolean isPushable() {
         return !this.isOnHead() && super.isPushable();
+    }
+
+    @Override
+    protected AABB getAttackBoundingBox(double horizontalExpansion) {
+        return super.getAttackBoundingBox(horizontalExpansion).inflate(0D, horizontalExpansion, 0D);
     }
 
     @Override
