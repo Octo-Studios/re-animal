@@ -8,7 +8,7 @@ import net.minecraft.world.level.Level;
 
 public class SeaUrchinNavigation extends SurfaceNavigation<SeaUrchinEntity> {
     public SeaUrchinNavigation(SeaUrchinEntity urchin, Level level) {
-        super(urchin, level, (state, side) -> side != Direction.UP, 1D);
+        super(urchin, level, (state, side) -> side != Direction.UP, 0.04D);
     }
 
     @Override

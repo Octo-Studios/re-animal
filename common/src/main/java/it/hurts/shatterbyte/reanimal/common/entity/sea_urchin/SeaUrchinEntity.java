@@ -44,6 +44,7 @@ import org.joml.Quaternionfc;
 public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.sea_urchin.idle");
     private static final RawAnimation WOBBLE = RawAnimation.begin().thenLoop("animation.sea_urchin.wobbling");
+    private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ROLLING = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Quaternionfc> ROLL_ROTATION = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.QUATERNION);
     private static final EntityDataAccessor<Direction> CLIMBING_SIDE = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.DIRECTION);
@@ -130,9 +131,18 @@ public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
 
+        builder.define(EATING, false);
         builder.define(ROLLING, false);
         builder.define(CLIMBING_SIDE, Direction.DOWN);
         builder.define(ROLL_ROTATION, new Quaternionf());
+    }
+
+    public boolean isEating() {
+        return this.entityData.get(EATING);
+    }
+
+    public void setEating(boolean eating) {
+        this.entityData.set(EATING, eating);
     }
 
     public boolean isRolling() {
@@ -161,6 +171,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber
     private void startRolling() {
         this.rollTicks = RIGHTING_DELAY + RIGHTING_DURATION;
         this.entityData.set(ROLLING, true);
+        this.setEating(false);
         this.setClimbingSide(Direction.DOWN, Vec3.ZERO);
         this.getNavigation().stop();
         this.getMoveControl().setWait();
@@ -360,7 +371,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (entity.isRolling() || !entity.onGround() || entity.getDeltaMovement().multiply(1, 0, 1).length() > 0) {
+        if (entity.isEating() || entity.isRolling() || !entity.onGround() || entity.getDeltaMovement().multiply(1, 0, 1).length() > 0) {
             controller.setAnimation(WOBBLE);
         } else {
             controller.setAnimation(IDLE);
