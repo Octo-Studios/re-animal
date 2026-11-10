@@ -13,6 +13,7 @@ import it.hurts.shatterbyte.reanimal.common.blockentity.GlowLightBlockEntity;
 import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
 import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -125,6 +126,8 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
         var hitPos = result.getLocation();
         var normal = Vec3.atLowerCornerOf(result.getDirection().getUnitVec3i());
 
+        this.spawnImpactParticle(hitPos, normal, motion);
+
         var bounce = motion.subtract(normal.scale(2.0D * motion.dot(normal))).scale(BOUNCE_DAMPING);
 
         if (result.getDirection().getAxis() == Direction.Axis.Y && Math.abs(bounce.y) < BOUNCE_Y_CUTOFF)
@@ -145,6 +148,8 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
             var hitNormal = Vec3.atLowerCornerOf(hit.getDirection().getStep());
 
+            this.spawnImpactParticle(hitLocation, hitNormal, bounce);
+
             bounce = bounce.subtract(hitNormal.scale(2.0D * bounce.dot(hitNormal))).scale(BOUNCE_DAMPING);
             if (hit.getDirection().getAxis() == Direction.Axis.Y && Math.abs(bounce.y) < BOUNCE_Y_CUTOFF)
                 bounce = new Vec3(bounce.x, 0.0D, bounce.z);
@@ -158,6 +163,17 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
 
         this.setPos(pos.x, pos.y, pos.z);
         this.setDeltaMovement(bounce);
+    }
+
+    private void spawnImpactParticle(Vec3 position, Vec3 normal, Vec3 motion) {
+        var speed = -motion.dot(normal);
+
+        if (this.level() instanceof ServerLevel level && speed > this.getDefaultGravity() * 2.0D) {
+            var impulse = normal.scale(Math.min(speed, 1.0D));
+            var contact = position.add(normal.scale(0.01D));
+
+            level.sendParticles(ReAnimalParticleTypes.BALL_IMPACT, contact.x, contact.y, contact.z, 0, impulse.x, impulse.y, impulse.z, 1.0D);
+        }
     }
 
     private boolean isSticky() {
