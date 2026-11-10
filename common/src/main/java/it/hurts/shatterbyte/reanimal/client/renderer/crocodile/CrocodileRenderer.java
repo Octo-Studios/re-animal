@@ -11,10 +11,11 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import com.geckolib.renderer.GeoEntityRenderer;
 import com.geckolib.renderer.base.BoneSnapshots;
 import com.geckolib.renderer.base.RenderPassInfo;
-import it.hurts.shatterbyte.reanimal.client.renderer.HeadTracking;
+import net.minecraft.util.Mth;
 
 public class CrocodileRenderer extends GeoEntityRenderer<CrocodileEntity, EntityRenderState> {
     private static final DataTicket<Float> SWIM_PITCH = DataTicket.create("reanimal_crocodile_swim_pitch", Float.class);
+    private static final DataTicket<Boolean> HEAD_TRACKING = DataTicket.create("reanimal_crocodile_head_tracking", Boolean.class);
 
     public CrocodileRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new CrocodileModel());
@@ -26,8 +27,8 @@ public class CrocodileRenderer extends GeoEntityRenderer<CrocodileEntity, Entity
 
         ((GeoRenderState) renderState).addGeckolibData(SWIM_PITCH, entity.getSwimPitch(partialTick));
 
-        HeadTracking.setMode(renderState, entity.isAttacking() || entity.isAmbushing() || entity.isBasking()
-                || entity.isDashing() || entity.getGrabbedPrey() != null ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
+        ((GeoRenderState) renderState).addGeckolibData(HEAD_TRACKING, !entity.isAttacking() && !entity.isAmbushing()
+                && !entity.isBasking() && !entity.isDashing() && entity.getGrabbedPrey() == null);
     }
 
     @Override
@@ -60,6 +61,15 @@ public class CrocodileRenderer extends GeoEntityRenderer<CrocodileEntity, Entity
     public void adjustModelBonesForRender(RenderPassInfo renderPassInfo, BoneSnapshots snapshots) {
         super.adjustModelBonesForRender(renderPassInfo, snapshots);
 
-        HeadTracking.apply(renderPassInfo, snapshots, !(renderPassInfo.renderState() instanceof LivingEntityRenderState living) || !living.isInWater);
+        if (!(renderPassInfo.renderState() instanceof LivingEntityRenderState living)
+                || !(boolean) renderPassInfo.renderState().getGeckolibData(HEAD_TRACKING))
+            return;
+
+        var pitch = living.isInWater ? (float) renderPassInfo.renderState().getGeckolibData(SWIM_PITCH) : 0F;
+
+        snapshots.ifPresent("head", snapshot -> {
+            snapshot.setRotY(snapshot.getRotY() - Mth.clamp(living.yRot * 0.5F, -20F, 20F) * Mth.DEG_TO_RAD);
+            snapshot.setRotX(snapshot.getRotX() + Mth.clamp((-living.xRot - pitch) * 0.5F, -8F, 8F) * Mth.DEG_TO_RAD);
+        });
     }
 }

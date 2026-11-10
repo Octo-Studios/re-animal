@@ -55,6 +55,9 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.crocodile.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.crocodile.walk");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.crocodile.swim");
+    private static final RawAnimation SWIM_IDLE = RawAnimation.begin().thenLoop("animation.crocodile.swim_idle");
+    private static final RawAnimation LAND_POSE = RawAnimation.begin().thenLoop("animation.crocodile.land_pose");
+    private static final RawAnimation SWIM_POSE = RawAnimation.begin().thenLoop("animation.crocodile.swim_pose");
     private static final RawAnimation AMBUSH = RawAnimation.begin().thenLoop("animation.crocodile.ambush");
     private static final RawAnimation BASK = RawAnimation.begin().thenLoop("animation.crocodile.bask");
     private static final RawAnimation HOLD = RawAnimation.begin().thenLoop("animation.crocodile.hold");
@@ -114,6 +117,16 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         this.navigation = new AmphibiousPathNavigation(this, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
+    }
+
+    @Override
+    public int getHeadRotSpeed() {
+        return 5;
+    }
+
+    @Override
+    public int getMaxHeadXRot() {
+        return 5;
     }
 
     public boolean isAttacking() {
@@ -487,6 +500,8 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
+        controllers.add(new AnimationController<>("pose", 5,
+                state -> state.setAndContinue(this.isInWater() ? SWIM_POSE : LAND_POSE)).additiveAnimations());
         controllers.add(new AnimationController<>("mouth", 3, state -> {
             if (this.getGrabbedPrey() == null || this.isAttacking()) {
                 state.controller().reset();
@@ -497,14 +512,16 @@ public class CrocodileEntity extends Animal implements GeoEntity {
             state.controller().setAnimation(HOLD);
 
             return PlayState.CONTINUE;
-        }));
+        }).additiveAnimations());
         controllers.add(new AnimationController<>("attack", 0, state -> PlayState.STOP)
+                .additiveAnimations()
                 .triggerableAnim(BITE_TRIGGER, ATTACK_1)
                 .triggerableAnim(SPIN_TRIGGER, ATTACK_2));
     }
 
     private PlayState mainPredicate(AnimationTest<CrocodileEntity> state) {
         var controller = state.controller();
+        var moving = state.isMoving() && !this.isSpinning();
 
         if (this.isBasking())
             controller.setAnimation(BASK);
@@ -512,12 +529,11 @@ public class CrocodileEntity extends Animal implements GeoEntity {
             controller.setAnimation(AMBUSH);
         else if (this.isDashing())
             controller.setAnimation(this.isInWater() ? DASH_SWIM : DASH_LAND);
-        else if (state.isMoving()) {
-            if (this.isInWater())
-                controller.setAnimation(SWIM);
-            else
-                controller.setAnimation(WALK);
-        } else
+        else if (this.isInWater())
+            controller.setAnimation(moving ? SWIM : SWIM_IDLE);
+        else if (moving)
+            controller.setAnimation(WALK);
+        else
             controller.setAnimation(IDLE);
 
         return PlayState.CONTINUE;
