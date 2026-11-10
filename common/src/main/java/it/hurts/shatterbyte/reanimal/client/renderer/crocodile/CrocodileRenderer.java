@@ -1,6 +1,8 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.crocodile;
 
 import com.mojang.math.Axis;
+import com.geckolib.constant.dataticket.DataTicket;
+import com.geckolib.renderer.base.GeoRenderState;
 import it.hurts.shatterbyte.reanimal.client.model.crocodile.CrocodileModel;
 import it.hurts.shatterbyte.reanimal.common.entity.crocodile.CrocodileEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -12,8 +14,20 @@ import com.geckolib.renderer.base.RenderPassInfo;
 import it.hurts.shatterbyte.reanimal.client.renderer.HeadTracking;
 
 public class CrocodileRenderer extends GeoEntityRenderer<CrocodileEntity, EntityRenderState> {
+    private static final DataTicket<Float> SWIM_PITCH = DataTicket.create("reanimal_crocodile_swim_pitch", Float.class);
+
     public CrocodileRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new CrocodileModel());
+    }
+
+    @Override
+    public void extractRenderState(CrocodileEntity entity, EntityRenderState renderState, float partialTick) {
+        super.extractRenderState(entity, renderState, partialTick);
+
+        ((GeoRenderState) renderState).addGeckolibData(SWIM_PITCH, entity.getSwimPitch(partialTick));
+
+        HeadTracking.setMode(renderState, entity.isAttacking() || entity.isAmbushing() || entity.isBasking()
+                || entity.isDashing() || entity.getGrabbedPrey() != null ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
     }
 
     @Override
@@ -39,13 +53,13 @@ public class CrocodileRenderer extends GeoEntityRenderer<CrocodileEntity, Entity
         if (!(renderPassInfo.renderState() instanceof LivingEntityRenderState les) || !les.isInWater)
             return;
 
-        renderPassInfo.poseStack().rotateDegrees(Axis.XP, -les.xRot);
+        renderPassInfo.poseStack().rotateDegrees(Axis.XP, (float) renderPassInfo.renderState().getGeckolibData(SWIM_PITCH));
     }
 
     @Override
     public void adjustModelBonesForRender(RenderPassInfo renderPassInfo, BoneSnapshots snapshots) {
         super.adjustModelBonesForRender(renderPassInfo, snapshots);
 
-        HeadTracking.apply(renderPassInfo, snapshots, true);
+        HeadTracking.apply(renderPassInfo, snapshots, !(renderPassInfo.renderState() instanceof LivingEntityRenderState living) || !living.isInWater);
     }
 }

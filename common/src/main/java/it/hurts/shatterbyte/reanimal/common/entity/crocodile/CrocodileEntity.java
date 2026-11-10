@@ -7,9 +7,8 @@ import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
-import net.minecraft.util.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -21,7 +20,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -54,6 +55,11 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.crocodile.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.crocodile.walk");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.crocodile.swim");
+    private static final RawAnimation AMBUSH = RawAnimation.begin().thenLoop("animation.crocodile.ambush");
+    private static final RawAnimation BASK = RawAnimation.begin().thenLoop("animation.crocodile.bask");
+    private static final RawAnimation HOLD = RawAnimation.begin().thenLoop("animation.crocodile.hold");
+    private static final RawAnimation DASH_LAND = RawAnimation.begin().thenLoop("animation.crocodile.dash_land");
+    private static final RawAnimation DASH_SWIM = RawAnimation.begin().thenLoop("animation.crocodile.dash_swim");
     private static final RawAnimation ATTACK_1 = RawAnimation.begin().then("animation.crocodile.bite", LoopType.PLAY_ONCE);
     private static final RawAnimation ATTACK_2 = RawAnimation.begin().then("animation.crocodile.spinn", LoopType.PLAY_ONCE);
 
@@ -62,10 +68,22 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> HAS_EGG = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> AMBUSHING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> BASKING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> DASHING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Boolean> SPINNING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int attackAnimationTicks;
+    private int dashTicks;
+    private int dashCooldown;
+    private Vec3 dashDirection = Vec3.ZERO;
+    private float swimPitch;
+    private float previousSwimPitch;
+
+    @Nullable
+    private BlockPos dragTarget;
 
     @Nullable
     private BlockPos environmentTarget;
@@ -73,8 +91,26 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     public CrocodileEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
-        this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.4F, 1F, false);
-        this.lookControl = new SmoothSwimmingLookControl(this, 10);
+        this.moveControl = new SmoothSwimmingMoveControl<>(this, 85, 10, 0.4F, 1F, false) {
+            private float movementPitch;
+
+            @Override
+            public void tick() {
+                if (this.mob.isInWater())
+                    this.mob.setXRot(this.movementPitch);
+
+                super.tick();
+
+                this.movementPitch = this.mob.isInWater() && !this.mob.getNavigation().isDone() ? this.mob.getXRot() : 0F;
+            }
+        };
+        this.lookControl = new SmoothSwimmingLookControl(this, 10) {
+            @Override
+            public void tick() {
+                if (!CrocodileEntity.this.isAmbushing() && !CrocodileEntity.this.isBasking())
+                    super.tick();
+            }
+        };
         this.navigation = new AmphibiousPathNavigation(this, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
@@ -96,11 +132,119 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         this.entityData.set(HAS_EGG, hasEgg);
     }
 
-    public void startAttackAnimation() {
-        this.attackAnimationTicks = CrocodileAI.ATTACK_ANIMATION_TICKS;
-        this.setAttacking(true);
+    public boolean isAmbushing() {
+        return this.entityData.get(AMBUSHING);
+    }
 
-        this.triggerAnim("attack", this.getRandom().nextBoolean() ? BITE_TRIGGER : SPIN_TRIGGER);
+    public void setAmbushing(boolean ambushing) {
+        this.entityData.set(AMBUSHING, ambushing);
+    }
+
+    public boolean isBasking() {
+        return this.entityData.get(BASKING);
+    }
+
+    public void setBasking(boolean basking) {
+        this.entityData.set(BASKING, basking);
+    }
+
+    public boolean isDashing() {
+        return this.entityData.get(DASHING);
+    }
+
+    public boolean isSpinning() {
+        return this.isAttacking() && this.entityData.get(SPINNING);
+    }
+
+    public void startAttackAnimation(boolean spinning) {
+        this.attackAnimationTicks = spinning ? CrocodileAI.SPIN_ANIMATION_TICKS : CrocodileAI.BITE_ANIMATION_TICKS;
+        this.entityData.set(SPINNING, spinning);
+        this.setAttacking(true);
+        this.stopDash();
+
+        this.triggerAnim("attack", spinning ? SPIN_TRIGGER : BITE_TRIGGER);
+    }
+
+    public void tryDash(LivingEntity target) {
+        var distance = this.distanceToSqr(target);
+
+        if (this.isBaby() || this.dashCooldown > 0 || this.isDashing() || this.isAttacking() || this.isVehicle()
+                || !this.isInWater() && !this.onGround() || distance < 4D || distance > 36D || !this.hasLineOfSight(target))
+            return;
+
+        this.dashDirection = target.position().subtract(this.position()).multiply(1D, this.isInWater() ? 1D : 0D, 1D).normalize();
+        this.dashTicks = 10;
+        this.dashCooldown = 80 + this.random.nextInt(80);
+        this.entityData.set(DASHING, true);
+    }
+
+    public void stopDash() {
+        this.dashTicks = 0;
+        this.entityData.set(DASHING, false);
+    }
+
+    @Nullable
+    public LivingEntity getGrabbedPrey() {
+        return this.getFirstPassenger() instanceof LivingEntity prey ? prey : null;
+    }
+
+    public boolean canGrab(LivingEntity target) {
+        return !this.isBaby() && !this.isVehicle() && !this.isPassenger() && !target.isPassenger() && !target.isVehicle()
+                && target.getBbWidth() <= this.getBbWidth();
+    }
+
+    public boolean grabPrey(LivingEntity target, BlockPos water) {
+        if (!this.canGrab(target) || !target.startRiding(this, true, true))
+            return false;
+
+        this.dragTarget = water;
+        this.stopDash();
+        this.clearEnvironmentTarget();
+        this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        this.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+        this.getNavigation().stop();
+
+        return true;
+    }
+
+    public void releasePrey() {
+        this.ejectPassengers();
+        this.dragTarget = null;
+    }
+
+    @Nullable
+    public BlockPos getDragTarget() {
+        return this.dragTarget;
+    }
+
+    public void setDragTarget(@Nullable BlockPos target) {
+        this.dragTarget = target;
+    }
+
+    @Override
+    @Nullable
+    public LivingEntity getControllingPassenger() {
+        return null;
+    }
+
+    @Override
+    public boolean dismountsUnderwater() {
+        return false;
+    }
+
+    @Override
+    protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
+        return new Vec3(0D, 4D / 16D, 23D / 16D).scale(this.getScale()).xRot(this.swimPitch * Mth.DEG_TO_RAD).yRot(-this.yBodyRot * Mth.DEG_TO_RAD);
+    }
+
+    @Override
+    protected void positionRider(Entity passenger, MoveFunction moveFunction) {
+        var mouth = this.getPassengerRidingPosition(passenger);
+        var pos = BlockPos.containing(mouth);
+        var shape = this.level().getBlockState(pos).getCollisionShape(this.level(), pos);
+        var height = shape.isEmpty() ? mouth.y : Math.max(mouth.y, pos.getY() + shape.max(Direction.Axis.Y));
+
+        moveFunction.accept(passenger, mouth.x, height, mouth.z);
     }
 
     public void setEnvironmentTarget(@Nullable BlockPos pos) {
@@ -133,13 +277,18 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
         var lastAttacker = this.getLastHurtByMob();
 
-        if (lastAttacker != null && CrocodileAI.isValidTarget(this, lastAttacker))
+        var prey = this.getGrabbedPrey();
+
+        if (prey != null && CrocodileAI.isValidTarget(this, prey))
+            brain.setMemory(MemoryModuleType.ATTACK_TARGET, prey);
+        else if (lastAttacker != null && CrocodileAI.isValidTarget(this, lastAttacker))
             brain.setMemory(MemoryModuleType.ATTACK_TARGET, lastAttacker);
 
         brain.getMemory(MemoryModuleType.ATTACK_TARGET).ifPresent(target -> {
             if (!CrocodileAI.isValidTarget(this, target) || CrocodileAI.isHoldingFavoriteFood(target)) {
                 brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
                 brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
+                this.releasePrey();
             }
         });
 
@@ -154,12 +303,39 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     public void aiStep() {
         super.aiStep();
 
+        this.previousSwimPitch = this.swimPitch;
+
+        var movement = this.getDeltaMovement();
+        var targetPitch = this.isInWater() && !this.isAmbushing()
+                ? Mth.clamp((float) Mth.atan2(movement.y, movement.horizontalDistance()) * Mth.RAD_TO_DEG, -35F, 35F)
+                * (float) Math.min(movement.length() / this.getAttributeValue(Attributes.MOVEMENT_SPEED), 1D)
+                : 0F;
+
+        this.swimPitch = Mth.lerp(0.15F, this.swimPitch, targetPitch);
+
         if (!this.level().isClientSide() && this.attackAnimationTicks > 0) {
             this.attackAnimationTicks--;
 
             if (this.attackAnimationTicks == 0 && this.isAttacking())
                 this.setAttacking(false);
         }
+
+        if (!this.level().isClientSide()) {
+            if (this.dashCooldown > 0)
+                --this.dashCooldown;
+
+            if (this.dashTicks > 0 && (--this.dashTicks == 0 || this.horizontalCollision))
+                this.stopDash();
+
+            var prey = this.getGrabbedPrey();
+
+            if (prey != null && (!this.isAlive() || !prey.isAlive()))
+                this.releasePrey();
+        }
+    }
+
+    public float getSwimPitch(float partialTick) {
+        return Mth.lerp(partialTick, this.previousSwimPitch, this.swimPitch);
     }
 
     @Override
@@ -256,6 +432,26 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
     @Override
     public void travel(Vec3 travelVector) {
+        if (this.isBasking()) {
+            this.setDeltaMovement(0D, this.getDeltaMovement().y, 0D);
+            super.travel(Vec3.ZERO);
+
+            return;
+        }
+
+        if (this.isAmbushing() && this.isInWater()) {
+            this.move(MoverType.SELF, this.getDeltaMovement());
+
+            return;
+        }
+
+        if (this.isDashing()) {
+            var movement = this.dashDirection.scale(this.isInWater() ? 0.45D : 0.28D);
+
+            this.setDeltaMovement(movement.x, this.isInWater() ? movement.y : this.getDeltaMovement().y, movement.z);
+            travelVector = Vec3.ZERO;
+        }
+
         if (this.isEffectiveAi() && this.isInWater() && this.isSwimming()) {
             var swimSpeed = (float) this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.25F;
 
@@ -271,6 +467,15 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
+        if (this.isSpinning()) {
+            var hurt = target.hurtServer(level, this.damageSources().mobAttack(this), (float) this.getAttributeValue(Attributes.ATTACK_DAMAGE) * 2F);
+
+            if (hurt)
+                this.setLastHurtMob(target);
+
+            return hurt;
+        }
+
         return super.doHurtTarget(level, target);
     }
 
@@ -282,6 +487,17 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
+        controllers.add(new AnimationController<>("mouth", 3, state -> {
+            if (this.getGrabbedPrey() == null || this.isAttacking()) {
+                state.controller().reset();
+
+                return PlayState.STOP;
+            }
+
+            state.controller().setAnimation(HOLD);
+
+            return PlayState.CONTINUE;
+        }));
         controllers.add(new AnimationController<>("attack", 0, state -> PlayState.STOP)
                 .triggerableAnim(BITE_TRIGGER, ATTACK_1)
                 .triggerableAnim(SPIN_TRIGGER, ATTACK_2));
@@ -290,7 +506,13 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private PlayState mainPredicate(AnimationTest<CrocodileEntity> state) {
         var controller = state.controller();
 
-        if (state.isMoving()) {
+        if (this.isBasking())
+            controller.setAnimation(BASK);
+        else if (this.isAmbushing())
+            controller.setAnimation(AMBUSH);
+        else if (this.isDashing())
+            controller.setAnimation(this.isInWater() ? DASH_SWIM : DASH_LAND);
+        else if (state.isMoving()) {
             if (this.isInWater())
                 controller.setAnimation(SWIM);
             else
@@ -317,6 +539,10 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
         buidler.define(ATTACKING, false);
         buidler.define(HAS_EGG, false);
+        buidler.define(AMBUSHING, false);
+        buidler.define(BASKING, false);
+        buidler.define(DASHING, false);
+        buidler.define(SPINNING, false);
     }
 
     private void tickEggLaying() {
