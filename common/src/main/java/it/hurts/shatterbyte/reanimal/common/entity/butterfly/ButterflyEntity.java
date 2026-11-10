@@ -9,7 +9,9 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -122,7 +124,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return false;
+        return stack.is(ReAnimalTags.Items.BUTTERFLY_FOOD);
     }
 
     @Override
@@ -142,7 +144,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        return null;
+        return ReAnimalEntities.BUTTERFLY.create(level, EntitySpawnReason.BREEDING);
     }
 
     @Override

@@ -6,8 +6,9 @@ import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
 import it.hurts.shatterbyte.reanimal.common.entity.PerchOnMob;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.RestOnSurface;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
-import net.minecraft.tags.BlockItemTags;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.ai.Brain;
@@ -82,8 +83,9 @@ public class ButterflyAI {
                 Activity.IDLE,
                 ImmutableList.of(
                         Pair.of(0, SetEntityLookTargetSometimes.create(net.minecraft.world.entity.EntityTypes.PLAYER, 6F, UniformInt.of(30, 60))),
+                        Pair.of(1, new AnimalMakeLove(ReAnimalEntities.BUTTERFLY, 1F, 1)),
                         Pair.of(
-                                1,
+                                2,
                                 new RunOne<>(
                                         ImmutableList.of(
                                                 Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
@@ -91,9 +93,9 @@ public class ButterflyAI {
                                         )
                                 )
                         ),
-                        Pair.of(2, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
+                        Pair.of(3, new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)),
                         Pair.of(
-                                3,
+                                4,
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
@@ -128,6 +130,6 @@ public class ButterflyAI {
     }
 
     public static Predicate<ItemStack> getTemptations() {
-        return stack -> stack.is(BlockItemTags.FLOWERS.item()) || stack.is(BlockItemTags.SMALL_FLOWERS.item());
+        return stack -> stack.is(ReAnimalTags.Items.BUTTERFLY_FOOD);
     }
 }

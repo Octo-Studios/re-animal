@@ -20,6 +20,7 @@ public class ReAnimalTags {
     }
 
     public static final class Items {
+        public static final TagKey<Item> BUTTERFLY_FOOD = Items.create("butterfly_food");
         public static final TagKey<Item> PIGEON_FOOD = Items.create("pigeon_food");
         public static final TagKey<Item> TOUCAN_FOOD = Items.create("toucan_food");
         public static final TagKey<Item> KIWI_FOOD = Items.create("kiwi_food");

@@ -1,10 +1,12 @@
 package it.hurts.shatterbyte.reanimal.client.renderer.butterfly;
 
+import com.geckolib.renderer.base.RenderPassInfo;
 import it.hurts.shatterbyte.reanimal.client.model.butterfly.ButterflyModel;
 import it.hurts.shatterbyte.reanimal.client.renderer.InsectRenderer;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.resources.Identifier;
@@ -14,6 +16,18 @@ public class ButterflyRenderer extends InsectRenderer<ButterflyEntity> {
         super(renderManager, new ButterflyModel());
 
         this.shadowRadius = 0.25F;
+    }
+
+    @Override
+    public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState state && state.isBaby;
+
+        if (isBaby)
+            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
+
+        this.shadowRadius = isBaby ? 0.125F : 0.25F;
+
+        super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
     }
 
     @Override
