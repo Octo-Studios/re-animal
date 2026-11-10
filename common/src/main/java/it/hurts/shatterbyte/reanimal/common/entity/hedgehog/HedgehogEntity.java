@@ -57,12 +57,14 @@ import java.util.function.IntFunction;
 public class HedgehogEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.hedgehog.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.hedgehog.walk");
+    private static final RawAnimation DIG = RawAnimation.begin().thenPlayAndHold("animation.hedgehog.dig");
     private static final RawAnimation ROLL = RawAnimation.begin().thenPlayAndHold("animation.hedgehog.roll");
     private static final RawAnimation UNROLL = RawAnimation.begin().thenPlayAndHold("animation.hedgehog.unroll");
     private static final RawAnimation SCARED = RawAnimation.begin().thenLoop("animation.hedgehog.scared");
 
     private static final EntityDataAccessor<HedgehogState> STATE = SynchedEntityData.defineId(HedgehogEntity.class, ReAnimalEntityDataSerializers.HEDGEHOG_STATE);
     private static final EntityDataAccessor<ItemStack> STACK = SynchedEntityData.defineId(HedgehogEntity.class, EntityDataSerializers.ITEM_STACK);
+    private static final EntityDataAccessor<Boolean> DIGGING = SynchedEntityData.defineId(HedgehogEntity.class, EntityDataSerializers.BOOLEAN);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -82,6 +84,14 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
 
     public void setStack(ItemStack stack) {
         this.getEntityData().set(STACK, stack);
+    }
+
+    public boolean isDigging() {
+        return this.getEntityData().get(DIGGING);
+    }
+
+    public void setDigging(boolean digging) {
+        this.getEntityData().set(DIGGING, digging);
     }
 
     public boolean isScared() {
@@ -225,7 +235,9 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        if (!this.isOnHead()) {
+        if (this.isOnHead())
+            this.setDigging(false);
+        else {
             ((Brain<HedgehogEntity>) this.getBrain()).tick(serverLevel, this);
             HedgehogAI.updateActivity(this);
         }
@@ -287,7 +299,7 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
         return new BodyRotationControl(this) {
             @Override
             public void clientTick() {
-                if (HedgehogEntity.this.isScared())
+                if (HedgehogEntity.this.isScared() || HedgehogEntity.this.isDigging())
                     return;
 
                 super.clientTick();
@@ -369,6 +381,7 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
 
         buidler.define(STATE, HedgehogState.IDLE);
         buidler.define(STACK, ItemStack.EMPTY);
+        buidler.define(DIGGING, false);
     }
 
     @Override
@@ -445,7 +458,9 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
             return PlayState.CONTINUE;
         }
 
-        if (state.isMoving() && !this.isOnHead())
+        if (this.isDigging())
+            controller.setAnimation(DIG);
+        else if (state.isMoving() && !this.isOnHead())
             controller.setAnimation(WALK);
         else
             controller.setAnimation(IDLE);

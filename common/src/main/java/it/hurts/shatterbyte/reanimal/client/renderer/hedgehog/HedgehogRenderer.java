@@ -44,7 +44,7 @@ public class HedgehogRenderer extends GeoEntityRenderer<HedgehogEntity, EntityRe
         var transform = MobPerch.extract(entity, renderState, partialTick, 5.5F / 16F);
 
         ((GeoRenderState) renderState).addGeckolibData(MobPerch.TRANSFORM, transform);
-        HeadTracking.setMode(renderState, entity.isOnHead() ? HeadTracking.RESET : HeadTracking.FOLLOW);
+        HeadTracking.setMode(renderState, entity.isOnHead() ? HeadTracking.RESET : entity.isDigging() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);
     }
 
     @Override

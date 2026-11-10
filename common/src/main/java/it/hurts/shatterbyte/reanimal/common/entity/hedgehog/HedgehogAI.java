@@ -1,18 +1,21 @@
 package it.hurts.shatterbyte.reanimal.common.entity.hedgehog;
 
-import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
+import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
@@ -25,6 +28,7 @@ import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Map;
 import java.util.Set;
@@ -72,6 +76,7 @@ public class HedgehogAI {
         initCoreActivity(brain);
         initIdleActivity(brain);
         initScaredActivity(brain);
+        BrainUtil.addActivity(brain, Activity.DIG, 0, ImmutableList.of());
 
         brain.setCoreActivities(Set.of(Activity.CORE));
         brain.setDefaultActivity(Activity.IDLE);
@@ -85,6 +90,7 @@ public class HedgehogAI {
                 Activity.CORE,
                 0,
                 ImmutableList.of(
+                        new HedgehogDigging(),
                         new Swim<>(0.8F),
                         new HedgehogPanic(2F),
                         new LookAtTargetSink(45, 90),
@@ -148,11 +154,92 @@ public class HedgehogAI {
     }
 
     public static void updateActivity(HedgehogEntity entity) {
-        entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
+        entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, entity.isDigging() ? Activity.DIG : Activity.IDLE));
     }
 
     public static Predicate<ItemStack> getTemptations() {
         return stack -> stack.is(ReAnimalTags.Items.HEDGEHOG_FOOD);
+    }
+
+    public static class HedgehogDigging extends Behavior<HedgehogEntity> {
+        private static final int DIG_DURATION_TICKS = 80;
+        private static final int DIG_TRANSITION_TICKS = 5;
+        private static final UniformInt DIG_COOLDOWN = UniformInt.of(600, 1200);
+
+        private BlockPos target;
+        private Vec3 digPosition;
+        private int digTicks;
+        private long nextDigTick;
+
+        public HedgehogDigging() {
+            super(Map.of(
+                    MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.IS_PANICKING, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.DANGER_DETECTED_RECENTLY, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.TEMPTING_PLAYER, MemoryStatus.VALUE_ABSENT,
+                    MemoryModuleType.BREED_TARGET, MemoryStatus.VALUE_ABSENT
+            ), DIG_DURATION_TICKS);
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, HedgehogEntity entity) {
+            if (!entity.getBrain().isActive(Activity.IDLE) || level.getGameTime() < this.nextDigTick
+                    || !entity.onGround() || entity.isInLiquid() || entity.isPassenger() || entity.isScared() || entity.isInLove())
+                return false;
+
+            var front = entity.position().add(new Vec3(0D, 0D, entity.getBbWidth() * 0.5D).yRot(-entity.yBodyRot * Mth.DEG_TO_RAD));
+
+            this.target = BlockPos.containing(front.x, entity.getOnPos().getY(), front.z);
+
+            var state = level.getBlockState(this.target);
+
+            if (!state.is(ReAnimalTags.Blocks.HEDGEHOG_DIGGABLE))
+                return false;
+
+            this.digPosition = new Vec3(front.x, this.target.getY() + state.getCollisionShape(level, this.target).max(Direction.Axis.Y), front.z);
+
+            return true;
+        }
+
+        @Override
+        protected void start(ServerLevel level, HedgehogEntity entity, long gameTime) {
+            this.digTicks = 0;
+            entity.getNavigation().stop();
+            entity.getMoveControl().setWait();
+            entity.setDeltaMovement(0D, entity.getDeltaMovement().y, 0D);
+            entity.getBrain().eraseMemory(MemoryModuleType.LOOK_TARGET);
+            entity.setYRot(entity.yBodyRot);
+            entity.yHeadRot = entity.yBodyRot;
+            entity.setDigging(true);
+            updateActivity(entity);
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, HedgehogEntity entity, long gameTime) {
+            var brain = entity.getBrain();
+
+            return entity.isDigging() && entity.onGround() && !entity.isInLiquid() && !entity.isPassenger()
+                    && !entity.isScared() && !entity.isInLove()
+                    && !brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                    && !brain.hasMemoryValue(MemoryModuleType.DANGER_DETECTED_RECENTLY)
+                    && !brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+                    && !brain.hasMemoryValue(MemoryModuleType.BREED_TARGET)
+                    && level.getBlockState(this.target).is(ReAnimalTags.Blocks.HEDGEHOG_DIGGABLE);
+        }
+
+        @Override
+        protected void tick(ServerLevel level, HedgehogEntity entity, long gameTime) {
+            if (++this.digTicks >= DIG_TRANSITION_TICKS && this.digTicks <= DIG_DURATION_TICKS - DIG_TRANSITION_TICKS && this.digTicks % 4 == 0)
+                level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, level.getBlockState(this.target)),
+                        this.digPosition.x, this.digPosition.y, this.digPosition.z, 4, entity.getBbWidth() * 0.2D, 0D, entity.getBbWidth() * 0.2D, 0.04D);
+        }
+
+        @Override
+        protected void stop(ServerLevel level, HedgehogEntity entity, long gameTime) {
+            entity.setDigging(false);
+            this.nextDigTick = gameTime + DIG_COOLDOWN.sample(entity.getRandom());
+            updateActivity(entity);
+        }
     }
 
     public static class HedgehogBallUp extends Behavior<HedgehogEntity> {
@@ -308,7 +395,7 @@ public class HedgehogAI {
 
             if (!target.isAlive() || !(target instanceof ItemEntity item)) {
                 return;
-                }
+            }
 
             if (entity.position().distanceTo(item.position()) <= 1.5F) {
                 if (entity.getStack().isEmpty()) {
