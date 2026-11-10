@@ -1,4 +1,6 @@
 package it.hurts.shatterbyte.reanimal.common.entity.starfish;
+import lombok.Getter;
+import lombok.Setter;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
@@ -53,6 +55,9 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
     private final Quaternionf surfaceRotation = new Quaternionf();
     private final Quaternionf previousSurfaceRotation = new Quaternionf();
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+    @Setter
+    @Getter
+    private boolean eating;
 
     public StarfishEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
