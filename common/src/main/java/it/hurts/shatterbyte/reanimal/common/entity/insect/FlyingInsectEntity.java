@@ -12,21 +12,33 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
+import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     private static final EntityDataAccessor<Integer> RESTING_FACE = SynchedEntityData.defineId(FlyingInsectEntity.class, EntityDataSerializers.INT);
     private static final int REST_TRANSITION_TICKS = 10;
 
+    private final MoveControl flightMoveControl;
+    private final PathNavigation flightNavigation;
+    private boolean shelteringFromRain;
+    private int shelterSearchTicks;
+    private Vec3 rainLandingTarget;
     private int nextLandingTick;
     private Vec3 takeoffTarget;
     @Getter
@@ -48,6 +60,8 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         };
         this.navigation = new FlyingPathNavigation(this, level);
         this.navigation.setCanFloat(true);
+        this.flightMoveControl = this.moveControl;
+        this.flightNavigation = this.navigation;
     }
 
     @Override
@@ -65,6 +79,140 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
 
     public boolean isResting() {
         return this.getEntityData().get(RESTING_FACE) >= 0;
+    }
+
+    public boolean canFly() {
+        return !this.level().isRaining();
+    }
+
+    protected boolean updateRainNavigation(ServerLevel level) {
+        var raining = !this.canFly();
+
+        if (raining == this.shelteringFromRain)
+            return false;
+
+        var brain = (Brain<FlyingInsectEntity>) this.getBrain();
+
+        brain.stopAll(level, this);
+        this.stopResting();
+        this.getNavigation().stop();
+        this.getMoveControl().setWait();
+        brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+        brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
+        brain.eraseMemory(MemoryModuleType.PATH);
+        brain.eraseMemory(MemoryModuleType.BREED_TARGET);
+        this.navigation = this.flightNavigation;
+        this.moveControl = this.flightMoveControl;
+        this.setNoGravity(true);
+        this.setYya(0F);
+        this.setZza(0F);
+        this.setXRot(0F);
+        this.setDeltaMovement(Vec3.ZERO);
+        this.shelteringFromRain = raining;
+        this.shelterSearchTicks = 0;
+        this.rainLandingTarget = null;
+
+        return true;
+    }
+
+    private void tickRainShelter(ServerLevel level) {
+        if (this.shelterSearchTicks > 0)
+            --this.shelterSearchTicks;
+
+        if (this.navigation == this.flightNavigation) {
+            if (!this.landForRain(level))
+                return;
+
+            this.getNavigation().stop();
+            this.getMoveControl().setWait();
+            this.navigation = new GroundPathNavigation(this, level);
+            this.navigation.setCanFloat(true);
+            this.moveControl = new MoveControl(this);
+            this.setNoGravity(false);
+            this.setYya(0F);
+            this.setZza(0F);
+            this.setXRot(0F);
+            this.setDeltaMovement(Vec3.ZERO);
+            this.rainLandingTarget = null;
+            this.shelterSearchTicks = 0;
+        }
+
+        if (!level.isRainingAt(this.blockPosition())) {
+            this.getNavigation().stop();
+            this.getMoveControl().setWait();
+
+            return;
+        }
+
+        if (!this.onGround() || !this.getNavigation().isDone() || this.shelterSearchTicks > 0)
+            return;
+
+        this.shelterSearchTicks = 20;
+
+        var range = Mth.ceil(this.getAttributeValue(Attributes.FOLLOW_RANGE));
+        var height = Mth.ceil(this.maxUpStep());
+
+        for (var pos : BlockPos.withinBoxByManhattanDistance(this.blockPosition(), range, height, range)) {
+            if (level.isRainingAt(pos) || !level.getFluidState(pos).isEmpty() || !this.navigation.isStableDestination(pos)
+                    || !level.noCollision(this, this.getBoundingBox().move(Vec3.atBottomCenterOf(pos).subtract(this.position()))))
+                continue;
+
+            var path = this.navigation.createPath(pos, 0);
+
+            if (path != null && path.canReach()) {
+                this.navigation.moveTo(path, 1D);
+
+                return;
+            }
+        }
+
+        var pos = LandRandomPos.getPos(this, range, height);
+
+        if (pos != null)
+            this.navigation.moveTo(pos.x, pos.y, pos.z, 1D);
+    }
+
+    private boolean landForRain(ServerLevel level) {
+        if (this.onGround())
+            return true;
+
+        if (this.rainLandingTarget == null && this.shelterSearchTicks == 0) {
+            this.shelterSearchTicks = 20;
+
+            var range = Mth.ceil(this.getAttributeValue(Attributes.FOLLOW_RANGE));
+
+            for (var pos : BlockPos.withinBoxByManhattanDistance(this.blockPosition(), range, 0, range)) {
+                var start = new Vec3(pos.getX() + 0.5D, this.getY(), pos.getZ() + 0.5D);
+                var hit = level.clip(new ClipContext(start, new Vec3(start.x, level.getMinY(), start.z), ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this));
+
+                if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection() != Direction.UP
+                        || !level.getFluidState(hit.getBlockPos()).isEmpty() || !this.canRestOn(hit.getBlockPos(), Direction.UP))
+                    continue;
+
+                var target = Vec3.atBottomCenterOf(hit.getBlockPos().above());
+
+                if (!level.noCollision(this, this.getBoundingBox().expandTowards(target.subtract(this.position()))))
+                    continue;
+
+                this.rainLandingTarget = target;
+
+                break;
+            }
+        }
+
+        if (this.rainLandingTarget == null)
+            return false;
+
+        if (this.position().distanceToSqr(this.rainLandingTarget) <= Math.max(this.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR)) {
+            this.setPos(this.rainLandingTarget);
+            this.setOnGround(true);
+
+            return true;
+        }
+
+        this.getMoveControl().setWantedPosition(this.rainLandingTarget.x, this.rainLandingTarget.y, this.rainLandingTarget.z, 0.5D);
+
+        return false;
     }
 
     @Override
@@ -124,7 +272,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     }
 
     boolean canLand() {
-        return this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
+        return this.canFly() && this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER);
     }
@@ -178,8 +326,11 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
 
+        if (!this.canFly())
+            this.tickRainShelter(level);
+
         if (this.takeoffTarget != null) {
-            if (this.position().distanceToSqr(this.takeoffTarget) <= Math.max(this.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR)
+            if (!this.canFly() || this.position().distanceToSqr(this.takeoffTarget) <= Math.max(this.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR)
                     || !level.noCollision(this, this.getBoundingBox().expandTowards(this.takeoffTarget.subtract(this.position()))))
                 this.takeoffTarget = null;
             else

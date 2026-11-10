@@ -56,6 +56,7 @@ public class ButterflyAI {
         initCoreActivity(brain);
         initIdleActivity(brain);
         initPanicActivity(brain);
+        BrainUtil.addActivity(brain, Activity.HIDE, 0, ImmutableList.of());
 
         brain.setCoreActivities(Set.of(Activity.CORE));
         brain.setDefaultActivity(Activity.IDLE);
@@ -126,7 +127,10 @@ public class ButterflyAI {
     }
 
     public static void updateActivity(ButterflyEntity entity) {
-        entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
+        if (entity.canFly())
+            entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
+        else
+            entity.getBrain().setActiveActivityIfPossible(Activity.HIDE);
     }
 
     public static Predicate<ItemStack> getTemptations() {

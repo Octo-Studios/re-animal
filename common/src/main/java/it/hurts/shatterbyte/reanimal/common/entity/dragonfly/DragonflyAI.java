@@ -51,6 +51,7 @@ public class DragonflyAI {
         initCoreActivity(brain);
         initIdleActivity(brain);
         initPanicActivity(brain);
+        BrainUtil.addActivity(brain, Activity.HIDE, 0, ImmutableList.of());
 
         brain.setCoreActivities(Set.of(Activity.CORE));
         brain.setDefaultActivity(Activity.IDLE);
@@ -121,6 +122,9 @@ public class DragonflyAI {
     }
 
     public static void updateActivity(DragonflyEntity entity) {
-        entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
+        if (entity.canFly())
+            entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
+        else
+            entity.getBrain().setActiveActivityIfPossible(Activity.HIDE);
     }
 }

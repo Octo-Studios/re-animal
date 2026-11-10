@@ -37,6 +37,7 @@ import com.geckolib.util.GeckoLibUtil;
 public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.dragonfly.idle");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.dragonfly.fly");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.dragonfly.walk");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(DragonflyEntity.class, EntityDataSerializers.INT);
 
@@ -71,8 +72,11 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        this.tickScared(serverLevel);
+        if (this.updateRainNavigation(serverLevel))
+            DragonflyAI.updateActivity(this);
 
+        if (this.canFly())
+            this.tickScared(serverLevel);
 
         if (!this.isPerched()) {
             ((Brain<DragonflyEntity>) this.getBrain()).tick(serverLevel, this);
@@ -195,7 +199,9 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
+        if (!entity.canFly() && entity.onGround())
+            controller.setAnimation(state.isMoving() ? WALK : IDLE);
+        else if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);
         else
             controller.setAnimation(IDLE);
@@ -207,8 +213,8 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 2D)
-                .add(Attributes.MOVEMENT_SPEED, 0.2D)
-                .add(Attributes.FLYING_SPEED, 0.5D)
+                .add(Attributes.MOVEMENT_SPEED, 0.16D)
+                .add(Attributes.FLYING_SPEED, 0.4D)
                 .add(Attributes.FOLLOW_RANGE, 8D);
     }
 }

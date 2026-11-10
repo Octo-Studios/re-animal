@@ -49,6 +49,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final TagKey<Biome> IS_SWAMP = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_swamp"));
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.butterfly.idle");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.butterfly.fly");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.butterfly.walk");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ButterflyEntity.class, EntityDataSerializers.INT);
 
@@ -81,7 +82,11 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        this.tickScared(serverLevel);
+        if (this.updateRainNavigation(serverLevel))
+            ButterflyAI.updateActivity(this);
+
+        if (this.canFly())
+            this.tickScared(serverLevel);
 
         if (!this.isPerched()) {
             ((Brain<ButterflyEntity>) this.getBrain()).tick(serverLevel, this);
@@ -209,7 +214,9 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
+        if (!entity.canFly() && entity.onGround())
+            controller.setAnimation(state.isMoving() ? WALK : IDLE);
+        else if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);
         else
             controller.setAnimation(IDLE);
@@ -230,8 +237,8 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 2D)
-                .add(Attributes.MOVEMENT_SPEED, 0.2D)
-                .add(Attributes.FLYING_SPEED, 0.2D)
+                .add(Attributes.MOVEMENT_SPEED, 0.16D)
+                .add(Attributes.FLYING_SPEED, 0.16D)
                 .add(Attributes.FOLLOW_RANGE, 8D)
                 .add(Attributes.STEP_HEIGHT, 1.1D);
     }

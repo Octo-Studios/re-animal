@@ -4,6 +4,39 @@
 		"animation.dragonfly.idle": {
 			"loop": true
 		},
+		"animation.dragonfly.walk": {
+			"loop": true,
+			"animation_length": 0.6,
+			"bones": {
+				"legs_1": {
+					"rotation": {
+						"0.0": [-20, 0, 0],
+						"0.15": [0, 0, 0],
+						"0.3": [20, 0, 0],
+						"0.45": [0, 0, 0],
+						"0.6": [-20, 0, 0]
+					}
+				},
+				"legs_2": {
+					"rotation": {
+						"0.0": [20, 0, 0],
+						"0.15": [0, 0, 0],
+						"0.3": [-20, 0, 0],
+						"0.45": [0, 0, 0],
+						"0.6": [20, 0, 0]
+					}
+				},
+				"legs_3": {
+					"rotation": {
+						"0.0": [-20, 0, 0],
+						"0.15": [0, 0, 0],
+						"0.3": [20, 0, 0],
+						"0.45": [0, 0, 0],
+						"0.6": [-20, 0, 0]
+					}
+				}
+			}
+		},
 		"animation.dragonfly.fly": {
 			"loop": true,
 			"animation_length": 1,
