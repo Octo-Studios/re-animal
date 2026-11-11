@@ -67,15 +67,12 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
                 var extent = face.getAxis() == Direction.Axis.Y ? halfHeight : insect.getBbWidth() * 0.5D;
                 var target = Vec3.atCenterOf(pos).add(Vec3.atLowerCornerOf(face.getUnitVec3i()).scale(0.5D + extent)).subtract(0.0D, halfHeight, 0.0D);
 
-                if (this.hasClearApproach(level, insect, target)) {
+                if (insect.canFlyDirectlyTo(target)) {
                     candidates.add(new LandingSpot(pos.immutable(), face, target));
                     found[kind] = true;
                 }
             }
         }
-
-        if (!insect.canFly() && candidates.size() > 1)
-            candidates.removeIf(spot -> spot.face() == Direction.UP);
 
         if (!candidates.isEmpty()) {
             this.landing = candidates.get(insect.getRandom().nextInt(candidates.size()));
@@ -100,7 +97,7 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
                 && (insect.isResting() || this.approachTicks < APPROACH_TICKS)
                 && insect.canRestOn(this.landing.support(), this.landing.face())
                 && level.getFluidState(BlockPos.containing(this.landing.target())).isEmpty()
-                && this.hasClearApproach(level, insect, this.landing.target());
+                && insect.canFlyDirectlyTo(this.landing.target());
     }
 
     @Override
@@ -116,11 +113,6 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
     @Override
     protected void stop(ServerLevel level, FlyingInsectEntity insect, long timestamp) {
         insect.stopResting();
-    }
-
-    private boolean hasClearApproach(ServerLevel level, FlyingInsectEntity insect, Vec3 target) {
-        return !level.isRainingAt(BlockPos.containing(target))
-                && level.noCollision(insect, insect.getBoundingBox().expandTowards(target.subtract(insect.position())));
     }
 
     private record LandingSpot(BlockPos support, Direction face, Vec3 target) {

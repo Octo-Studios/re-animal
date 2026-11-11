@@ -65,8 +65,7 @@ public class ButterflyAI {
         initIdleActivity(brain);
         initPanicActivity(brain);
         BrainUtil.<ButterflyEntity>addActivity(brain, Activity.HIDE, 0, ImmutableList.of(
-                new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F),
-                new RestOnSurface()
+                new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)
         ));
 
         brain.setCoreActivities(Set.of(Activity.CORE));
@@ -139,7 +138,7 @@ public class ButterflyAI {
     }
 
     public static void updateActivity(ButterflyEntity entity) {
-        if (entity.canFly())
+        if (!entity.isExposedToRain())
             entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
         else
             entity.getBrain().setActiveActivityIfPossible(Activity.HIDE);
@@ -167,7 +166,7 @@ public class ButterflyAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, ButterflyEntity butterfly) {
-            if (!butterfly.canFly() || butterfly.isInWater() || butterfly.isPassenger() || butterfly.hurtTime > 0
+            if (butterfly.isExposedToRain() || butterfly.isInWater() || butterfly.isPassenger() || butterfly.hurtTime > 0
                     || !butterfly.getNavigation().isDone() || level.getGameTime() < this.nextSearchTick)
                 return false;
 
@@ -182,7 +181,7 @@ public class ButterflyAI {
                 var shape = state.getShape(level, pos).bounds();
                 var target = Vec3.atLowerCornerOf(pos).add(shape.getCenter().with(Direction.Axis.Y, shape.maxY));
 
-                if (!level.noCollision(butterfly, butterfly.getBoundingBox().expandTowards(target.subtract(butterfly.position()))))
+                if (!butterfly.canFlyDirectlyTo(target))
                     continue;
 
                 this.flower = pos.immutable();
@@ -207,10 +206,10 @@ public class ButterflyAI {
 
         @Override
         protected boolean canStillUse(ServerLevel level, ButterflyEntity butterfly, long timestamp) {
-            return butterfly.canFly() && !butterfly.isInWater() && !butterfly.isPassenger() && butterfly.hurtTime == 0
+            return !butterfly.isExposedToRain() && !butterfly.isInWater() && !butterfly.isPassenger() && butterfly.hurtTime == 0
                     && butterfly.getNavigation().isDone() && this.hasRequiredMemories(butterfly)
                     && level.getBlockState(this.flower).is(BlockTags.FLOWERS) && level.getFluidState(this.flower).isEmpty()
-                    && level.noCollision(butterfly, butterfly.getBoundingBox().expandTowards(this.hoverPos.subtract(butterfly.position())));
+                    && butterfly.canFlyDirectlyTo(this.hoverPos);
         }
 
         @Override
@@ -226,7 +225,7 @@ public class ButterflyAI {
                         Mth.sin(this.hoverAngle) / 3D
                 );
 
-                if (!level.noCollision(butterfly, butterfly.getBoundingBox().expandTowards(target.subtract(butterfly.position())))) {
+                if (!butterfly.canFlyDirectlyTo(target)) {
                     this.doStop(level, butterfly, timestamp);
                     return;
                 }

@@ -38,7 +38,6 @@ import com.geckolib.util.GeckoLibUtil;
 public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.dragonfly.idle");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.dragonfly.fly");
-    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.dragonfly.walk");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(DragonflyEntity.class, EntityDataSerializers.INT);
 
@@ -78,7 +77,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         if (this.updateRainNavigation(serverLevel))
             DragonflyAI.updateActivity(this);
 
-        if (this.canFly())
+        if (!this.isExposedToRain())
             this.tickScared(serverLevel);
 
         if (!this.isPerched()) {
@@ -204,9 +203,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (!entity.canFly() && entity.onGround())
-            controller.setAnimation(state.isMoving() ? WALK : IDLE);
-        else if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
+        if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);
         else
             controller.setAnimation(IDLE);

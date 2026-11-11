@@ -61,8 +61,7 @@ public class DragonflyAI {
         initPanicActivity(brain);
         initFightActivity(brain);
         BrainUtil.<DragonflyEntity>addActivity(brain, Activity.HIDE, 0, ImmutableList.of(
-                new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F),
-                new RestOnSurface()
+                new RandomLookAround(UniformInt.of(150, 250), 30F, 0F, 0F)
         ));
 
         brain.setCoreActivities(Set.of(Activity.CORE));
@@ -149,7 +148,7 @@ public class DragonflyAI {
             entity.getMoveControl().setWait();
         }
 
-        if (entity.canFly())
+        if (!entity.isExposedToRain())
             brain.setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.FIGHT, Activity.IDLE));
         else
             brain.setActiveActivityIfPossible(Activity.HIDE);
@@ -160,7 +159,7 @@ public class DragonflyAI {
                 Activity.FIGHT,
                 10,
                 ImmutableList.of(
-                        StopAttackingIfTargetInvalid.create((level, target) -> target.isInWater()
+                        StopAttackingIfTargetInvalid.create((level, target) -> target.isInWater() || level.isRainingAt(target.blockPosition())
                                 || !target.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.DRAGONFLY_PREY)),
                         new ChasePrey(),
                         MeleeAttack.create(DragonflyAI::canHunt, 20)
@@ -170,13 +169,13 @@ public class DragonflyAI {
     }
 
     private static boolean canHunt(DragonflyEntity entity) {
-        return entity.canFly() && !entity.isBaby() && !entity.isPassenger() && !entity.isInWater() && !entity.isScared()
+        return !entity.isExposedToRain() && !entity.isBaby() && !entity.isPassenger() && !entity.isInWater() && !entity.isScared()
                 && !entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
     }
 
     private static Optional<LivingEntity> findNearestPrey(ServerLevel level, DragonflyEntity entity) {
         return entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-                .flatMap(visible -> visible.findClosest(target -> !target.isInWater()
+                .flatMap(visible -> visible.findClosest(target -> !target.isInWater() && !level.isRainingAt(target.blockPosition())
                         && target.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.DRAGONFLY_PREY)
                         && Sensor.isEntityAttackable(level, entity, target)));
     }
@@ -205,7 +204,7 @@ public class DragonflyAI {
 
             entity.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
 
-            if (level.noCollision(entity, entity.getBoundingBox().expandTowards(position.subtract(entity.position())))) {
+            if (entity.canFlyDirectlyTo(position)) {
                 entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
                 entity.getNavigation().stop();
                 entity.getMoveControl().setWantedPosition(position.x, position.y, position.z, 1.25D);

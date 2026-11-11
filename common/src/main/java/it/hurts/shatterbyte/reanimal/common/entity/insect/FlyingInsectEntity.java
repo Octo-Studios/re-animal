@@ -17,18 +17,16 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
-import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.ai.util.LandRandomPos;
 import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+
+import java.util.HashSet;
 
 public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     private static final EntityDataAccessor<Integer> RESTING_FACE = SynchedEntityData.defineId(FlyingInsectEntity.class, EntityDataSerializers.INT);
@@ -36,11 +34,8 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     private static final double FLIGHT_ACCELERATION = 0.02D;
     private static final double FLIGHT_DRAG = 0.91D;
 
-    private final MoveControl flightMoveControl;
-    private final PathNavigation flightNavigation;
-    private boolean shelteringFromRain;
+    private boolean seekingShelter;
     private int shelterSearchTicks;
-    private Vec3 rainLandingTarget;
     private int nextLandingTick;
     private Vec3 takeoffTarget;
     @Getter
@@ -56,7 +51,8 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         this.moveControl = new FlyingMoveControl<>(this, 10, true) {
             @Override
             public void tick() {
-                if (FlyingInsectEntity.this.isResting() || FlyingInsectEntity.this.isPerched())
+                var insect = FlyingInsectEntity.this;
+                if (insect.isResting() || insect.isPerched())
                     return;
 
                 var moving = this.hasWanted();
@@ -64,20 +60,25 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
                 super.tick();
 
                 if (moving) {
-                    var movement = new Vec3(this.wantedX, this.wantedY, this.wantedZ).subtract(FlyingInsectEntity.this.position());
+                    var movement = new Vec3(this.wantedX, this.wantedY, this.wantedZ).subtract(insect.position());
                     var distance = movement.length();
-                    var speed = FlyingInsectEntity.this.getSpeed() * FLIGHT_ACCELERATION / (1D - FLIGHT_DRAG);
+                    var speed = insect.getSpeed() * FLIGHT_ACCELERATION / (1D - FLIGHT_DRAG);
 
-                    FlyingInsectEntity.this.setYya(0F);
-                    FlyingInsectEntity.this.setZza(0F);
-                    FlyingInsectEntity.this.setDeltaMovement(distance < MIN_SPEED ? Vec3.ZERO : movement.scale(Math.min(speed, distance) / distance));
-                }
+                    insect.setYya(0F);
+                    insect.setZza(0F);
+                    insect.setDeltaMovement(distance < MIN_SPEED ? Vec3.ZERO : movement.scale(Math.min(speed, distance) / distance));
+                } else if (insect.level().isRaining() && !insect.isExposedToRain()
+                        && !insect.hasDryFlightPath(insect.position().add(insect.getDeltaMovement())))
+                    insect.setDeltaMovement(Vec3.ZERO);
             }
         };
-        this.navigation = new FlyingPathNavigation(this, level);
-        this.navigation.setCanFloat(true);
-        this.flightMoveControl = this.moveControl;
-        this.flightNavigation = this.navigation;
+    }
+
+    @Override
+    protected PathNavigation createNavigation(Level level) {
+        var navigation = new InsectNavigation(this, level);
+        navigation.setCanFloat(true);
+        return navigation;
     }
 
     @Override
@@ -97,14 +98,31 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         return this.getEntityData().get(RESTING_FACE) >= 0;
     }
 
-    public boolean canFly() {
-        return !this.level().isRaining() || !this.level().getBiome(this.blockPosition()).value().hasPrecipitation();
+    public boolean isExposedToRain() {
+        return this.level().isRainingAt(this.blockPosition());
+    }
+
+    @Override
+    public float getWalkTargetValue(BlockPos pos) {
+        return this.level().isRainingAt(pos) ? Float.NEGATIVE_INFINITY : super.getWalkTargetValue(pos);
+    }
+
+    boolean hasDryFlightPath(Vec3 target) {
+        var level = this.level();
+        return !level.isRaining() || !level.isRainingAt(BlockPos.containing(target))
+                && BlockGetter.traverseBlocks(this.position(), target, level,
+                        (world, pos) -> world.isRainingAt(pos) ? false : null, world -> true);
+    }
+
+    public boolean canFlyDirectlyTo(Vec3 target) {
+        return this.hasDryFlightPath(target)
+                && this.level().noCollision(this, this.getBoundingBox().expandTowards(target.subtract(this.position())));
     }
 
     protected boolean updateRainNavigation(ServerLevel level) {
-        var raining = !this.canFly();
+        var exposed = this.isExposedToRain();
 
-        if (raining == this.shelteringFromRain)
+        if (exposed == this.seekingShelter)
             return false;
 
         var brain = (Brain<FlyingInsectEntity>) this.getBrain();
@@ -117,16 +135,9 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
         brain.eraseMemory(MemoryModuleType.PATH);
         brain.eraseMemory(MemoryModuleType.BREED_TARGET);
-        this.navigation = this.flightNavigation;
-        this.moveControl = this.flightMoveControl;
-        this.setNoGravity(true);
-        this.setYya(0F);
-        this.setZza(0F);
-        this.setXRot(0F);
         this.setDeltaMovement(Vec3.ZERO);
-        this.shelteringFromRain = raining;
+        this.seekingShelter = exposed;
         this.shelterSearchTicks = 0;
-        this.rainLandingTarget = null;
 
         return true;
     }
@@ -135,109 +146,32 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         if (this.shelterSearchTicks > 0)
             --this.shelterSearchTicks;
 
-        if (!level.isRainingAt(this.blockPosition())) {
-            if (this.navigation != this.flightNavigation) {
-                this.getNavigation().stop();
-                this.navigation = this.flightNavigation;
-                this.moveControl = this.flightMoveControl;
-                this.setNoGravity(true);
-            }
-
-            return;
-        }
-
-        if (this.navigation == this.flightNavigation) {
-            if (!this.landForRain(level))
-                return;
-
-            this.getNavigation().stop();
-            this.getMoveControl().setWait();
-            this.navigation = new GroundPathNavigation(this, level);
-            this.navigation.setCanFloat(true);
-            this.moveControl = new MoveControl(this);
-            this.setNoGravity(false);
-            this.setYya(0F);
-            this.setZza(0F);
-            this.setXRot(0F);
-            this.setDeltaMovement(Vec3.ZERO);
-            this.rainLandingTarget = null;
-            this.shelterSearchTicks = 0;
-        }
-
-        if (!this.onGround() || !this.getNavigation().isDone() || this.shelterSearchTicks > 0)
+        if (!this.getNavigation().isDone() || this.shelterSearchTicks > 0)
             return;
 
         this.shelterSearchTicks = 20;
 
         var range = Mth.ceil(this.getAttributeValue(Attributes.FOLLOW_RANGE));
-        var height = Mth.ceil(this.maxUpStep());
+        var shelters = new HashSet<BlockPos>();
 
-        for (var pos : BlockPos.withinBoxByManhattanDistance(this.blockPosition(), range, height, range)) {
-            if (level.isRainingAt(pos) || !level.getFluidState(pos).isEmpty() || !this.navigation.isStableDestination(pos)
-                    || !level.noCollision(this, this.getBoundingBox().move(Vec3.atBottomCenterOf(pos).subtract(this.position()))))
-                continue;
-
-            var path = this.navigation.createPath(pos, 0);
-
-            if (path != null && path.canReach()) {
-                this.navigation.moveTo(path, 1D);
-
-                return;
-            }
+        for (var pos : BlockPos.withinManhattan(this.blockPosition(), range)) {
+            if (level.isEmptyBlock(pos) && !level.isRainingAt(pos))
+                shelters.add(pos.immutable());
         }
 
-        var pos = LandRandomPos.getPos(this, range, height);
-
-        if (pos != null)
-            this.navigation.moveTo(pos.x, pos.y, pos.z, 1D);
-    }
-
-    private boolean landForRain(ServerLevel level) {
-        if (this.onGround())
-            return true;
-
-        if (this.rainLandingTarget == null && this.shelterSearchTicks == 0) {
-            this.shelterSearchTicks = 20;
-
-            var range = Mth.ceil(this.getAttributeValue(Attributes.FOLLOW_RANGE));
-
-            for (var pos : BlockPos.withinBoxByManhattanDistance(this.blockPosition(), range, 0, range)) {
-                var start = new Vec3(pos.getX() + 0.5D, this.getY(), pos.getZ() + 0.5D);
-                var hit = level.clip(new ClipContext(start, new Vec3(start.x, level.getMinY(), start.z), ClipContext.Block.COLLIDER, ClipContext.Fluid.ANY, this));
-
-                if (hit.getType() != HitResult.Type.BLOCK || hit.getDirection() != Direction.UP
-                        || !level.getFluidState(hit.getBlockPos()).isEmpty() || !this.canRestOn(hit.getBlockPos(), Direction.UP))
-                    continue;
-
-                var target = Vec3.atBottomCenterOf(hit.getBlockPos().above());
-
-                if (!level.noCollision(this, this.getBoundingBox().expandTowards(target.subtract(this.position()))))
-                    continue;
-
-                this.rainLandingTarget = target;
-
-                break;
-            }
-        }
-
-        if (this.rainLandingTarget == null)
-            return false;
-
-        if (this.position().distanceToSqr(this.rainLandingTarget) <= Math.max(this.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR)) {
-            this.setPos(this.rainLandingTarget);
-            this.setOnGround(true);
-
-            return true;
-        }
-
-        this.getMoveControl().setWantedPosition(this.rainLandingTarget.x, this.rainLandingTarget.y, this.rainLandingTarget.z, 0.5D);
-
-        return false;
+        var path = this.getNavigation().createPath(shelters, 0);
+        if (path != null && path.canReach())
+            this.getNavigation().moveTo(path, 1D);
     }
 
     @Override
     public boolean canPerch() {
         return super.canPerch() && this.canLand() && !this.isResting();
+    }
+
+    @Override
+    public boolean canPerchOn(LivingEntity host) {
+        return super.canPerchOn(host) && (!this.level().isRaining() || this.hasDryFlightPath(this.getPerchPosition(host)));
     }
 
     @Override
@@ -292,7 +226,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     }
 
     boolean canLand() {
-        return !this.level().isRainingAt(this.blockPosition()) && this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
+        return !this.isExposedToRain() && this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER);
@@ -347,13 +281,13 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
 
-        if (!this.canFly())
+        if (this.seekingShelter)
             this.tickRainShelter(level);
 
         if (this.takeoffTarget != null) {
-            if (!this.canFly() || !this.getNavigation().isDone() || this.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
+            if (!this.getNavigation().isDone() || this.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
                     || this.position().distanceToSqr(this.takeoffTarget) <= Math.max(this.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR)
-                    || !level.noCollision(this, this.getBoundingBox().expandTowards(this.takeoffTarget.subtract(this.position()))))
+                    || !this.canFlyDirectlyTo(this.takeoffTarget))
                 this.takeoffTarget = null;
             else
                 this.getMoveControl().setWantedPosition(this.takeoffTarget.x, this.takeoffTarget.y, this.takeoffTarget.z, 1.0D);
