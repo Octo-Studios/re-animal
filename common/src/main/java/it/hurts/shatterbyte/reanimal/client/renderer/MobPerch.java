@@ -27,6 +27,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.RandomSupport;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -182,7 +183,7 @@ public final class MobPerch {
 
         if (attachment == null || attachment.hostId != host.getId() || attachment.seed != seed) {
             var point = animal.getPosition(partialTick).subtract(host.getPosition(partialTick));
-            attachment = new Attachment(host.getId(), seed, animal instanceof PerchingAnimalEntity,
+            attachment = new Attachment(host, seed, animal instanceof PerchingAnimalEntity,
                     animal instanceof GlowStickEntity ? new Vector3f((float) point.x, (float) point.y, (float) point.z) : null, animal.getBbWidth());
 
             ATTACHMENTS.put(animal, attachment);
@@ -330,6 +331,7 @@ public final class MobPerch {
         private final int hostId;
         private final int seed;
         private final boolean randomized;
+        private final boolean headOnly;
         private final float yaw;
         private final Vector3f point;
         private final float spacing;
@@ -349,16 +351,22 @@ public final class MobPerch {
         private Vector3f anchor;
         private float distance = Float.POSITIVE_INFINITY;
 
-        private Attachment(int hostId, int seed, boolean randomized, Vector3f point, float spacing) {
-            this.hostId = hostId;
+        private Attachment(LivingEntity host, int seed, boolean randomized, Vector3f point, float spacing) {
+            this.hostId = host.getId();
             this.seed = seed;
             this.randomized = randomized;
+            this.headOnly = randomized && host instanceof Player;
             this.yaw = randomized ? RandomSource.create(seed).nextFloat() * Mth.TWO_PI : 0F;
             this.point = point;
             this.spacing = spacing;
         }
 
         private void offer(String bone, Object cube, PoseStack.Pose pose, Vector3f center, Vector3f normal, Vector3f edge, Vector3f otherEdge, float footSpan, int face) {
+            var name = bone.substring(bone.lastIndexOf('/') + 1).toLowerCase(Locale.ROOT);
+
+            if (this.headOnly && !name.equals("head"))
+                return;
+
             var worldEdge = pose.pose().transformDirection(edge, new Vector3f());
             var worldOtherEdge = pose.pose().transformDirection(otherEdge, new Vector3f());
             var span = Math.min(worldEdge.length(), worldOtherEdge.length());
@@ -376,7 +384,6 @@ public final class MobPerch {
             }
 
             var position = pose.pose().transformPosition(center, new Vector3f());
-            var name = bone.substring(bone.lastIndexOf('/') + 1).toLowerCase(Locale.ROOT);
             var priority = (span >= footSpan ? 2 : 0)
                     + (name.contains("head") || name.contains("body") || name.contains("torso") || name.contains("back") || name.contains("chest") ? 1 : 0);
 
