@@ -177,6 +177,11 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
     }
 
     @Override
+    public DamageSource createDamageSource() {
+        return ReAnimalDamageTypes.source(this, ReAnimalDamageTypes.STARFISH_ATTACK);
+    }
+
+    @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float amount) {
         if (source.is(ReAnimalDamageTypes.SEA_URCHIN_SPIKES))
             return false;

@@ -21,6 +21,10 @@ public class ReAnimalDamageTypes {
             Registries.DAMAGE_TYPE,
             Identifier.fromNamespaceAndPath(ReAnimal.MODID, "jellyfish_sting")
     );
+    public static final ResourceKey<DamageType> STARFISH_ATTACK = ResourceKey.create(
+        Registries.DAMAGE_TYPE,
+        Identifier.fromNamespaceAndPath(ReAnimal.MODID, "starfish_attack")
+    );
 
     public static DamageSource source(Entity entity, ResourceKey<DamageType> key) {
         return new DamageSource(entity.level().registryAccess().lookupOrThrow(Registries.DAMAGE_TYPE).getOrThrow(key), entity);
