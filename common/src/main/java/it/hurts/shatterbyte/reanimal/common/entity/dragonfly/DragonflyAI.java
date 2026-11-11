@@ -22,11 +22,14 @@ import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 import java.util.Set;
 
 public class DragonflyAI {
+    private static final int PREY_PATH_CHECK_INTERVAL = 20;
+
     private static final ImmutableList<SensorType<? extends Sensor<? super DragonflyEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
@@ -139,9 +142,13 @@ public class DragonflyAI {
 
     public static void updateActivity(DragonflyEntity entity) {
         var brain = entity.getBrain();
+        var path = entity.getNavigation().getPath();
+        var unreachableInRain = entity.level().isRaining() && brain.isActive(Activity.FIGHT)
+                && (brain.hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE) || path != null && !path.canReach());
 
         if (brain.getMemory(MemoryModuleType.ATTACK_TARGET)
-                .filter(target -> !canHunt(entity) || !entity.closerThan(target, entity.getAttributeValue(Attributes.FOLLOW_RANGE))).isPresent()) {
+                .filter(target -> unreachableInRain || !canHunt(entity)
+                        || !entity.closerThan(target, entity.getAttributeValue(Attributes.FOLLOW_RANGE))).isPresent()) {
             brain.eraseMemory(MemoryModuleType.ATTACK_TARGET);
             brain.eraseMemory(MemoryModuleType.WALK_TARGET);
             brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
@@ -176,11 +183,27 @@ public class DragonflyAI {
     }
 
     private static Optional<LivingEntity> findNearestPrey(ServerLevel level, DragonflyEntity entity) {
+        var raining = level.isRaining();
+        var checkPath = raining && entity.getNavigation().isDone()
+                && (level.getGameTime() + entity.getId()) % PREY_PATH_CHECK_INTERVAL == 0;
+
         return entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
                 .flatMap(visible -> visible.findClosest(target -> !target.isInWater()
                         && !FlyingInsectEntity.hasPrecipitationAt(level, target.blockPosition())
                         && target.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.DRAGONFLY_PREY)
-                        && Sensor.isEntityAttackable(level, entity, target)));
+                        && Sensor.isEntityAttackable(level, entity, target)
+                        && (!raining || entity.canFlyDirectlyTo(preyPosition(entity, target))
+                                || checkPath && canPathToPrey(entity, target))));
+    }
+
+    private static Vec3 preyPosition(DragonflyEntity entity, LivingEntity target) {
+        return target.getBoundingBox().getCenter().subtract(0D, entity.getBbHeight() * 0.5D, 0D);
+    }
+
+    private static boolean canPathToPrey(DragonflyEntity entity, LivingEntity target) {
+        var path = entity.getNavigation().createPath(target, 0);
+
+        return path != null && path.canReach() && entity.canFlyDirectlyTo(path.getNextEntityPos(entity));
     }
 
     private static class ChasePrey extends Behavior<DragonflyEntity> {
@@ -193,6 +216,7 @@ public class DragonflyAI {
             entity.stopResting();
             entity.getNavigation().stop();
             entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+            entity.getBrain().eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
         }
 
         @Override
@@ -202,17 +226,19 @@ public class DragonflyAI {
 
         @Override
         protected void tick(ServerLevel level, DragonflyEntity entity, long gameTime) {
-            var target = entity.getBrain().getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
-            var position = target.getBoundingBox().getCenter().subtract(0D, entity.getBbHeight() * 0.5D, 0D);
+            var brain = entity.getBrain();
+            var target = brain.getMemory(MemoryModuleType.ATTACK_TARGET).orElseThrow();
+            var position = preyPosition(entity, target);
 
-            entity.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
+            brain.setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(target, true));
 
             if (entity.canFlyDirectlyTo(position)) {
-                entity.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+                brain.eraseMemory(MemoryModuleType.WALK_TARGET);
+                brain.eraseMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE);
                 entity.getNavigation().stop();
                 entity.getMoveControl().setWantedPosition(position.x, position.y, position.z, 1.25D);
             } else
-                entity.getBrain().setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(target, false), 1.25F, 0));
+                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(new EntityTracker(target, false), 1.25F, 0));
         }
 
         @Override

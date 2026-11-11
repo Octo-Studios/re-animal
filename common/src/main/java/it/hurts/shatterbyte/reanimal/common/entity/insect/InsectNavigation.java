@@ -3,12 +3,14 @@ package it.hurts.shatterbyte.reanimal.common.entity.insect;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.control.MoveControl;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.pathfinder.FlyNodeEvaluator;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 final class InsectNavigation extends FlyingPathNavigation {
@@ -48,7 +50,15 @@ final class InsectNavigation extends FlyingPathNavigation {
 
         if (!this.path.isDone() && !insect.hasDryPath(insect.position(), this.path.getNextEntityPos(insect))) {
             this.stop();
+
+            var brain = insect.getBrain();
+            if (brain.hasMemoryValue(MemoryModuleType.WALK_TARGET) && !brain.hasMemoryValue(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE))
+                brain.setMemory(MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE, this.level.getGameTime());
+        }
+
+        if (this.isDone()) {
             insect.getMoveControl().setWait();
+            insect.setDeltaMovement(Vec3.ZERO);
             return;
         }
 
