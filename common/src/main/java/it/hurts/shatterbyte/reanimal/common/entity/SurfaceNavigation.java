@@ -29,6 +29,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
+import java.util.function.ToDoubleFunction;
 
 public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPathNavigation {
     private static final double GRIP_REACH = 0.125D;
@@ -103,21 +104,27 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     }
 
     public Path createSurfacePath(Set<BlockPos> targets, int reachRange, float maxPathLength) {
-        return this.createSurfacePath(targets, reachRange, maxPathLength, this::canFinishAt);
+        var target = targets.stream().min(Comparator.comparingDouble(pos -> pos.distSqr(this.climber.blockPosition()))).orElse(this.climber.blockPosition());
+        var destination = Vec3.atCenterOf(target);
+
+        return this.createSurfacePath(targets, reachRange, maxPathLength, this::canFinishAt,
+                point -> targets.isEmpty() ? 0D : point.position().distanceTo(destination), Mth.ceil(maxPathLength * 16F));
     }
 
     protected Path createSurfacePath(float maxPathLength, Predicate<Point> destinationFilter) {
-        return this.createSurfacePath(Set.of(), 0, maxPathLength, destinationFilter);
+        return this.createSurfacePath(maxPathLength, destinationFilter, point -> 0D, Mth.ceil(maxPathLength * 16F));
     }
 
-    private Path createSurfacePath(Set<BlockPos> targets, int reachRange, float maxPathLength, Predicate<Point> destinationFilter) {
-        var target = targets.stream().min(Comparator.comparingDouble(pos -> pos.distSqr(this.climber.blockPosition()))).orElse(this.climber.blockPosition());
-        var destination = Vec3.atCenterOf(target);
+    protected Path createSurfacePath(float maxPathLength, Predicate<Point> destinationFilter, ToDoubleFunction<Point> priorityBias, int maxVisitedNodes) {
+        return this.createSurfacePath(Set.of(), 0, maxPathLength, destinationFilter, priorityBias, maxVisitedNodes);
+    }
+
+    private Path createSurfacePath(Set<BlockPos> targets, int reachRange, float maxPathLength, Predicate<Point> destinationFilter,
+                                   ToDoubleFunction<Point> priorityBias, int maxVisitedNodes) {
         var pointsByCell = new HashMap<BlockPos, List<Point>>();
         var entries = new HashMap<Point, Entry>();
         var closed = new HashSet<Point>();
-        var pending = new PriorityQueue<Entry>(Comparator.comparingDouble(entry -> entry.cost()
-                + (targets.isEmpty() ? 0D : entry.point().position().distanceTo(destination))));
+        var pending = new PriorityQueue<Entry>(Comparator.comparingDouble(entry -> entry.cost() + priorityBias.applyAsDouble(entry.point())));
         var start = new Entry(new Point(this.climber.blockPosition(), this.climber.position(), this.climber.getClimbingSide()), null, 0D, null);
 
         for (var cell : BlockPos.betweenClosed(this.climber.blockPosition().offset(-1, -1, -1), this.climber.blockPosition().offset(1, 1, 1))) {
@@ -130,7 +137,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             }
         }
 
-        while (!pending.isEmpty() && closed.size() < maxPathLength * 16F) {
+        while (!pending.isEmpty() && closed.size() < maxVisitedNodes) {
             var current = pending.remove();
 
             if (entries.get(current.point()) != current || !closed.add(current.point()))
@@ -152,11 +159,13 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             cells.add(current.point().cell());
 
             for (var direction : Direction.values()) {
+                var adjacent = current.point().cell().relative(direction);
+
                 if (direction.getAxis() != current.point().side().getAxis()) {
-                    cells.add(current.point().cell().relative(direction));
-                    cells.add(current.point().cell().relative(direction).relative(current.point().side()));
-                } else if (unsupported)
-                    cells.add(current.point().cell().relative(direction));
+                    cells.add(adjacent);
+                    cells.add(adjacent.relative(current.point().side()));
+                } else if (unsupported || direction == Direction.DOWN && this.isPassable(adjacent))
+                    cells.add(adjacent);
             }
 
             for (var cell : cells) {

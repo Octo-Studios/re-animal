@@ -222,7 +222,7 @@ public class RedPandaAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, RedPandaEntity panda) {
-            if (panda.isInLiquid() || panda.isPassenger() || level.getGameTime() < this.nextSearchTick)
+            if (level.getGameTime() < this.nextSearchTick || !((RedPandaNavigation) panda.getNavigation()).canClimbTree())
                 return false;
 
             this.nextSearchTick = level.getGameTime() + 100 + panda.getRandom().nextInt(100);

@@ -212,13 +212,13 @@ public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber 
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
+        ((RedPandaNavigation) this.getNavigation()).recover();
+
         ((Brain<RedPandaEntity>) this.getBrain()).tick(serverLevel, this);
 
         RedPandaAI.updateActivity(this);
 
         super.customServerAiStep(serverLevel);
-
-        ((RedPandaNavigation) this.getNavigation()).recover();
     }
     protected Brain.Provider<RedPandaEntity> brainProvider() {
         return RedPandaAI.brainProvider();
@@ -234,8 +234,8 @@ public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber 
         super.aiStep();
 
         var targetPlayer = this.findNearbyPlayer();
-        var shouldStand = this.onGround() && !this.isClimbing() && !this.isInLeaves(this.position())
-                && targetPlayer != null && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+        var shouldStand = targetPlayer != null && this.onGround() && !((RedPandaNavigation) this.getNavigation()).isInTree()
+                && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
 
         if (!this.level().isClientSide())
             this.updateStandState(shouldStand);

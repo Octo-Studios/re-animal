@@ -5,22 +5,26 @@ import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.Set;
-
 public class RedPandaNavigation extends SurfaceNavigation<RedPandaEntity> {
-    private long nextRestSearchTick;
+    private static final int TREE_PATH_RANGE = 16;
+    private static final UniformInt TREE_CLIMB_COOLDOWN = UniformInt.of(600, 1200);
+
+    private long nextDescentSearchTick;
+    private long nextClimbTick;
+    private boolean wasInTree;
 
     public RedPandaNavigation(RedPandaEntity panda, Level level) {
         super(panda, level, (state, side) -> side == Direction.DOWN
                 || side != Direction.UP && !state.is(BlockTags.LEAVES) && state.is(ReAnimalTags.Blocks.RED_PANDA_CLIMBABLE), 0.4D);
 
-        this.setRequiredPathLength(16F);
+        this.setRequiredPathLength(TREE_PATH_RANGE);
     }
 
     @Override
@@ -38,15 +42,48 @@ public class RedPandaNavigation extends SurfaceNavigation<RedPandaEntity> {
         return point.side() == Direction.DOWN && this.canRest(point.position());
     }
 
+    @Override
+    public boolean isStableDestination(BlockPos pos) {
+        return !this.isTreeBlock(pos.below()) && super.isStableDestination(pos);
+    }
+
+    private boolean isTreeBlock(BlockPos pos) {
+        var state = this.level.getBlockState(pos);
+
+        return state.is(BlockTags.LEAVES) || state.is(ReAnimalTags.Blocks.RED_PANDA_CLIMBABLE);
+    }
+
+    public boolean isInTree() {
+        return this.climber.isClimbing() || this.climber.isInLeaves(this.climber.position())
+                || this.climber.onGround() && this.isTreeBlock(this.climber.getOnPos());
+    }
+
+    public boolean canClimbTree() {
+        return this.climber.onGround() && !this.wasInTree && this.canNavigate() && this.level.getGameTime() >= this.nextClimbTick;
+    }
+
     public void recover() {
-        if (!this.isDone() || this.climber.isInLiquid() || this.climber.isPassenger()
-                || (!this.climber.isClimbing() && (!this.climber.onGround() || !this.climber.isInLeaves(this.climber.position())))
-                || this.level.getGameTime() < this.nextRestSearchTick)
+        var inTree = this.isInTree();
+        var gameTime = this.level.getGameTime();
+
+        if (inTree)
+            this.wasInTree = true;
+        else if (this.wasInTree && this.climber.onGround()) {
+            this.wasInTree = false;
+            this.nextClimbTick = gameTime + TREE_CLIMB_COOLDOWN.sample(this.climber.getRandom());
+        }
+
+        if (!inTree || !this.isDone() || !this.canNavigate() || gameTime < this.nextDescentSearchTick
+                || this.climber.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING))
             return;
 
-        this.nextRestSearchTick = this.level.getGameTime() + 20L;
+        this.nextDescentSearchTick = gameTime + 20L;
 
-        var path = this.createSurfacePath(Set.of(), 0, 16F);
+        var searchRange = TREE_PATH_RANGE * 2;
+        var descentY = this.climber.getY() - TREE_PATH_RANGE;
+        var path = this.createSurfacePath(searchRange, point -> point.position().y <= descentY
+                || this.canFinishAt(point) && !this.isTreeBlock(point.cell().below()),
+                point -> point.position().y, searchRange * searchRange);
 
         if (path != null) {
             this.climber.setStandState(RedPandaEntity.StandState.ON_ALL_FOURS);
