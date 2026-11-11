@@ -254,7 +254,9 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
                 var movement = this.position().subtract(this.xo, this.yo, this.zo).with(face.getAxis(), 0D);
                 var moving = movement.lengthSqr() > 0D;
 
-                if (moving || this.restProgress == 0F || face != this.renderRestingFace) {
+                if (!moving && face == Direction.UP)
+                    this.restTargetYaw = this.yHeadRot;
+                else if (moving || this.restProgress == 0F || face != this.renderRestingFace) {
                     var facing = moving ? movement : Vec3.directionFromRotation(this.getXRot(), this.yBodyRot);
                     var look = rotation.transformInverse(facing.toVector3f());
                     this.restTargetYaw = (float) Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG;
