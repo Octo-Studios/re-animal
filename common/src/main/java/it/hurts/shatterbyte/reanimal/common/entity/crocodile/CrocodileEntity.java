@@ -69,6 +69,11 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private static final String BITE_TRIGGER = "bite";
     private static final String SPIN_TRIGGER = "spin";
     private static final int TURN_SPEED = 10;
+    private static final int DASH_DURATION = 10;
+    private static final double BITE_REACH = 24.5D / 16D;
+    private static final double BITE_RADIUS = 4D / 16D;
+    private static final Vec3 BITE_START = new Vec3(0D, 4D / 16D, 10D / 16D);
+    private static final Vec3 BITE_END = new Vec3(0D, 4D / 16D, BITE_REACH);
 
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> HAS_EGG = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
@@ -172,21 +177,32 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     }
 
     public boolean canBite(LivingEntity target) {
-        if (!this.isWithinMeleeAttackRange(target))
-            return false;
+        return this.canBite(target, this.yBodyRot);
+    }
 
-        var forward = Vec3.directionFromRotation(0F, this.yBodyRot);
-        var offset = target.position().subtract(this.position());
-        var sideways = forward.z * offset.x - forward.x * offset.z;
+    boolean isWithinBiteRange(LivingEntity target) {
+        return this.canBite(target, this.yawTo(target));
+    }
 
-        return forward.dot(offset) > Math.abs(sideways);
+    private boolean canBite(LivingEntity target, float yaw) {
+        var scale = this.getScale() * this.getAgeScale();
+        var pitch = this.isInWater() ? this.swimPitch * Mth.DEG_TO_RAD : 0F;
+        var rotation = -yaw * Mth.DEG_TO_RAD;
+        var start = this.position().add(BITE_START.scale(scale).xRot(pitch).yRot(rotation));
+        var end = this.position().add(BITE_END.scale(scale).xRot(pitch).yRot(rotation));
+        var bounds = target.getBoundingBox().inflate(BITE_RADIUS * scale);
+
+        return (bounds.contains(start) || bounds.contains(end) || bounds.clip(start, end).isPresent()) && this.hasLineOfSight(target);
     }
 
     public void turnToward(LivingEntity target) {
-        var offset = target.position().subtract(this.position());
-        var yaw = (float) Mth.atan2(-offset.x, offset.z) * Mth.RAD_TO_DEG;
+        this.setFacing(Mth.approachDegrees(this.yBodyRot, this.yawTo(target), TURN_SPEED));
+    }
 
-        this.setFacing(Mth.approachDegrees(this.yBodyRot, yaw, TURN_SPEED));
+    private float yawTo(LivingEntity target) {
+        var offset = target.position().subtract(this.position());
+
+        return (float) Mth.atan2(-offset.x, offset.z) * Mth.RAD_TO_DEG;
     }
 
     private void setFacing(float yaw) {
@@ -204,6 +220,10 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     }
 
     public void startAttackAnimation(boolean spinning) {
+        this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        this.getNavigation().stop();
+        this.setDeltaMovement(0D, this.isInWater() ? 0D : this.getDeltaMovement().y, 0D);
+
         this.attackAnimationTicks = spinning ? CrocodileAI.SPIN_ANIMATION_TICKS : CrocodileAI.BITE_ANIMATION_TICKS;
         this.setFacing(this.yBodyRot);
         this.entityData.set(SPINNING, spinning);
@@ -219,10 +239,11 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
     public void tryDash(LivingEntity target) {
         var offset = target.position().subtract(this.position());
-        var distance = offset.lengthSqr();
+        var reach = this.getDashSpeed() * DASH_DURATION + (BITE_REACH + BITE_RADIUS) * this.getScale();
 
         if (this.isBaby() || this.dashCooldown > 0 || this.isDashing() || this.isAttacking() || this.isVehicle()
-                || !this.isInWater() && !this.onGround() || distance < 4D || distance > 36D || offset.horizontalDistanceSqr() == 0D)
+                || !this.isInWater() && !this.onGround() || offset.lengthSqr() < 4D || offset.horizontalDistanceSqr() == 0D
+                || target.getBoundingBox().distanceToSqr(this.position()) > reach * reach)
             return;
 
         var yaw = (float) Mth.atan2(-offset.x, offset.z) * Mth.RAD_TO_DEG;
@@ -234,9 +255,13 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
         this.getNavigation().stop();
         this.dashDirection = offset.multiply(1D, this.isInWater() ? 1D : 0D, 1D).normalize();
-        this.dashTicks = 10;
+        this.dashTicks = DASH_DURATION;
         this.dashCooldown = 80 + this.random.nextInt(80);
         this.entityData.set(DASHING, true);
+    }
+
+    private double getDashSpeed() {
+        return this.isInWater() ? 0.45D : 0.28D;
     }
 
     public void stopDash() {
@@ -366,13 +391,15 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
         this.previousSwimPitch = this.swimPitch;
 
-        var movement = this.getDeltaMovement();
-        var targetPitch = this.isInWater() && !this.isAmbushing()
-                ? Mth.clamp((float) Mth.atan2(movement.y, movement.horizontalDistance()) * Mth.RAD_TO_DEG, -35F, 35F)
-                * (float) Math.min(movement.length() / this.getAttributeValue(Attributes.MOVEMENT_SPEED), 1D)
-                : 0F;
+        if (!this.isAttacking()) {
+            var movement = this.getDeltaMovement();
+            var targetPitch = this.isInWater() && !this.isAmbushing()
+                    ? Mth.clamp((float) Mth.atan2(movement.y, movement.horizontalDistance()) * Mth.RAD_TO_DEG, -35F, 35F)
+                    * (float) Math.min(movement.length() / this.getAttributeValue(Attributes.MOVEMENT_SPEED), 1D)
+                    : 0F;
 
-        this.swimPitch = Mth.lerp(0.15F, this.swimPitch, targetPitch);
+            this.swimPitch = Mth.lerp(0.15F, this.swimPitch, targetPitch);
+        }
 
         if (!this.level().isClientSide() && this.attackAnimationTicks > 0) {
             this.attackAnimationTicks--;
@@ -507,7 +534,7 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         }
 
         if (this.isDashing()) {
-            var movement = this.dashDirection.scale(this.isInWater() ? 0.45D : 0.28D);
+            var movement = this.dashDirection.scale(this.getDashSpeed());
 
             this.setDeltaMovement(movement.x, this.isInWater() ? movement.y : this.getDeltaMovement().y, movement.z);
             travelVector = Vec3.ZERO;

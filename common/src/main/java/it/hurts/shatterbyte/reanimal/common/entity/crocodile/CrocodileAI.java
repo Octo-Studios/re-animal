@@ -456,16 +456,19 @@ public class CrocodileAI {
                 return;
             }
 
-            if (crocodile.isDashing())
+            if (crocodile.isDashing() || crocodile.isAttacking())
                 return;
 
-            if (crocodile.isWithinMeleeAttackRange(target)) {
+            if (crocodile.isWithinBiteRange(target)) {
                 brain.eraseMemory(MemoryModuleType.WALK_TARGET);
                 crocodile.getNavigation().stop();
                 crocodile.turnToward(target);
             } else {
-                brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 1.2F, 0));
-                crocodile.tryDash(target);
+                brain.setMemory(MemoryModuleType.WALK_TARGET, crocodile.isInWater() && target.isInWater()
+                        ? new WalkTarget(target.position().add(0D, 0.5D, 0D), 1.2F, 0)
+                        : new WalkTarget(target, 1.2F, 0));
+                if (!brain.hasMemoryValue(MemoryModuleType.ATTACK_COOLING_DOWN))
+                    crocodile.tryDash(target);
             }
         }
 
@@ -619,10 +622,6 @@ public class CrocodileAI {
         private int animationLength;
         private int hitTick;
         private int elapsedTicks;
-        private boolean dealtDamage;
-
-        @Nullable
-        private BlockPos grabWater;
 
         public CrocodileAttack() {
             super(ImmutableMap.of(
@@ -641,15 +640,12 @@ public class CrocodileAI {
         @Override
         protected void start(ServerLevel level, CrocodileEntity entity, long gameTime) {
             this.elapsedTicks = 0;
-            this.dealtDamage = false;
 
             var target = getAttackTarget(entity).orElseThrow();
-
-            this.grabWater = entity.canGrab(target) ? findDeepWater(level, entity) : null;
-            var spinning = this.grabWater == null && (entity.getGrabbedPrey() == target || entity.getRandom().nextBoolean());
+            var spinning = entity.getGrabbedPrey() == target;
 
             this.animationLength = spinning ? SPIN_ANIMATION_TICKS : BITE_ANIMATION_TICKS;
-            this.hitTick = spinning ? 18 : 9;
+            this.hitTick = spinning ? 18 : entity.isDashing() ? 1 : 9;
 
             entity.startAttackAnimation(spinning);
         }
@@ -662,20 +658,21 @@ public class CrocodileAI {
 
         @Override
         protected void tick(ServerLevel level, CrocodileEntity entity, long gameTime) {
-            this.elapsedTicks++;
+            if (++this.elapsedTicks != this.hitTick)
+                return;
 
-            CrocodileAI.getAttackTarget(entity).ifPresent(target -> {
-                if (!this.dealtDamage && this.elapsedTicks == this.hitTick
-                        && (entity.getGrabbedPrey() == target || entity.canBite(target))) {
-                    this.dealtDamage = this.grabWater != null && entity.grabPrey(target, this.grabWater);
+            var target = getAttackTarget(entity).orElseThrow();
+            if (entity.isSpinning() ? entity.getGrabbedPrey() != target : !entity.canBite(target))
+                return;
 
-                    if (!this.dealtDamage)
-                        this.dealtDamage = entity.doHurtTarget(level, target);
+            var grabbed = false;
+            if (entity.canGrab(target) && entity.getRandom().nextBoolean()) {
+                var water = findDeepWater(level, entity);
+                grabbed = water != null && entity.grabPrey(target, water);
+            }
 
-                    if (this.dealtDamage)
-                        entity.playSound(ReAnimalSoundEvents.CROCODILE_BITE, 1F, 1F);
-                }
-            });
+            if (grabbed || entity.doHurtTarget(level, target))
+                entity.playSound(ReAnimalSoundEvents.CROCODILE_BITE, 1F, 1F);
         }
 
         @Override
