@@ -2,7 +2,6 @@ package it.hurts.shatterbyte.reanimal.common.entity.penguin;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
@@ -44,7 +43,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.pathfinder.PathType;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -99,23 +97,6 @@ public class PenguinEntity extends Animal implements GeoEntity {
         this.navigation = new AmphibiousPathNavigation(this, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
-    }
-
-    @Override
-    protected AABB makeBoundingBox(Vec3 position) {
-        var bounds = super.makeBoundingBox(position);
-
-        return (this.swimmingDimensions || this.isSliding() || this.isDiving()) ? BodyBounds.fitAlongYaw(this, bounds, 1.75D) : bounds;
-    }
-
-    @Override
-    public void setYRot(float yaw) {
-        var previous = this.getYRot();
-
-        super.setYRot(yaw);
-
-        if (this.getYRot() != previous)
-            this.setBoundingBox(this.makeBoundingBox());
     }
 
     @Override
@@ -327,7 +308,7 @@ public class PenguinEntity extends Animal implements GeoEntity {
 
         var direction = offset.scale(1D / distance);
         var yaw = (float) Mth.atan2(-direction.x, direction.z) * Mth.RAD_TO_DEG;
-        var slideBounds = BodyBounds.alongYaw(this.getDimensions(this.getPose()).scale(1F, 0.5F).makeBoundingBox(this.position()), 1.75D, yaw);
+        var slideBounds = this.getDimensions(this.getPose()).scale(1F, 0.5F).makeBoundingBox(this.position());
         var route = direction.scale(distance - stopDistance);
 
         if (!this.level().noCollision(this, this.getBoundingBox().move(route)))

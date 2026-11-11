@@ -11,7 +11,6 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animation.state.AnimationTest;
 import com.geckolib.constant.dataticket.DataTicket;
 import com.geckolib.util.GeckoLibUtil;
-import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallPlay;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
@@ -50,7 +49,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
@@ -143,23 +141,6 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
             return false;
 
         return this.blockPosition().closerThan(this.environmentTarget, 2F);
-    }
-
-    @Override
-    protected AABB makeBoundingBox(Vec3 position) {
-        var bounds = super.makeBoundingBox(position);
-
-        return this.equipment != null ? BodyBounds.fitAlongYaw(this, bounds, 1.8D) : bounds;
-    }
-
-    @Override
-    public void setYRot(float yaw) {
-        var previous = this.getYRot();
-
-        super.setYRot(yaw);
-
-        if (this.getYRot() != previous)
-            this.setBoundingBox(this.makeBoundingBox());
     }
 
     @Override

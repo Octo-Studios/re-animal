@@ -2,7 +2,6 @@ package it.hurts.shatterbyte.reanimal.common.entity.meerkat;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
-import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
@@ -27,7 +26,6 @@ import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -73,24 +71,6 @@ public class MeerkatEntity extends Animal implements GeoEntity {
         this.getNavigation().setCanFloat(true);
 
         this.standCooldownTicks = Mth.randomBetweenInclusive(this.random, STAND_COOLDOWN_MIN, STAND_COOLDOWN_MAX);
-    }
-
-    @Override
-    protected AABB makeBoundingBox(Vec3 position) {
-        var bounds = super.makeBoundingBox(position);
-
-        return this.equipment != null && this.getStandState() != StandState.STANDING
-                ? BodyBounds.fitAlongYaw(this, bounds, 1.35D) : bounds;
-    }
-
-    @Override
-    public void setYRot(float yaw) {
-        var previous = this.getYRot();
-
-        super.setYRot(yaw);
-
-        if (this.getYRot() != previous)
-            this.setBoundingBox(this.makeBoundingBox());
     }
 
     @Override
