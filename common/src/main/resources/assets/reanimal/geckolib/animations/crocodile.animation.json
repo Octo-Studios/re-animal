@@ -265,45 +265,6 @@
 						"1.5833": {"vector": [0, 0, 0], "easing": "easeInOutSine"}
 					}
 				},
-				"head": {
-					"rotation": {
-						"0.0": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"0.25": {"vector": [-8, 0, 0], "easing": "easeInOutSine"},
-						"0.4167": {"vector": [3, 0, 0], "easing": "easeInOutSine"},
-						"0.5417": {"vector": [-3, 0, 0], "easing": "easeInOutSine"},
-						"1.3333": {"vector": [-3, 0, 0], "easing": "easeInOutSine"},
-						"1.5833": {"vector": [0, 0, 0], "easing": "easeInOutSine"}
-					},
-					"position": [0, 0, 0]
-				},
-				"lower_jaw": {
-					"rotation": {
-						"0.0": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"0.25": {"vector": [30, 0, 0], "easing": "easeInOutSine"},
-						"0.4583": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"1.5833": {"vector": [0, 0, 0], "easing": "easeInOutSine"}
-					},
-					"position": {
-						"0.0": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"0.25": {"vector": [0, -0.5, 1.1], "easing": "easeInOutSine"},
-						"0.4583": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"1.5833": {"vector": [0, 0, 0], "easing": "easeInOutSine"}
-					}
-				},
-				"upper_jaw": {
-					"rotation": {
-						"0.0": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"0.25": {"vector": [-12, 0, 0], "easing": "easeInOutSine"},
-						"0.4583": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"1.5833": {"vector": [0, 0, 0], "easing": "easeInOutSine"}
-					},
-					"position": {
-						"0.0": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"0.25": {"vector": [0, 0.13, 0.36], "easing": "easeInOutSine"},
-						"0.4583": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
-						"1.5833": {"vector": [0, 0, 0], "easing": "easeInOutSine"}
-					}
-				},
 				"tail_1": {
 					"rotation": {
 						"0.0": {"vector": [0, 0, 0], "easing": "easeInOutSine"},
@@ -395,7 +356,7 @@
 			}
 		},
 		"animation.crocodile.hold": {
-			"loop": true,
+			"loop": "hold_on_last_frame",
 			"bones": {
 				"lower_jaw": {
 					"rotation": [15, 0, 0],

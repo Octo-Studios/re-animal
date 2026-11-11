@@ -62,14 +62,15 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private static final RawAnimation SWIM_POSE = RawAnimation.begin().thenLoop("animation.crocodile.swim_pose");
     private static final RawAnimation AMBUSH = RawAnimation.begin().thenLoop("animation.crocodile.ambush");
     private static final RawAnimation BASK = RawAnimation.begin().thenLoop("animation.crocodile.bask");
-    private static final RawAnimation HOLD = RawAnimation.begin().thenLoop("animation.crocodile.hold");
+    private static final RawAnimation HOLD = RawAnimation.begin().thenPlayAndHold("animation.crocodile.hold");
     private static final RawAnimation DASH_LAND = RawAnimation.begin().thenLoop("animation.crocodile.dash_land");
     private static final RawAnimation DASH_SWIM = RawAnimation.begin().thenLoop("animation.crocodile.dash_swim");
-    private static final RawAnimation ATTACK_1 = RawAnimation.begin().then("animation.crocodile.bite", LoopType.PLAY_ONCE);
-    private static final RawAnimation ATTACK_2 = RawAnimation.begin().then("animation.crocodile.spinn", LoopType.PLAY_ONCE);
+    private static final RawAnimation BITE = RawAnimation.begin().then("animation.crocodile.bite", LoopType.PLAY_ONCE);
+    private static final RawAnimation SPIN = RawAnimation.begin().then("animation.crocodile.spinn", LoopType.PLAY_ONCE);
 
     private static final String BITE_TRIGGER = "bite";
     private static final String SPIN_TRIGGER = "spin";
+    private static final int TURN_SPEED = 10;
 
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> HAS_EGG = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
@@ -96,7 +97,7 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     public CrocodileEntity(EntityType<? extends Animal> entityType, Level level) {
         super(entityType, level);
 
-        this.moveControl = new SmoothSwimmingMoveControl<>(this, 85, 10, 0.4F, 1F, false) {
+        this.moveControl = new SmoothSwimmingMoveControl<>(this, 85, TURN_SPEED, 0.4F, 1F, false) {
             private float movementPitch;
 
             @Override
@@ -112,7 +113,8 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         this.lookControl = new SmoothSwimmingLookControl(this, 10) {
             @Override
             public void tick() {
-                if (!CrocodileEntity.this.isAmbushing() && !CrocodileEntity.this.isBasking())
+                if (!CrocodileEntity.this.isAmbushing() && !CrocodileEntity.this.isBasking()
+                        && !CrocodileEntity.this.isAttacking() && !CrocodileEntity.this.isDashing())
                     super.tick();
             }
         };
@@ -188,23 +190,69 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         return this.isAttacking() && this.entityData.get(SPINNING);
     }
 
+    public boolean canBite(LivingEntity target) {
+        if (!this.isWithinMeleeAttackRange(target))
+            return false;
+
+        var forward = Vec3.directionFromRotation(0F, this.yBodyRot);
+        var offset = target.position().subtract(this.position());
+        var sideways = forward.z * offset.x - forward.x * offset.z;
+
+        return forward.dot(offset) > Math.abs(sideways);
+    }
+
+    public void turnToward(LivingEntity target) {
+        var offset = target.position().subtract(this.position());
+        var yaw = (float) Mth.atan2(-offset.x, offset.z) * Mth.RAD_TO_DEG;
+
+        this.setFacing(Mth.approachDegrees(this.yBodyRot, yaw, TURN_SPEED));
+    }
+
+    private void setFacing(float yaw) {
+        this.setYRot(yaw);
+        this.yBodyRot = yaw;
+        this.setYHeadRot(yaw);
+    }
+
+    @Override
+    protected void tickHeadTurn(float yBodyRot) {
+        if (this.isAttacking() || this.isDashing())
+            this.yBodyRot = this.getYRot();
+        else
+            super.tickHeadTurn(yBodyRot);
+    }
+
     public void startAttackAnimation(boolean spinning) {
         this.attackAnimationTicks = spinning ? CrocodileAI.SPIN_ANIMATION_TICKS : CrocodileAI.BITE_ANIMATION_TICKS;
+        this.setFacing(this.yBodyRot);
         this.entityData.set(SPINNING, spinning);
         this.setAttacking(true);
         this.stopDash();
 
-        this.triggerAnim("attack", spinning ? SPIN_TRIGGER : BITE_TRIGGER);
+        if (spinning)
+            this.triggerAnim("spin", SPIN_TRIGGER);
+
+        if (this.getGrabbedPrey() == null)
+            this.triggerAnim("mouth", BITE_TRIGGER);
     }
 
     public void tryDash(LivingEntity target) {
-        var distance = this.distanceToSqr(target);
+        var offset = target.position().subtract(this.position());
+        var distance = offset.lengthSqr();
 
         if (this.isBaby() || this.dashCooldown > 0 || this.isDashing() || this.isAttacking() || this.isVehicle()
-                || !this.isInWater() && !this.onGround() || distance < 4D || distance > 36D || !this.hasLineOfSight(target))
+                || !this.isInWater() && !this.onGround() || distance < 4D || distance > 36D || offset.horizontalDistanceSqr() == 0D)
             return;
 
-        this.dashDirection = target.position().subtract(this.position()).multiply(1D, this.isInWater() ? 1D : 0D, 1D).normalize();
+        var yaw = (float) Mth.atan2(-offset.x, offset.z) * Mth.RAD_TO_DEG;
+
+        if (Math.abs(Mth.wrapDegrees(yaw - this.yBodyRot)) > TURN_SPEED || !this.hasLineOfSight(target))
+            return;
+
+        this.setFacing(yaw);
+        this.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
+        this.getNavigation().stop();
+        this.dashDirection = offset.multiply(1D, this.isInWater() ? 1D : 0D, 1D).normalize();
         this.dashTicks = 10;
         this.dashCooldown = 80 + this.random.nextInt(80);
         this.entityData.set(DASHING, true);
@@ -521,21 +569,27 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
         controllers.add(new AnimationController<>("pose", 5,
                 state -> state.setAndContinue(this.isInWater() ? SWIM_POSE : LAND_POSE)).additiveAnimations());
-        controllers.add(new AnimationController<>("mouth", 3, state -> {
-            if (this.getGrabbedPrey() == null || this.isAttacking()) {
-                state.controller().reset();
+        controllers.add(new AnimationController<>("mouth", 0, state -> {
+            var controller = state.controller();
 
-                return PlayState.STOP;
+            if (this.getGrabbedPrey() != null) {
+                controller.setTransitionTicks(3);
+
+                return state.setAndContinue(HOLD);
             }
 
-            state.controller().setAnimation(HOLD);
+            controller.setTransitionTicks(0);
 
-            return PlayState.CONTINUE;
-        }).additiveAnimations());
-        controllers.add(new AnimationController<>("attack", 0, state -> PlayState.STOP)
+            if (controller.getCurrentRawAnimation() == BITE)
+                return PlayState.CONTINUE;
+
+            controller.reset();
+
+            return PlayState.STOP;
+        }).additiveAnimations().receiveTriggeredAnimations().triggerableAnim(BITE_TRIGGER, BITE));
+        controllers.add(new AnimationController<>("spin", 0, state -> PlayState.STOP)
                 .additiveAnimations()
-                .triggerableAnim(BITE_TRIGGER, ATTACK_1)
-                .triggerableAnim(SPIN_TRIGGER, ATTACK_2));
+                .triggerableAnim(SPIN_TRIGGER, SPIN));
     }
 
     private PlayState mainPredicate(AnimationTest<CrocodileEntity> state) {

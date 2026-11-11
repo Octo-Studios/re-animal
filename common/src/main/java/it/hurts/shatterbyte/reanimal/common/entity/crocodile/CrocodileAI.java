@@ -456,9 +456,13 @@ public class CrocodileAI {
                 return;
             }
 
+            if (crocodile.isDashing())
+                return;
+
             if (crocodile.isWithinMeleeAttackRange(target)) {
                 brain.eraseMemory(MemoryModuleType.WALK_TARGET);
                 crocodile.getNavigation().stop();
+                crocodile.turnToward(target);
             } else {
                 brain.setMemory(MemoryModuleType.WALK_TARGET, new WalkTarget(target, 1.2F, 0));
                 crocodile.tryDash(target);
@@ -631,7 +635,7 @@ public class CrocodileAI {
         protected boolean checkExtraStartConditions(ServerLevel level, CrocodileEntity entity) {
             return !entity.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_COOLING_DOWN)
                     && CrocodileAI.getAttackTarget(entity).filter(target -> entity.getGrabbedPrey() == target
-                    ? entity.isInWater() && target.isInWater() : entity.isWithinMeleeAttackRange(target)).isPresent();
+                    ? entity.isInWater() && target.isInWater() : entity.canBite(target)).isPresent();
         }
 
         @Override
@@ -661,11 +665,8 @@ public class CrocodileAI {
             this.elapsedTicks++;
 
             CrocodileAI.getAttackTarget(entity).ifPresent(target -> {
-                if (entity.getGrabbedPrey() != target)
-                    entity.getLookControl().setLookAt(target, 30F, 30F);
-
                 if (!this.dealtDamage && this.elapsedTicks == this.hitTick
-                        && (entity.getGrabbedPrey() == target || entity.isWithinMeleeAttackRange(target))) {
+                        && (entity.getGrabbedPrey() == target || entity.canBite(target))) {
                     this.dealtDamage = this.grabWater != null && entity.grabPrey(target, this.grabWater);
 
                     if (!this.dealtDamage)
