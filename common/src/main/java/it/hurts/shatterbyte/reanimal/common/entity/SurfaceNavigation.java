@@ -18,6 +18,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -392,12 +393,8 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     }
 
     private boolean hasSupport(AABB bounds, Direction side) {
-        var box = bounds.deflate(Shapes.EPSILON);
-        var offset = Vec3.atLowerCornerOf(side.getUnitVec3i()).scale(GRIP_REACH);
-        var probe = box.move(offset);
-        var collisions = new BlockCollisions<>(this.climber.level(), CollisionContext.empty(), probe, false,
-                (pos, shape) -> this.canSupport(pos, side) && (side != Direction.DOWN || shape.max(Direction.Axis.Y) <= bounds.minY + Shapes.EPSILON)
-                        ? shape : Shapes.empty());
+        var probe = bounds.deflate(Shapes.EPSILON).move(side.getUnitVec3().scale(GRIP_REACH));
+        var collisions = this.getSupportCollisions(bounds, side, probe);
 
         while (collisions.hasNext()) {
             if (!collisions.next().isEmpty())
@@ -405,6 +402,28 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         }
 
         return false;
+    }
+
+    public Vec3 getSupportOffset(Vec3 position, Direction side) {
+        var bounds = this.getBoundingBox(position, side);
+        var axis = side.getAxis();
+        var thickness = axis.choose(bounds.getXsize(), bounds.getYsize(), bounds.getZsize());
+        var reach = GRIP_REACH + Math.max(0D, (this.climber.getBbWidth() - thickness) * 0.5D);
+        var probe = bounds.deflate(Shapes.EPSILON).expandTowards(side.getUnitVec3().scale(reach));
+        var collisions = this.getSupportCollisions(bounds, side, probe);
+        var limit = reach * side.getAxisDirection().getStep();
+        var offset = limit;
+
+        while (collisions.hasNext())
+            offset = collisions.next().collide(axis, bounds, offset);
+
+        return offset == limit ? Vec3.ZERO : Vec3.ZERO.with(axis, offset);
+    }
+
+    private BlockCollisions<VoxelShape> getSupportCollisions(AABB bounds, Direction side, AABB probe) {
+        return new BlockCollisions<>(this.climber.level(), CollisionContext.empty(), probe, false,
+                (pos, shape) -> this.canSupport(pos, side) && (side != Direction.DOWN || shape.max(Direction.Axis.Y) <= bounds.minY + Shapes.EPSILON)
+                        ? shape : Shapes.empty());
     }
 
     private Entry connect(Entry from, Point to) {
