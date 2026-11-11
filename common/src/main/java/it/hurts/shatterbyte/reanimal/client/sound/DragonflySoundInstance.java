@@ -33,7 +33,7 @@ public class DragonflySoundInstance extends AbstractTickableSoundInstance {
         this.y = (float) dragonfly.getY();
         this.z = (float) dragonfly.getZ();
 
-        if (dragonfly.onGround() || dragonfly.isPerched()) {
+        if (dragonfly.onGround() || dragonfly.isResting() || dragonfly.isPerched() || dragonfly.isExposedToRain()) {
             this.pitch = 0.0F;
             this.volume = 0.0F;
             return;

@@ -46,7 +46,7 @@ final class InsectNavigation extends FlyingPathNavigation {
         if (insect.position().distanceToSqr(this.path.getNextEntityPos(insect)) <= MoveControl.MIN_SPEED_SQR)
             this.path.advance();
 
-        if (!this.path.isDone() && !insect.hasDryFlightPath(this.path.getNextEntityPos(insect))) {
+        if (!this.path.isDone() && !insect.hasDryPath(insect.position(), this.path.getNextEntityPos(insect))) {
             this.stop();
             insect.getMoveControl().setWait();
             return;

@@ -11,13 +11,13 @@ import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
 import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
-import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> extends GeoEntityRenderer<T, EntityRenderState> {
-    private static final DataTicket<Integer> RESTING_FACE = DataTicket.create("reanimal_insect_resting_face", Integer.class);
+    private static final DataTicket<Quaternionf> REST_ROTATION = DataTicket.create("reanimal_insect_rest_rotation", Quaternionf.class);
     private static final DataTicket<Float> REST_PROGRESS = DataTicket.create("reanimal_insect_rest_progress", Float.class);
     private static final DataTicket<Float> REST_YAW = DataTicket.create("reanimal_insect_rest_yaw", Float.class);
 
@@ -31,7 +31,7 @@ public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> e
 
         var geoState = (GeoRenderState) renderState;
 
-        geoState.addGeckolibData(RESTING_FACE, entity.getRenderRestingFace().get3DDataValue());
+        geoState.addGeckolibData(REST_ROTATION, entity.getRestRotation(partialTick));
         geoState.addGeckolibData(REST_PROGRESS, entity.getRestProgress(partialTick));
         geoState.addGeckolibData(REST_YAW, entity.getRestYaw(partialTick));
         geoState.addGeckolibData(MobPerch.TRANSFORM, MobPerch.extract(entity, renderState, partialTick, entity.getPerchFootSpan()));
@@ -57,14 +57,15 @@ public abstract class InsectRenderer<T extends FlyingInsectEntity & GeoEntity> e
         var progress = geoState.getOrDefaultGeckolibData(REST_PROGRESS, 0.0F);
 
         if (progress > 0.0F) {
-            var direction = Direction.from3DDataValue(geoState.getGeckolibData(RESTING_FACE));
+            var rotation = geoState.getGeckolibData(REST_ROTATION);
+            var up = rotation.transformPositiveY(new Vector3f());
             var state = (LivingEntityRenderState) renderPassInfo.renderState();
             var halfHeight = state.boundingBoxHeight * 0.5F;
-            var extent = direction.getAxis() == Direction.Axis.Y ? halfHeight : state.boundingBoxWidth * 0.5F;
+            var extent = Mth.lerp(Math.abs(up.y), state.boundingBoxWidth * 0.5F, halfHeight);
             var bodyYaw = (180.0F - state.bodyRot) * Mth.DEG_TO_RAD;
-            var restingRotation = direction.getRotation().rotateY((180.0F - geoState.getGeckolibData(REST_YAW)) * Mth.DEG_TO_RAD);
+            var restingRotation = new Quaternionf(rotation).rotateY((180.0F - geoState.getGeckolibData(REST_YAW)) * Mth.DEG_TO_RAD);
 
-            renderPassInfo.poseStack().translate(-direction.getStepX() * extent * progress, (halfHeight - direction.getStepY() * extent) * progress, -direction.getStepZ() * extent * progress);
+            renderPassInfo.poseStack().translate(-up.x * extent * progress, (halfHeight - up.y * extent) * progress, -up.z * extent * progress);
             renderPassInfo.poseStack().rotate(new Quaternionf().rotationY(bodyYaw).slerp(restingRotation, progress).rotateY(-bodyYaw));
         }
 

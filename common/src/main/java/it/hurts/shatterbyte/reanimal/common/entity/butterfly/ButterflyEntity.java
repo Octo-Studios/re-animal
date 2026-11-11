@@ -53,6 +53,7 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final TagKey<Biome> IS_DESERT = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_desert"));
     private static final TagKey<Biome> IS_SWAMP = TagKey.create(Registries.BIOME, Identifier.fromNamespaceAndPath("c", "is_swamp"));
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.butterfly.idle");
+    private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.butterfly.walk");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.butterfly.fly");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ButterflyEntity.class, EntityDataSerializers.INT);
@@ -246,7 +247,9 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (!entity.isResting() && !entity.isPerched() && (state.isMoving() || !entity.onGround()))
+        if (entity.isResting() || entity.isExposedToRain())
+            controller.setAnimation((entity.isResting() || entity.onGround()) && state.isMoving() ? WALK : IDLE);
+        else if (!entity.isPerched() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);
         else
             controller.setAnimation(IDLE);

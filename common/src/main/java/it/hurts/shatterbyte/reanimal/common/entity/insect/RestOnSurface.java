@@ -15,9 +15,11 @@ import java.util.Map;
 public class RestOnSurface extends Behavior<FlyingInsectEntity> {
     private static final int SEARCH_RADIUS = 6;
     private static final int APPROACH_TICKS = 200;
+    private static final int CRAWL_PAUSE_TICKS = 40;
 
     private LandingSpot landing;
     private int approachTicks;
+    private int restTicks;
     private long nextSearchTick;
 
     public RestOnSurface() {
@@ -33,11 +35,8 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
         if (!insect.canLand() || level.getGameTime() < this.nextSearchTick)
             return false;
 
-        if (insect.isResting()) {
-            this.landing = new LandingSpot(insect.getRestingBlock(), insect.getRestingFace(), insect.position());
-
+        if (insect.isResting())
             return true;
-        }
 
         var center = insect.getBoundingBox().getCenter();
         var candidates = new ArrayList<LandingSpot>(3);
@@ -88,21 +87,28 @@ public class RestOnSurface extends Behavior<FlyingInsectEntity> {
     @Override
     protected void start(ServerLevel level, FlyingInsectEntity insect, long timestamp) {
         this.approachTicks = 0;
+        this.restTicks = 0;
         insect.getNavigation().stop();
     }
 
     @Override
     protected boolean canStillUse(ServerLevel level, FlyingInsectEntity insect, long timestamp) {
         return insect.canLand() && !insect.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
-                && (insect.isResting() || this.approachTicks < APPROACH_TICKS)
+                && (insect.isResting() || this.approachTicks < APPROACH_TICKS
                 && insect.canRestOn(this.landing.support(), this.landing.face())
                 && level.getFluidState(BlockPos.containing(this.landing.target())).isEmpty()
-                && insect.canFlyDirectlyTo(this.landing.target());
+                && insect.canFlyDirectlyTo(this.landing.target()));
     }
 
     @Override
     protected void tick(ServerLevel level, FlyingInsectEntity insect, long timestamp) {
-        if (insect.isResting() || insect.position().distanceToSqr(this.landing.target()) <= Math.max(insect.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR))
+        if (insect.isResting()) {
+            var navigation = insect.getSurfaceNavigation();
+            if (navigation.isDone() && ++this.restTicks >= CRAWL_PAUSE_TICKS) {
+                navigation.stroll();
+                this.restTicks = 0;
+            }
+        } else if (insect.position().distanceToSqr(this.landing.target()) <= Math.max(insect.getDeltaMovement().lengthSqr(), MoveControl.MIN_SPEED_SQR))
             insect.restOn(this.landing.face(), this.landing.target());
         else {
             this.approachTicks++;

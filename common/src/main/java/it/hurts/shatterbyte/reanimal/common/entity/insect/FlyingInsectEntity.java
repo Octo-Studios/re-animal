@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.common.entity.insect;
 
 import it.hurts.shatterbyte.reanimal.common.entity.PerchingAnimalEntity;
-import lombok.Getter;
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -12,8 +12,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.ai.Brain;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -25,34 +25,37 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 
-import java.util.HashSet;
-
-public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
+public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements SurfaceClimber {
     private static final EntityDataAccessor<Integer> RESTING_FACE = SynchedEntityData.defineId(FlyingInsectEntity.class, EntityDataSerializers.INT);
     private static final int REST_TRANSITION_TICKS = 10;
     private static final double FLIGHT_ACCELERATION = 0.02D;
     private static final double FLIGHT_DRAG = 0.91D;
 
+    private final InsectSurfaceNavigation surfaceNavigation;
+    private final Quaternionf previousRestRotation = new Quaternionf();
+    private final Quaternionf restRotation = new Quaternionf();
     private boolean seekingShelter;
     private int shelterSearchTicks;
     private int nextLandingTick;
     private Vec3 takeoffTarget;
-    @Getter
     private Direction renderRestingFace = Direction.UP;
     private float previousRestProgress;
     private float restProgress;
     private float previousRestYaw;
     private float restYaw;
+    private float restTargetYaw;
 
     protected FlyingInsectEntity(EntityType<? extends Animal> type, Level level) {
         super(type, level);
 
+        this.surfaceNavigation = new InsectSurfaceNavigation(this, level);
         this.moveControl = new FlyingMoveControl<>(this, 10, true) {
             @Override
             public void tick() {
                 var insect = FlyingInsectEntity.this;
-                if (insect.isResting() || insect.isPerched())
+                if (insect.seekingShelter || insect.isResting() || insect.isPerched())
                     return;
 
                 var moving = this.hasWanted();
@@ -68,7 +71,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
                     insect.setZza(0F);
                     insect.setDeltaMovement(distance < MIN_SPEED ? Vec3.ZERO : movement.scale(Math.min(speed, distance) / distance));
                 } else if (insect.level().isRaining() && !insect.isExposedToRain()
-                        && !insect.hasDryFlightPath(insect.position().add(insect.getDeltaMovement())))
+                        && !insect.hasDryPath(insect.position(), insect.position().add(insect.getDeltaMovement())))
                     insect.setDeltaMovement(Vec3.ZERO);
             }
         };
@@ -98,8 +101,32 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         return this.getEntityData().get(RESTING_FACE) >= 0;
     }
 
+    @Override
+    public Direction getClimbingSide() {
+        var face = this.getRestingFace();
+        return face == null ? Direction.DOWN : face.getOpposite();
+    }
+
+    @Override
+    public void setClimbingSide(Direction side, Vec3 movement) {
+        var face = side.getOpposite();
+        if (face != this.getRestingFace()) {
+            this.getEntityData().set(RESTING_FACE, face.get3DDataValue());
+            this.setOnGround(side == Direction.DOWN);
+            this.setNoGravity(true);
+        }
+    }
+
+    InsectSurfaceNavigation getSurfaceNavigation() {
+        return this.surfaceNavigation;
+    }
+
     public boolean isExposedToRain() {
         return this.level().isRainingAt(this.blockPosition());
+    }
+
+    boolean isSeekingShelter() {
+        return this.seekingShelter;
     }
 
     @Override
@@ -107,15 +134,15 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         return this.level().isRainingAt(pos) ? Float.NEGATIVE_INFINITY : super.getWalkTargetValue(pos);
     }
 
-    boolean hasDryFlightPath(Vec3 target) {
+    boolean hasDryPath(Vec3 from, Vec3 target) {
         var level = this.level();
         return !level.isRaining() || !level.isRainingAt(BlockPos.containing(target))
-                && BlockGetter.traverseBlocks(this.position(), target, level,
+                && BlockGetter.traverseBlocks(from, target, level,
                         (world, pos) -> world.isRainingAt(pos) ? false : null, world -> true);
     }
 
     public boolean canFlyDirectlyTo(Vec3 target) {
-        return this.hasDryFlightPath(target)
+        return this.hasDryPath(this.position(), target)
                 && this.level().noCollision(this, this.getBoundingBox().expandTowards(target.subtract(this.position())));
     }
 
@@ -125,6 +152,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         if (exposed == this.seekingShelter)
             return false;
 
+        this.seekingShelter = exposed;
         var brain = (Brain<FlyingInsectEntity>) this.getBrain();
 
         brain.stopAll(level, this);
@@ -135,33 +163,31 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         brain.eraseMemory(MemoryModuleType.LOOK_TARGET);
         brain.eraseMemory(MemoryModuleType.PATH);
         brain.eraseMemory(MemoryModuleType.BREED_TARGET);
+        this.setYya(0F);
+        this.setZza(0F);
         this.setDeltaMovement(Vec3.ZERO);
-        this.seekingShelter = exposed;
+        this.setNoGravity(!exposed);
         this.shelterSearchTicks = 0;
+        if (exposed)
+            this.takeoffTarget = null;
 
         return true;
     }
 
-    private void tickRainShelter(ServerLevel level) {
+    private void tickRainShelter() {
         if (this.shelterSearchTicks > 0)
             --this.shelterSearchTicks;
 
-        if (!this.getNavigation().isDone() || this.shelterSearchTicks > 0)
+        if (!this.isResting() && !this.onGround())
             return;
 
-        this.shelterSearchTicks = 20;
-
-        var range = Mth.ceil(this.getAttributeValue(Attributes.FOLLOW_RANGE));
-        var shelters = new HashSet<BlockPos>();
-
-        for (var pos : BlockPos.withinManhattan(this.blockPosition(), range)) {
-            if (level.isEmptyBlock(pos) && !level.isRainingAt(pos))
-                shelters.add(pos.immutable());
+        if (this.surfaceNavigation.isDone() && this.shelterSearchTicks == 0) {
+            this.shelterSearchTicks = 20;
+            if (!this.surfaceNavigation.seekShelter())
+                this.surfaceNavigation.stroll();
         }
 
-        var path = this.getNavigation().createPath(shelters, 0);
-        if (path != null && path.canReach())
-            this.getNavigation().moveTo(path, 1D);
+        this.tickSurfaceNavigation();
     }
 
     @Override
@@ -171,7 +197,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
 
     @Override
     public boolean canPerchOn(LivingEntity host) {
-        return super.canPerchOn(host) && (!this.level().isRaining() || this.hasDryFlightPath(this.getPerchPosition(host)));
+        return super.canPerchOn(host) && (!this.level().isRaining() || this.hasDryPath(this.position(), this.getPerchPosition(host)));
     }
 
     @Override
@@ -192,6 +218,15 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         return Mth.rotLerp(partialTick, this.previousRestYaw, this.restYaw);
     }
 
+    public Quaternionf getRestRotation(float partialTick) {
+        return new Quaternionf(this.previousRestRotation).slerp(this.restRotation, partialTick);
+    }
+
+    @Override
+    public void calculateEntityAnimation(boolean useY) {
+        super.calculateEntityAnimation(useY || this.isResting());
+    }
+
     @Override
     public void aiStep() {
         super.aiStep();
@@ -206,22 +241,34 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         if (this.level().isClientSide()) {
             this.previousRestProgress = this.restProgress;
             this.previousRestYaw = this.restYaw;
+            this.previousRestRotation.set(this.restRotation);
 
             var face = this.getRestingFace();
-
             if (face != null) {
+                var rotation = face.getRotation();
+                var movement = this.position().subtract(this.xo, this.yo, this.zo).with(face.getAxis(), 0D);
+                var moving = movement.lengthSqr() > 0D;
+
+                if (moving || this.restProgress == 0F || face != this.renderRestingFace) {
+                    var facing = moving ? movement : Vec3.directionFromRotation(this.getXRot(), this.yBodyRot);
+                    var look = rotation.transformInverse(facing.toVector3f());
+                    this.restTargetYaw = (float) Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG;
+                }
+
+                if (this.restProgress == 0F) {
+                    this.restRotation.set(rotation);
+                    this.previousRestRotation.set(rotation);
+                } else
+                    this.restRotation.slerp(rotation, 0.25F);
+
                 this.renderRestingFace = face;
-                this.restProgress = Math.min(1.0F, this.restProgress + 1.0F / REST_TRANSITION_TICKS);
-            } else
-                this.restProgress = Math.max(0.0F, this.restProgress - 1.0F / REST_TRANSITION_TICKS);
-
-            if (this.restProgress > 0.0F && this.renderRestingFace != Direction.UP) {
-                var look = Vec3.directionFromRotation(this.getXRot(), this.yBodyRot).toVector3f();
-
-                this.renderRestingFace.getRotation().conjugate().transform(look);
-                this.restYaw = Mth.approachDegrees(this.restYaw, (float) Mth.atan2(-look.x, look.z) * Mth.RAD_TO_DEG, this.getHeadRotSpeed());
-            } else
-                this.restYaw = this.yBodyRot;
+                this.restYaw = Mth.approachDegrees(this.restYaw, this.restTargetYaw, this.getHeadRotSpeed());
+                this.restProgress = Math.min(1F, this.restProgress + 1F / REST_TRANSITION_TICKS);
+            } else {
+                this.restProgress = Math.max(0F, this.restProgress - 1F / REST_TRANSITION_TICKS);
+                if (this.restProgress == 0F)
+                    this.restYaw = this.yBodyRot;
+            }
         }
     }
 
@@ -236,14 +283,6 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         var state = this.level().getBlockState(pos);
 
         return !this.getType().isBlockDangerous(state) && Block.isFaceFull(state.getCollisionShape(this.level(), pos), face);
-    }
-
-    BlockPos getRestingBlock() {
-        var face = this.getRestingFace();
-        var halfHeight = this.getBbHeight() * 0.5D;
-        var extent = face.getAxis() == Direction.Axis.Y ? halfHeight : this.getBbWidth() * 0.5D;
-
-        return BlockPos.containing(this.position().add(0.0D, halfHeight, 0.0D).subtract(Vec3.atLowerCornerOf(face.getUnitVec3i()).scale(extent + 0.5D)));
     }
 
     void delayLanding() {
@@ -261,6 +300,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         this.setZza(0.0F);
         this.setXRot(0.0F);
         this.getNavigation().stop();
+        this.getMoveControl().setWait();
     }
 
     public void stopResting() {
@@ -270,8 +310,12 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
         var face = this.getRestingFace();
 
         if (face != null) {
+            this.surfaceNavigation.stop();
             this.getEntityData().set(RESTING_FACE, -1);
-            this.takeoffTarget = this.position().add(Vec3.atLowerCornerOf(face.getUnitVec3i()).scale(this.getBbWidth()));
+            if (this.seekingShelter)
+                this.setNoGravity(false);
+            else
+                this.takeoffTarget = this.position().add(Vec3.atLowerCornerOf(face.getUnitVec3i()).scale(this.getBbWidth()));
         }
 
         this.delayLanding();
@@ -281,8 +325,10 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
 
-        if (this.seekingShelter)
-            this.tickRainShelter(level);
+        if (this.seekingShelter) {
+            this.tickRainShelter();
+            return;
+        }
 
         if (this.takeoffTarget != null) {
             if (!this.getNavigation().isDone() || this.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)
@@ -293,18 +339,35 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity {
                 this.getMoveControl().setWantedPosition(this.takeoffTarget.x, this.takeoffTarget.y, this.takeoffTarget.z, 1.0D);
         }
 
-        var face = this.getRestingFace();
-
-        if (face == null)
+        if (!this.isResting())
             return;
 
-        if (!this.canLand() || this.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET) || !this.canRestOn(this.getRestingBlock(), face))
+        if (!this.canLand() || this.getBrain().hasMemoryValue(MemoryModuleType.WALK_TARGET)) {
+            this.stopResting();
+            return;
+        }
+
+        this.tickSurfaceNavigation();
+    }
+
+    private void tickSurfaceNavigation() {
+        this.surfaceNavigation.tick();
+        if (this.isResting() && this.surfaceNavigation.isDone() && !this.surfaceNavigation.hasSupport(this.position(), this.getClimbingSide()))
             this.stopResting();
     }
 
     @Override
     public void travel(Vec3 input) {
-        if (this.isResting() || this.isPerched())
+        if (this.isResting()) {
+            var movement = this.isEffectiveAi() ? this.surfaceNavigation.getMotion() : Vec3.ZERO;
+            this.setDeltaMovement(movement);
+
+            if (movement.lengthSqr() > 0D) {
+                this.move(MoverType.SELF, movement);
+                this.setOnGround(this.getClimbingSide() == Direction.DOWN);
+                this.resetFallDistance();
+            }
+        } else if (this.isPerched())
             this.setDeltaMovement(Vec3.ZERO);
         else
             super.travel(input);

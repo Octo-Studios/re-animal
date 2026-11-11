@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPathNavigation {
     private static final double GRIP_REACH = 0.125D;
@@ -102,6 +103,14 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     }
 
     public Path createSurfacePath(Set<BlockPos> targets, int reachRange, float maxPathLength) {
+        return this.createSurfacePath(targets, reachRange, maxPathLength, this::canFinishAt);
+    }
+
+    protected Path createSurfacePath(float maxPathLength, Predicate<Point> destinationFilter) {
+        return this.createSurfacePath(Set.of(), 0, maxPathLength, destinationFilter);
+    }
+
+    private Path createSurfacePath(Set<BlockPos> targets, int reachRange, float maxPathLength, Predicate<Point> destinationFilter) {
         var target = targets.stream().min(Comparator.comparingDouble(pos -> pos.distSqr(this.climber.blockPosition()))).orElse(this.climber.blockPosition());
         var destination = Vec3.atCenterOf(target);
         var pointsByCell = new HashMap<BlockPos, List<Point>>();
@@ -109,12 +118,12 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         var closed = new HashSet<Point>();
         var pending = new PriorityQueue<Entry>(Comparator.comparingDouble(entry -> entry.cost()
                 + (targets.isEmpty() ? 0D : entry.point().position().distanceTo(destination))));
+        var start = new Entry(new Point(this.climber.blockPosition(), this.climber.position(), this.climber.getClimbingSide()), null, 0D, null);
 
         for (var cell : BlockPos.betweenClosed(this.climber.blockPosition().offset(-1, -1, -1), this.climber.blockPosition().offset(1, 1, 1))) {
             for (var point : pointsByCell.computeIfAbsent(cell.immutable(), this::getPoints)) {
-                if (this.isConnected(this.climber.position(), this.climber.getClimbingSide(), point)) {
-                    var entry = new Entry(point, null, this.climber.position().distanceTo(point.position()), null);
-
+                var entry = this.connect(start, point);
+                if (entry != null) {
                     entries.put(point, entry);
                     pending.add(entry);
                 }
@@ -127,7 +136,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             if (entries.get(current.point()) != current || !closed.add(current.point()))
                 continue;
 
-            if (this.canFinishAt(current.point())) {
+            if (destinationFilter.test(current.point())) {
                 if (targets.isEmpty())
                     return this.buildPath(current, current.point().cell());
 
@@ -158,19 +167,12 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
                     if (closed.contains(point))
                         continue;
 
-                    var connected = this.isConnected(current.point().position(), current.point().side(), point);
-                    var corner = connected ? null : this.getCorner(current.point(), point);
-
-                    if (!connected && corner == null)
+                    var entry = this.connect(current, point);
+                    if (entry == null)
                         continue;
 
-                    var cost = current.cost() + (corner == null ? current.point().position().distanceTo(point.position())
-                            : current.point().position().distanceTo(corner) + corner.distanceTo(point.position()));
                     var previous = entries.get(point);
-
-                    if (previous == null || cost < previous.cost()) {
-                        var entry = new Entry(point, current, cost, corner);
-
+                    if (previous == null || entry.cost() < previous.cost()) {
                         entries.put(point, entry);
                         pending.add(entry);
                     }
@@ -191,7 +193,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     private Path buildPath(Entry end, BlockPos target) {
         var nodes = new ArrayList<Node>();
 
-        for (var entry = end; entry != null; entry = entry.previous()) {
+        for (var entry = end; entry.previous() != null; entry = entry.previous()) {
             nodes.add(new SurfaceNode(entry.point(), false));
 
             if (entry.corner() != null) {
@@ -282,7 +284,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         var movement = delta.normalize().scale(Math.min(speed, delta.length()));
         var side = point.side();
 
-        if (!this.canSupport(point.cell().relative(side), side)
+        if (!node.corner && !this.canSupport(point.cell().relative(side), side)
                 && !this.canClimbWithoutSupport(this.getBoundingBox(point.position(), side))) {
             this.stop();
 
@@ -396,9 +398,16 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         return false;
     }
 
-    private boolean isConnected(Vec3 from, Direction fromSide, Point to) {
-        return this.isConnected(from, to.position(), to.side())
-                || fromSide.getAxis() != to.side().getAxis() && this.isConnected(from, to.position(), fromSide);
+    private Entry connect(Entry from, Point to) {
+        var start = from.point();
+        var corner = this.getCorner(start, to);
+        if (corner == null && !this.isConnected(start.position(), to.position(), to.side())
+                && (start.side().getAxis() == to.side().getAxis() || !this.isConnected(start.position(), to.position(), start.side())))
+            return null;
+
+        var distance = corner == null ? start.position().distanceTo(to.position())
+                : start.position().distanceTo(corner) + corner.distanceTo(to.position());
+        return new Entry(to, from, from.cost() + distance, corner);
     }
 
     private boolean isConnected(Vec3 from, Vec3 to, Direction orientation) {
@@ -443,17 +452,22 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             case Z -> new Vec3(first.x, first.y, second.z);
         };
 
-        if (this.isClear(first, corner, from.side()) && this.isClear(corner, second, to.side())
-                && (sharedSupport || this.hasSupport(corner, from.side()) && this.hasSupport(corner, to.side())))
+        if (this.canTurnAt(from, corner, to, sharedSupport))
             return corner;
 
         corner = first.add(second).subtract(corner);
-
-        return this.isClear(first, corner, from.side()) && this.isClear(corner, second, to.side())
-                && (sharedSupport || this.hasSupport(corner, from.side()) && this.hasSupport(corner, to.side())) ? corner : null;
+        return this.canTurnAt(from, corner, to, sharedSupport) ? corner : null;
     }
 
-    private boolean isClear(Vec3 from, Vec3 to, Direction side) {
+    private boolean canTurnAt(Point from, Vec3 corner, Point to, boolean sharedSupport) {
+        if (sharedSupport)
+            return this.isClear(from.position(), corner, from.side()) && this.isClear(corner, to.position(), to.side());
+
+        return this.hasSupport(corner, from.side()) && this.hasSupport(corner, to.side())
+                && this.isConnected(from.position(), corner, from.side()) && this.isConnected(corner, to.position(), to.side());
+    }
+
+    protected boolean isClear(Vec3 from, Vec3 to, Direction side) {
         var level = this.climber.level();
         var box = this.getBoundingBox(from, side).expandTowards(to.subtract(from)).deflate(Shapes.EPSILON);
         var collisions = new BlockCollisions<>(level, this.climber, box, false, (pos, shape) -> !this.isPassable(pos));
