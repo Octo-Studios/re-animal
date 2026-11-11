@@ -333,9 +333,9 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         var passable = this.isPassable(cell);
 
         for (var side : Direction.values()) {
-            var support = cell.relative(side);
+            var supported = this.canSupport(cell.relative(side), side);
 
-            if (!this.canSupport(support, side) && !(side == Direction.DOWN && passable))
+            if (!supported && !(side == Direction.DOWN && passable))
                 continue;
 
             var center = Vec3.atCenterOf(cell);
@@ -346,7 +346,8 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
                 case Y -> halfHeight;
                 case Z -> bounds.getZsize() * 0.5D;
             };
-            var position = center.add(Vec3.atLowerCornerOf(side.getUnitVec3i()).scale(0.5D - extent)).subtract(0D, halfHeight, 0D);
+            var position = side == Direction.DOWN ? center.with(Direction.Axis.Y, supported ? this.getGroundY(center) : cell.getY())
+                    : center.add(Vec3.atLowerCornerOf(side.getUnitVec3i()).scale(0.5D - extent)).subtract(0D, halfHeight, 0D);
 
             if (this.isClear(position, position, side) && ((side == Direction.DOWN && passable) || this.hasSupport(position, side))
                     && this.canOccupy(cell))

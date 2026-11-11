@@ -92,6 +92,11 @@ public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber 
     }
 
     @Override
+    public boolean isInWall() {
+        return this.getClimbingSide().getAxis().isHorizontal() ? BodyBounds.isInWall(this) : super.isInWall();
+    }
+
+    @Override
     public void onSyncedDataUpdated(EntityDataAccessor<?> accessor) {
         super.onSyncedDataUpdated(accessor);
 
@@ -187,7 +192,8 @@ public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber 
     public void travel(Vec3 input) {
         var navigation = (RedPandaNavigation) this.getNavigation();
 
-        if (this.isEffectiveAi() && !this.isNoAi() && this.isAlive() && !this.isInLiquid() && !this.isPassenger() && navigation.isOnSurfacePath()) {
+        if (this.isEffectiveAi() && !this.isNoAi() && this.isAlive() && !this.isInLiquid() && !this.isPassenger()
+                && (navigation.isOnSurfacePath() || this.isClimbing() && navigation.hasSupport(this.position(), this.getClimbingSide()))) {
             this.setDeltaMovement(navigation.getMotion());
             this.move(MoverType.SELF, this.getDeltaMovement());
             this.setOnGround(this.getClimbingSide() == Direction.DOWN);

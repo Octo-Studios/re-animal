@@ -91,6 +91,11 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
     }
 
     @Override
+    public boolean isInWall() {
+        return this.getClimbingSide().getAxis().isHorizontal() ? BodyBounds.isInWall(this) : super.isInWall();
+    }
+
+    @Override
     protected PathNavigation createNavigation(Level level) {
         return new StarfishNavigation(this, level);
     }
