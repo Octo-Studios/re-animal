@@ -102,7 +102,7 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     @Override
     protected EntityDimensions getDefaultDimensions(Pose pose) {
-        return super.getDefaultDimensions(pose).scale(1F, this.getGrazeState() == GrazeState.GRAZING ? 0.75F : 1F);
+        return super.getDefaultDimensions(pose).scale(1F, this.getGrazeState() == GrazeState.GRAZING ? 0.5F : 1F);
     }
 
     @Override
