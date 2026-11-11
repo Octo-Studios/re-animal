@@ -30,7 +30,7 @@ final class InsectSurfaceNavigation extends SurfaceNavigation<FlyingInsectEntity
 
     boolean seekShelter() {
         var range = (float) this.climber.getAttributeValue(Attributes.FOLLOW_RANGE);
-        var path = this.createSurfacePath(range, point -> !this.level.isRainingAt(BlockPos.containing(point.position())));
+        var path = this.createSurfacePath(range, point -> !FlyingInsectEntity.hasPrecipitationAt(this.level, BlockPos.containing(point.position())));
         return this.moveTo(path, 1D);
     }
 

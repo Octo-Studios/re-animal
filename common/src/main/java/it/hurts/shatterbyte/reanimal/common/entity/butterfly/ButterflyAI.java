@@ -138,7 +138,7 @@ public class ButterflyAI {
     }
 
     public static void updateActivity(ButterflyEntity entity) {
-        if (!entity.isExposedToRain())
+        if (!entity.isExposedToPrecipitation())
             entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.IDLE));
         else
             entity.getBrain().setActiveActivityIfPossible(Activity.HIDE);
@@ -166,7 +166,7 @@ public class ButterflyAI {
 
         @Override
         protected boolean checkExtraStartConditions(ServerLevel level, ButterflyEntity butterfly) {
-            if (butterfly.isExposedToRain() || butterfly.isInWater() || butterfly.isPassenger() || butterfly.hurtTime > 0
+            if (butterfly.isExposedToPrecipitation() || butterfly.isInWater() || butterfly.isPassenger() || butterfly.hurtTime > 0
                     || !butterfly.getNavigation().isDone() || level.getGameTime() < this.nextSearchTick)
                 return false;
 
@@ -206,7 +206,7 @@ public class ButterflyAI {
 
         @Override
         protected boolean canStillUse(ServerLevel level, ButterflyEntity butterfly, long timestamp) {
-            return !butterfly.isExposedToRain() && !butterfly.isInWater() && !butterfly.isPassenger() && butterfly.hurtTime == 0
+            return !butterfly.isExposedToPrecipitation() && !butterfly.isInWater() && !butterfly.isPassenger() && butterfly.hurtTime == 0
                     && butterfly.getNavigation().isDone() && this.hasRequiredMemories(butterfly)
                     && level.getBlockState(this.flower).is(BlockTags.FLOWERS) && level.getFluidState(this.flower).isEmpty()
                     && butterfly.canFlyDirectlyTo(this.hoverPos);

@@ -75,10 +75,10 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     protected void customServerAiStep(ServerLevel serverLevel) {
-        if (this.updateRainNavigation(serverLevel))
+        if (this.updateShelterNavigation(serverLevel))
             DragonflyAI.updateActivity(this);
 
-        if (!this.isExposedToRain())
+        if (!this.isExposedToPrecipitation())
             this.tickScared(serverLevel);
 
         if (!this.isPerched()) {
@@ -204,7 +204,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (entity.isResting() || entity.isExposedToRain())
+        if (entity.isResting() || entity.isExposedToPrecipitation())
             controller.setAnimation((entity.isResting() || entity.onGround()) && state.isMoving() ? WALK : IDLE);
         else if (!entity.isPerched() && (state.isMoving() || !entity.onGround()))
             controller.setAnimation(FLY);

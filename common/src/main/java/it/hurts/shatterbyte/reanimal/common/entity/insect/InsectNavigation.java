@@ -24,12 +24,12 @@ final class InsectNavigation extends FlyingPathNavigation {
             @Override
             public void prepare(PathNavigationRegion region, Mob mob) {
                 super.prepare(region, mob);
-                this.stayDry = level.isRaining() && !level.isRainingAt(mob.blockPosition());
+                this.stayDry = level.isRaining() && !FlyingInsectEntity.hasPrecipitationAt(level, mob.blockPosition());
             }
 
             @Override
             protected @Nullable Node findAcceptedNode(int x, int y, int z) {
-                return this.stayDry && level.isRainingAt(new BlockPos(x, y, z)) ? null : super.findAcceptedNode(x, y, z);
+                return this.stayDry && FlyingInsectEntity.hasPrecipitationAt(level, new BlockPos(x, y, z)) ? null : super.findAcceptedNode(x, y, z);
             }
         };
         return new PathFinder(this.nodeEvaluator, maxVisitedNodes);
@@ -38,7 +38,7 @@ final class InsectNavigation extends FlyingPathNavigation {
     @Override
     protected void followThePath() {
         var insect = (FlyingInsectEntity) this.mob;
-        if (!this.level.isRaining() || insect.isExposedToRain()) {
+        if (!this.level.isRaining() || insect.isExposedToPrecipitation()) {
             super.followThePath();
             return;
         }

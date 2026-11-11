@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.util.Pair;
 import it.hurts.shatterbyte.reanimal.common.entity.BrainUtil;
 import it.hurts.shatterbyte.reanimal.common.entity.PerchOnMob;
+import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.RestOnSurface;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
@@ -148,7 +149,7 @@ public class DragonflyAI {
             entity.getMoveControl().setWait();
         }
 
-        if (!entity.isExposedToRain())
+        if (!entity.isExposedToPrecipitation())
             brain.setActiveActivityToFirstValid(ImmutableList.of(Activity.PANIC, Activity.FIGHT, Activity.IDLE));
         else
             brain.setActiveActivityIfPossible(Activity.HIDE);
@@ -159,7 +160,8 @@ public class DragonflyAI {
                 Activity.FIGHT,
                 10,
                 ImmutableList.of(
-                        StopAttackingIfTargetInvalid.create((level, target) -> target.isInWater() || level.isRainingAt(target.blockPosition())
+                        StopAttackingIfTargetInvalid.create((level, target) -> target.isInWater()
+                                || FlyingInsectEntity.hasPrecipitationAt(level, target.blockPosition())
                                 || !target.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.DRAGONFLY_PREY)),
                         new ChasePrey(),
                         MeleeAttack.create(DragonflyAI::canHunt, 20)
@@ -169,13 +171,14 @@ public class DragonflyAI {
     }
 
     private static boolean canHunt(DragonflyEntity entity) {
-        return !entity.isExposedToRain() && !entity.isBaby() && !entity.isPassenger() && !entity.isInWater() && !entity.isScared()
+        return !entity.isExposedToPrecipitation() && !entity.isBaby() && !entity.isPassenger() && !entity.isInWater() && !entity.isScared()
                 && !entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
     }
 
     private static Optional<LivingEntity> findNearestPrey(ServerLevel level, DragonflyEntity entity) {
         return entity.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES)
-                .flatMap(visible -> visible.findClosest(target -> !target.isInWater() && !level.isRainingAt(target.blockPosition())
+                .flatMap(visible -> visible.findClosest(target -> !target.isInWater()
+                        && !FlyingInsectEntity.hasPrecipitationAt(level, target.blockPosition())
                         && target.getType().builtInRegistryHolder().is(ReAnimalTags.EntityTypes.DRAGONFLY_PREY)
                         && Sensor.isEntityAttackable(level, entity, target)));
     }

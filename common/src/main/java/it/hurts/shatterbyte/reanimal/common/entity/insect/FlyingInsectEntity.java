@@ -21,6 +21,7 @@ import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -70,7 +71,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
                     insect.setYya(0F);
                     insect.setZza(0F);
                     insect.setDeltaMovement(distance < MIN_SPEED ? Vec3.ZERO : movement.scale(Math.min(speed, distance) / distance));
-                } else if (insect.level().isRaining() && !insect.isExposedToRain()
+                } else if (insect.level().isRaining() && !insect.isExposedToPrecipitation()
                         && !insect.hasDryPath(insect.position(), insect.position().add(insect.getDeltaMovement())))
                     insect.setDeltaMovement(Vec3.ZERO);
             }
@@ -121,8 +122,12 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
         return this.surfaceNavigation;
     }
 
-    public boolean isExposedToRain() {
-        return this.level().isRainingAt(this.blockPosition());
+    public boolean isExposedToPrecipitation() {
+        return hasPrecipitationAt(this.level(), this.blockPosition());
+    }
+
+    public static boolean hasPrecipitationAt(Level level, BlockPos pos) {
+        return level.precipitationAt(pos) != Biome.Precipitation.NONE;
     }
 
     boolean isSeekingShelter() {
@@ -131,14 +136,14 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
 
     @Override
     public float getWalkTargetValue(BlockPos pos) {
-        return this.level().isRainingAt(pos) ? Float.NEGATIVE_INFINITY : super.getWalkTargetValue(pos);
+        return hasPrecipitationAt(this.level(), pos) ? Float.NEGATIVE_INFINITY : super.getWalkTargetValue(pos);
     }
 
     boolean hasDryPath(Vec3 from, Vec3 target) {
         var level = this.level();
-        return !level.isRaining() || !level.isRainingAt(BlockPos.containing(target))
+        return !level.isRaining() || !hasPrecipitationAt(level, BlockPos.containing(target))
                 && BlockGetter.traverseBlocks(from, target, level,
-                        (world, pos) -> world.isRainingAt(pos) ? false : null, world -> true);
+                        (world, pos) -> hasPrecipitationAt(world, pos) ? false : null, world -> true);
     }
 
     public boolean canFlyDirectlyTo(Vec3 target) {
@@ -146,8 +151,8 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
                 && this.level().noCollision(this, this.getBoundingBox().expandTowards(target.subtract(this.position())));
     }
 
-    protected boolean updateRainNavigation(ServerLevel level) {
-        var exposed = this.isExposedToRain();
+    protected boolean updateShelterNavigation(ServerLevel level) {
+        var exposed = this.isExposedToPrecipitation();
 
         if (exposed == this.seekingShelter)
             return false;
@@ -174,7 +179,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
         return true;
     }
 
-    private void tickRainShelter() {
+    private void tickShelterSearch() {
         if (this.shelterSearchTicks > 0)
             --this.shelterSearchTicks;
 
@@ -273,7 +278,8 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
     }
 
     boolean canLand() {
-        return !this.isExposedToRain() && this.tickCount >= this.nextLandingTick && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
+        return !this.isExposedToPrecipitation() && this.tickCount >= this.nextLandingTick
+                && this.hurtTime == 0 && !this.isInWater() && !this.isPassenger()
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.ATTACK_TARGET)
                 && !this.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER);
@@ -326,7 +332,7 @@ public abstract class FlyingInsectEntity extends PerchingAnimalEntity implements
         super.customServerAiStep(level);
 
         if (this.seekingShelter) {
-            this.tickRainShelter();
+            this.tickShelterSearch();
             return;
         }
 
