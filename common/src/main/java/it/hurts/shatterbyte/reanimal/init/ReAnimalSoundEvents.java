@@ -87,6 +87,10 @@ public class ReAnimalSoundEvents {
     public static SoundEvent SEA_URCHIN_HURT;
     public static SoundEvent SEA_URCHIN_DEATH;
 
+    public static SoundEvent MEERKAT_IDLE;
+    public static SoundEvent MEERKAT_HURT;
+    public static SoundEvent MEERKAT_DEATH;
+
     public static SoundEvent BALL_BOUNCE;
     public static SoundEvent BALL_SPLASH;
 
@@ -170,6 +174,10 @@ public class ReAnimalSoundEvents {
         SEA_URCHIN_IDLE = register("entity.sea_urchin.idle");
         SEA_URCHIN_HURT = register("entity.sea_urchin.hurt");
         SEA_URCHIN_DEATH = register("entity.sea_urchin.death");
+
+        MEERKAT_IDLE = register("entity.meerkat.idle");
+        MEERKAT_HURT = register("entity.meerkat.hurt");
+        MEERKAT_DEATH = register("entity.meerkat.death");
 
         BALL_BOUNCE = register("entity.ball.bounce");
         BALL_SPLASH = register("entity.ball.splash");

@@ -149,7 +149,7 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
     protected AABB makeBoundingBox(Vec3 position) {
         var bounds = super.makeBoundingBox(position);
 
-        return BodyBounds.fitAlongYaw(this, bounds, 1.8D);
+        return this.equipment != null ? BodyBounds.fitAlongYaw(this, bounds, 1.8D) : bounds;
     }
 
     @Override

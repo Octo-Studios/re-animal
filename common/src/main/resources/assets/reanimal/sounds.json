@@ -303,6 +303,33 @@
       "reanimal:entity/kiwi/idle2"
     ]
   },
+  "entity.meerkat.death": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.meerkat.death",
+    "sounds": [
+      "reanimal:entity/meerkat/death"
+    ]
+  },
+  "entity.meerkat.hurt": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.meerkat.hurt",
+    "sounds": [
+      "reanimal:entity/meerkat/hurt1",
+      "reanimal:entity/meerkat/hurt2",
+      "reanimal:entity/meerkat/hurt3"
+    ]
+  },
+  "entity.meerkat.idle": {
+    "category": "neutral",
+    "subtitle": "subtitles.reanimal.entity.meerkat.idle",
+    "sounds": [
+      "reanimal:entity/meerkat/idle1",
+      "reanimal:entity/meerkat/idle2",
+      "reanimal:entity/meerkat/idle3",
+      "reanimal:entity/meerkat/idle4",
+      "reanimal:entity/meerkat/idle5"
+    ]
+  },
   "entity.ostrich.death": {
     "category": "neutral",
     "subtitle": "subtitles.reanimal.entity.ostrich.death",

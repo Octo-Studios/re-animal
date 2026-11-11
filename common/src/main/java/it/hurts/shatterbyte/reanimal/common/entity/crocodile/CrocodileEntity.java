@@ -125,7 +125,7 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     protected AABB makeBoundingBox(Vec3 position) {
         var bounds = super.makeBoundingBox(position);
 
-        return BodyBounds.fitAlongYaw(this, bounds, 1.4D);
+        return this.equipment != null ? BodyBounds.fitAlongYaw(this, bounds, 1.4D) : bounds;
     }
 
     @Override

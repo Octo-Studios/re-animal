@@ -220,6 +220,10 @@
   "subtitles.reanimal.entity.kiwi.hurt": "Kiwi hurt",
   "subtitles.reanimal.entity.kiwi.death": "Kiwi dies",
 
+  "subtitles.reanimal.entity.meerkat.idle": "Meerkat chirps",
+  "subtitles.reanimal.entity.meerkat.hurt": "Meerkat hurt",
+  "subtitles.reanimal.entity.meerkat.death": "Meerkat dies",
+
   "subtitles.reanimal.entity.ostrich.idle": "Ostrich calls",
   "subtitles.reanimal.entity.ostrich.hurt": "Ostrich hurt",
   "subtitles.reanimal.entity.ostrich.death": "Ostrich dies",

@@ -4,12 +4,14 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
@@ -77,7 +79,8 @@ public class MeerkatEntity extends Animal implements GeoEntity {
     protected AABB makeBoundingBox(Vec3 position) {
         var bounds = super.makeBoundingBox(position);
 
-        return (this.getStandState() != StandState.STANDING) ? BodyBounds.fitAlongYaw(this, bounds, 1.35D) : bounds;
+        return this.equipment != null && this.getStandState() != StandState.STANDING
+                ? BodyBounds.fitAlongYaw(this, bounds, 1.35D) : bounds;
     }
 
     @Override
@@ -153,6 +156,21 @@ public class MeerkatEntity extends Animal implements GeoEntity {
     @Override
     public boolean isFood(ItemStack stack) {
         return stack.is(ReAnimalTags.Items.MEERKAT_FOOD);
+    }
+
+    @Override
+    protected SoundEvent getAmbientSound() {
+        return ReAnimalSoundEvents.MEERKAT_IDLE;
+    }
+
+    @Override
+    protected SoundEvent getHurtSound(DamageSource source) {
+        return ReAnimalSoundEvents.MEERKAT_HURT;
+    }
+
+    @Override
+    protected SoundEvent getDeathSound() {
+        return ReAnimalSoundEvents.MEERKAT_DEATH;
     }
 
     @Override
