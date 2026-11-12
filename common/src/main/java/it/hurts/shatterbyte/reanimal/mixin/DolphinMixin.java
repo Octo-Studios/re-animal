@@ -49,11 +49,13 @@ public abstract class DolphinMixin extends AgeableWaterCreature {
 
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void reanimal$saveBallPlay(ValueOutput output, CallbackInfo ci) {
-        this.reanimal$ballPlay.save(output);
+        if (!this.level().isClientSide())
+            this.reanimal$ballPlay.save(output);
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void reanimal$loadBallPlay(ValueInput input, CallbackInfo ci) {
-        this.reanimal$ballPlay.load(input);
+        if (!this.level().isClientSide())
+            this.reanimal$ballPlay.load(input);
     }
 }
