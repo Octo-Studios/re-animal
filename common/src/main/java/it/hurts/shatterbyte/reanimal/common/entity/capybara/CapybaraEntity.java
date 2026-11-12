@@ -47,6 +47,11 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation IDLE_SIT = RawAnimation.begin().thenLoop("animation.capybara.idle_sit");
     private static final RawAnimation SIT_DOWN = RawAnimation.begin().then("animation.capybara.sitting", LoopType.PLAY_ONCE).thenLoop("animation.capybara.idle_sit");
     private static final RawAnimation GETTING_UP = RawAnimation.begin().then("animation.capybara.getting_up", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.capybara_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.capybara_baby.walk");
+    private static final RawAnimation BABY_IDLE_SIT = RawAnimation.begin().thenLoop("animation.capybara_baby.idle_sit");
+    private static final RawAnimation BABY_SIT_DOWN = RawAnimation.begin().then("animation.capybara_baby.sitting", LoopType.PLAY_ONCE).thenLoop("animation.capybara_baby.idle_sit");
+    private static final RawAnimation BABY_GETTING_UP = RawAnimation.begin().then("animation.capybara_baby.getting_up", LoopType.PLAY_ONCE);
 
     private static final EntityDataAccessor<Integer> SIT_STATE = SynchedEntityData.defineId(CapybaraEntity.class, EntityDataSerializers.INT);
 
@@ -382,24 +387,27 @@ public class CapybaraEntity extends TamableAnimal implements GeoEntity {
 
     private PlayState mainPredicate(AnimationTest<CapybaraEntity> state) {
         var controller = state.controller();
+        var baby = this.isBaby();
+        var sitDown = baby ? BABY_SIT_DOWN : SIT_DOWN;
+        var idleSit = baby ? BABY_IDLE_SIT : IDLE_SIT;
 
         controller.setTransitionTicks(this.getSitState() == SitState.STANDING ? STAND_TRANSITION_TICKS : 0);
 
         if (this.getVehicle() instanceof CapybaraEntity) {
-            controller.setAnimation(IDLE_SIT);
+            controller.setAnimation(idleSit);
 
             return PlayState.CONTINUE;
         }
 
         switch (this.getSitState()) {
-            case SITTING_DOWN -> controller.setAnimation(SIT_DOWN);
-            case SITTING -> controller.setAnimation(controller.getCurrentRawAnimation() == SIT_DOWN ? SIT_DOWN : IDLE_SIT);
-            case GETTING_UP -> controller.setAnimation(GETTING_UP);
+            case SITTING_DOWN -> controller.setAnimation(sitDown);
+            case SITTING -> controller.setAnimation(controller.getCurrentRawAnimation() == sitDown ? sitDown : idleSit);
+            case GETTING_UP -> controller.setAnimation(baby ? BABY_GETTING_UP : GETTING_UP);
             case STANDING -> {
                 if (state.isMoving())
-                    controller.setAnimation(WALK);
+                    controller.setAnimation(baby ? BABY_WALK : WALK);
                 else
-                    controller.setAnimation(IDLE);
+                    controller.setAnimation(baby ? BABY_IDLE : IDLE);
             }
         }
 

@@ -10,6 +10,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraEntity;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
 
@@ -31,8 +32,10 @@ public class CapybaraBallLayer<R extends EntityRenderState & GeoRenderState> ext
 
     @Override
     protected void submitItemStackRender(PoseStack poseStack, GeoBone bone, ItemStackRenderState stackState, ItemDisplayContext displayContext, R renderState, SubmitNodeCollector renderTasks, int packedLight) {
+        var scale = renderState instanceof LivingEntityRenderState living && living.isBaby ? 0.15F : 0.35F;
+
         poseStack.pushPose();
-        poseStack.scale(0.35F, 0.35F, 0.35F);
+        poseStack.scale(scale, scale, scale);
 
         super.submitItemStackRender(poseStack, bone, stackState, displayContext, renderState, renderTasks, packedLight);
 
