@@ -12,7 +12,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
-import net.minecraft.world.entity.ai.behavior.CountDownCooldownTicks;
 import net.minecraft.world.entity.ai.behavior.LookAtTargetSink;
 import net.minecraft.world.entity.ai.behavior.MoveToTargetSink;
 import net.minecraft.world.entity.ai.behavior.RandomLookAround;
@@ -28,6 +27,8 @@ import net.minecraft.world.phys.Vec3;
 import java.util.Set;
 
 public class JellyfishAI {
+    static final double BREED_DISTANCE = 2.0;
+
     private static final ImmutableList<SensorType<? extends Sensor<? super JellyfishEntity>>> SENSOR_TYPES =
              ImmutableList.of(
                     SensorType.NEAREST_LIVING_ENTITIES,
@@ -42,7 +43,8 @@ public class JellyfishAI {
             MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE,
             MemoryModuleType.PATH,
             MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
-            MemoryModuleType.DANGER_DETECTED_RECENTLY
+            MemoryModuleType.DANGER_DETECTED_RECENTLY,
+            MemoryModuleType.BREED_TARGET
     );
 
     public static Brain.Provider<JellyfishEntity> brainProvider() {
@@ -76,6 +78,7 @@ public class JellyfishAI {
                 Activity.IDLE,
                 ImmutableList.of(
                         Pair.of(0, new JellyfishFlee()),
+                        Pair.of(1, new JellyfishBreed()),
                         Pair.of(2, new JellyfishWander()),
                         Pair.of(3, new RandomLookAround(UniformInt.of(120, 200), 30F, 0F, 0F))
                 )
@@ -84,6 +87,57 @@ public class JellyfishAI {
 
     public static void updateActivity(JellyfishEntity entity) {
         entity.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.IDLE));
+    }
+
+    private static class JellyfishBreed extends Behavior<JellyfishEntity> {
+        private static final int BREED_DELAY = 60;
+
+        private JellyfishEntity partner;
+        private long breedAt;
+
+        public JellyfishBreed() {
+            super(ImmutableMap.of(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES, MemoryStatus.VALUE_PRESENT));
+        }
+
+        @Override
+        protected boolean checkExtraStartConditions(ServerLevel level, JellyfishEntity jellyfish) {
+            if (!jellyfish.isInLove() || !jellyfish.isInWater())
+                return false;
+
+            this.partner = (JellyfishEntity) jellyfish.getBrain().getMemory(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES).orElseThrow()
+                    .findClosest(candidate -> candidate instanceof JellyfishEntity mate && jellyfish.canMate(mate)).orElse(null);
+            return this.partner != null;
+        }
+
+        @Override
+        protected void start(ServerLevel level, JellyfishEntity jellyfish, long gameTime) {
+            jellyfish.getBrain().setMemory(MemoryModuleType.BREED_TARGET, this.partner);
+            this.breedAt = gameTime + BREED_DELAY;
+        }
+
+        @Override
+        protected boolean canStillUse(ServerLevel level, JellyfishEntity jellyfish, long gameTime) {
+            return this.partner.isAlive() && jellyfish.canMate(this.partner) && jellyfish.hasLineOfSight(this.partner);
+        }
+
+        @Override
+        protected boolean timedOut(long gameTime) {
+            return false;
+        }
+
+        @Override
+        protected void tick(ServerLevel level, JellyfishEntity jellyfish, long gameTime) {
+            if (gameTime >= this.breedAt && jellyfish.closerThan(this.partner, BREED_DISTANCE)) {
+                jellyfish.spawnChildFromBreeding(level, this.partner);
+                this.doStop(level, jellyfish, gameTime);
+            }
+        }
+
+        @Override
+        protected void stop(ServerLevel level, JellyfishEntity jellyfish, long gameTime) {
+            jellyfish.getBrain().eraseMemory(MemoryModuleType.BREED_TARGET);
+            this.partner = null;
+        }
     }
 
     private static class JellyfishWander extends Behavior<JellyfishEntity> {
@@ -103,6 +157,9 @@ public class JellyfishAI {
 
         @Override
         protected void tick(ServerLevel level, JellyfishEntity jellyfish, long gameTime) {
+            if (jellyfish.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET))
+                return;
+
             int idleTicks = jellyfish.getNoActionTime();
 
             if (idleTicks > 160) {

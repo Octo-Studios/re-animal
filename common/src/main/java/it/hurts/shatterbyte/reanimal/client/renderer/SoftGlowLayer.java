@@ -17,6 +17,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.jellyfish.JellyfishEntity;
 import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -33,11 +34,17 @@ public class SoftGlowLayer<R extends EntityRenderState & GeoRenderState> extends
     private static final RenderType RENDER_TYPE = RenderTypes.eyes(Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/misc/soft_glow.png"));
 
     private final Glow[] glows;
+    private final Glow[] babyGlows;
 
     public SoftGlowLayer(GeoRenderer renderer, Glow... glows) {
+        this(renderer, glows, glows);
+    }
+
+    public SoftGlowLayer(GeoRenderer renderer, Glow[] glows, Glow[] babyGlows) {
         super(renderer);
 
         this.glows = glows;
+        this.babyGlows = babyGlows;
     }
 
     @Override
@@ -56,7 +63,8 @@ public class SoftGlowLayer<R extends EntityRenderState & GeoRenderState> extends
         if (renderPassInfo.renderState().isInvisible)
             return;
 
-        for (var glow : this.glows)
+        var glows = renderPassInfo.renderState() instanceof LivingEntityRenderState living && living.isBaby ? this.babyGlows : this.glows;
+        for (var glow : glows)
             renderPassInfo.model().getBone(glow.bone()).ifPresent(bone -> consumer.accept(bone,
                     (pass, ignored, renderTasks) -> this.submitGlow(pass, renderTasks, glow)));
     }

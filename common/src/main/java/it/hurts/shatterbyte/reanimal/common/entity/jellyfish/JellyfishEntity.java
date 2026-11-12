@@ -4,9 +4,11 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import it.hurts.shatterbyte.reanimal.common.entity.glow_stick.GlowStickEntity;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -23,8 +25,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Bucketable;
 import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -33,11 +37,15 @@ import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.fish.WaterAnimal;
+import net.minecraft.world.entity.ai.control.LookControl;
+import net.minecraft.world.entity.ai.memory.MemoryModuleType;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import com.geckolib.animatable.GeoEntity;
 import com.geckolib.animatable.instance.AnimatableInstanceCache;
@@ -47,10 +55,15 @@ import com.geckolib.animation.object.PlayState;
 import com.geckolib.animatable.manager.AnimatableManager;
 import com.geckolib.util.GeckoLibUtil;
 
-public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketable {
+public class JellyfishEntity extends Animal implements GeoEntity, Bucketable {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.jellyfish.idle");
     private static final RawAnimation SWIM = RawAnimation.begin().thenLoop("animation.jellyfish.swim");
     private static final RawAnimation LAND = RawAnimation.begin().thenLoop("animation.jellyfish.land");
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.jellyfish_baby.idle");
+    private static final RawAnimation BABY_SWIM = RawAnimation.begin().thenLoop("animation.jellyfish_baby.swim");
+    private static final RawAnimation BABY_LAND = RawAnimation.begin().thenLoop("animation.jellyfish_baby.land");
+
+    private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.46F, 0.46F).withEyeHeight(0.23F);
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(JellyfishEntity.class, EntityDataSerializers.BOOLEAN);
@@ -84,8 +97,16 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     private float landProgress;
     private float previousLandProgress;
 
-    public JellyfishEntity(EntityType<? extends WaterAnimal> entityType, Level level) {
+    public JellyfishEntity(EntityType<? extends JellyfishEntity> entityType, Level level) {
         super(entityType, level);
+        this.setPathfindingMalus(PathType.WATER, 0F);
+        this.lookControl = new LookControl(this) {
+            @Override
+            public void tick() {
+                if (!JellyfishEntity.this.getBrain().hasMemoryValue(MemoryModuleType.BREED_TARGET))
+                    super.tick();
+            }
+        };
     }
 
     private float getTentacleSpeed() {
@@ -115,7 +136,7 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     }
 
     public int getLightLevel() {
-        return Math.round(15F * this.getGlowIntensity(1F));
+        return Math.round((this.isBaby() ? 8F : 15F) * this.getGlowIntensity(1F));
     }
 
     public float getLandProgress(float partialTick) {
@@ -157,7 +178,32 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         if (!this.level().isClientSide())
             this.brighten();
 
-        return Bucketable.bucketMobPickup(player, hand, this).orElse(super.mobInteract(player, hand));
+        return Bucketable.bucketMobPickup(player, hand, this).orElseGet(() -> super.mobInteract(player, hand));
+    }
+
+    @Override
+    public boolean isFood(ItemStack stack) {
+        return stack.is(ReAnimalTags.Items.JELLYFISH_FOOD);
+    }
+
+    @Override
+    public boolean canFallInLove() {
+        return this.isInWater() && super.canFallInLove();
+    }
+
+    @Override
+    public boolean canMate(Animal partner) {
+        return this.isInWater() && partner.isInWater() && super.canMate(partner);
+    }
+
+    @Override
+    public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
+        var baby = ReAnimalEntities.JELLYFISH.create(level, EntitySpawnReason.BREEDING);
+        if (baby != null) {
+            baby.setVariant(this.random.nextBoolean() ? this.getVariant() : ((JellyfishEntity) partner).getVariant());
+            baby.setPersistenceRequired();
+        }
+        return baby;
     }
 
     @Override
@@ -174,7 +220,11 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     public void saveToBucketTag(ItemStack bucket) {
         Bucketable.saveDefaultDataToBucketTag(this, bucket);
 
-        CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, tag -> tag.putInt("variant", this.getVariant()));
+        CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, tag -> {
+            tag.putInt("variant", this.getVariant());
+            tag.putInt("Age", this.getAge());
+            tag.putBoolean("AgeLocked", this.isAgeLocked());
+        });
     }
 
     @Override
@@ -182,6 +232,8 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         Bucketable.loadDefaultDataFromBucketTag(this, tag);
 
         this.setVariant(tag.getIntOr("variant", 0));
+        this.setAge(tag.getIntOr("Age", 0));
+        this.setAgeLocked(tag.getBooleanOr("AgeLocked", false));
     }
 
     @Override
@@ -202,6 +254,44 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     @Override
     public boolean removeWhenFarAway(double distSqr) {
         return !this.fromBucket() && !this.hasCustomName();
+    }
+
+    @Override
+    public boolean checkSpawnObstruction(LevelReader level) {
+        return level.isUnobstructed(this);
+    }
+
+    @Override
+    public float getWalkTargetValue(BlockPos pos, LevelReader level) {
+        return 0F;
+    }
+
+    @Override
+    public boolean isPushedByFluid() {
+        return false;
+    }
+
+    @Override
+    public boolean canBeLeashed() {
+        return false;
+    }
+
+    @Override
+    public void baseTick() {
+        var air = this.getAirSupply();
+        super.baseTick();
+
+        if (this.level() instanceof ServerLevel level) {
+            if (this.isAlive() && !this.isInWater()) {
+                this.setAirSupply(air - 1);
+                if (this.shouldTakeDrowningDamage()) {
+                    this.setAirSupply(0);
+                    this.hurtServer(level, this.damageSources().drown(), 2F);
+                }
+            } else {
+                this.setAirSupply(this.getMaxAirSupply());
+            }
+        }
     }
 
     protected Brain.Provider<JellyfishEntity> brainProvider() {
@@ -289,7 +379,8 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
 
     @Override
     protected EntityDimensions getDefaultDimensions(Pose pose) {
-        return super.getDefaultDimensions(pose).scale(1F, this.beached ? 0.65F : 1F);
+        var dimensions = this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+        return dimensions.scale(1F, this.beached ? 0.65F : 1F);
     }
 
     @Override
@@ -335,6 +426,10 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
 
         var progress = this.tentacleMovement / (float) Math.PI;
         var thrusting = progress >= THRUST_START && progress <= THRUST_END;
+        if (this.getBrain().getMemory(MemoryModuleType.BREED_TARGET).orElse(null) instanceof JellyfishEntity mate) {
+            this.swimToMate(mate, thrusting);
+            return;
+        }
 
         if (this.chooseHeading) {
             this.chooseHeading = false;
@@ -354,6 +449,21 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
         }
 
         this.setDeltaMovement(motion.scale(WATER_DRAG));
+    }
+
+    private void swimToMate(JellyfishEntity mate, boolean thrusting) {
+        this.chooseHeading = true;
+        if (this.closerThan(mate, JellyfishAI.BREED_DISTANCE)) {
+            this.setDeltaMovement(Vec3.ZERO);
+            return;
+        }
+
+        var direction = mate.position().subtract(this.position()).normalize();
+        this.turnTowards(direction);
+        var speed = Math.max(0D, this.getDeltaMovement().dot(direction));
+        if (thrusting)
+            speed += THRUST_ACCELERATION;
+        this.setDeltaMovement(direction.scale(speed * WATER_DRAG));
     }
 
     private void turnTowards(Vec3 direction) {
@@ -456,13 +566,14 @@ public class JellyfishEntity extends WaterAnimal implements GeoEntity, Bucketabl
     private PlayState mainPredicate(AnimationTest<JellyfishEntity> state) {
         var controller = state.controller();
         var entity = state.animatable();
+        var baby = entity.isBaby();
 
         if (entity.beached)
-            controller.setAnimation(LAND);
+            controller.setAnimation(baby ? BABY_LAND : LAND);
         else if (entity.isInWater() && entity.tentacleMovement < (float) Math.PI)
-            controller.setAnimation(SWIM);
+            controller.setAnimation(baby ? BABY_SWIM : SWIM);
         else
-            controller.setAnimation(IDLE);
+            controller.setAnimation(baby ? BABY_IDLE : IDLE);
 
         return PlayState.CONTINUE;
     }

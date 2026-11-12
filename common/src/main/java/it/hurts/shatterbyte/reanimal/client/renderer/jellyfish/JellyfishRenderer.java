@@ -25,7 +25,7 @@ public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, Entity
     public JellyfishRenderer(EntityRendererProvider.Context renderManager) {
         super(renderManager, new JellyfishModel());
 
-        this.withRenderLayer(new SoftGlowLayer(this,
+        this.withRenderLayer(new SoftGlowLayer(this, new SoftGlowLayer.Glow[]{
                 new SoftGlowLayer.Glow("body", 0F, 1.2F, 0.44F),
                 new SoftGlowLayer.Glow("body", 0F, 0.7F, 0.28F),
                 new SoftGlowLayer.Glow("main_tentacles", -0.3125F, 0.55F, 0.07F),
@@ -36,7 +36,14 @@ public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, Entity
                 new SoftGlowLayer.Glow("main_tentacles", -0.9375F, 0.55F, 0.07F),
                 new SoftGlowLayer.Glow("main_tentacles", -1.0625F, 0.55F, 0.07F),
                 new SoftGlowLayer.Glow("main_tentacles", -1.1875F, 0.55F, 0.07F),
-                new SoftGlowLayer.Glow("main_tentacles", -1.3125F, 0.55F, 0.07F)));
+                new SoftGlowLayer.Glow("main_tentacles", -1.3125F, 0.55F, 0.07F)
+        }, new SoftGlowLayer.Glow[]{
+                new SoftGlowLayer.Glow("body", 0F, 1.2F, 0.19F),
+                new SoftGlowLayer.Glow("body", 0F, 0.7F, 0.12F),
+                new SoftGlowLayer.Glow("main_tentacles", -0.125F, 0.55F, 0.04F),
+                new SoftGlowLayer.Glow("main_tentacles", -0.25F, 0.55F, 0.04F),
+                new SoftGlowLayer.Glow("main_tentacles", -0.375F, 0.55F, 0.04F)
+        }));
 
         this.shadowRadius = 0.3F;
     }
@@ -69,9 +76,9 @@ public class JellyfishRenderer extends GeoEntityRenderer<JellyfishEntity, Entity
 
         var landProgress = (float) renderPassInfo.renderState().getGeckolibData(LAND_PROGRESS);
 
-        renderPassInfo.poseStack().translate(0, Mth.lerp(landProgress, 0.5F, 0F), 0);
-
-        if (renderPassInfo.renderState() instanceof LivingEntityRenderState les)
+        if (renderPassInfo.renderState() instanceof LivingEntityRenderState les) {
+            renderPassInfo.poseStack().translate(0, Mth.lerp(landProgress, les.isBaby ? 0.23F : 0.5F, 0F), 0);
             renderPassInfo.poseStack().rotateDegrees(Axis.XP, (-les.xRot - 90F) * (1F - landProgress));
+        }
     }
 }
