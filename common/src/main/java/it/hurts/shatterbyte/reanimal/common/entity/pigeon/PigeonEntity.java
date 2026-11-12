@@ -24,10 +24,12 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -54,6 +56,10 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.pigeon.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.pigeon.walk");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.pigeon.fly");
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.pigeon_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.pigeon_baby.walk");
+    private static final RawAnimation BABY_PECK = RawAnimation.begin().thenLoop("animation.pigeon_baby.peck");
+    private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.28F, 0.4F);
 
     public static final int VARIANTS = 4;
 
@@ -81,6 +87,11 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
 
         if (!level.isClientSide())
             this.setVariant(this.getRandom().nextInt(VARIANTS));
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
     }
 
     public int getVariant() {
@@ -404,20 +415,18 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
     private PlayState mainPredicate(AnimationTest<PigeonEntity> state) {
         var controller = state.controller();
         var entity = state.animatable();
+        var baby = entity.isBaby();
 
         if (entity.isPerched())
-            controller.setAnimation(IDLE);
-        else if (state.isMoving() || !entity.onGround() && !entity.isBaby()) {
-            if (entity.onGround())
-                controller.setAnimation(WALK);
-            else
-                controller.setAnimation(FLY);
-        } else {
-            if (entity.isPecking())
-                controller.setAnimation(PECK);
-            else
-                controller.setAnimation(IDLE);
-        }
+            controller.setAnimation(baby ? BABY_IDLE : IDLE);
+        else if (!entity.onGround() && !baby)
+            controller.setAnimation(FLY);
+        else if (entity.onGround() && state.isMoving())
+            controller.setAnimation(baby ? BABY_WALK : WALK);
+        else if (entity.isPecking())
+            controller.setAnimation(baby ? BABY_PECK : PECK);
+        else
+            controller.setAnimation(baby ? BABY_IDLE : IDLE);
 
         return PlayState.CONTINUE;
     }

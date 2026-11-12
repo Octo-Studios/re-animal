@@ -10,7 +10,8 @@ import com.geckolib.model.GeoModel;
 
 public class PigeonModel extends GeoModel<PigeonEntity> {
     private static final DataTicket<Integer> VARIANT = DataTicket.create("pigeon_variant", Integer.class);
-    private static final Identifier MODEL = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "pigeon");
+    private static final Identifier ADULT = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "pigeon_adult");
+    private static final Identifier BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "pigeon_baby");
     private static final Identifier[] TEXTURES_ADULT = {
             Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/pigeon_adult_gray.png"),
             Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/pigeon_adult_black.png"),
@@ -18,7 +19,6 @@ public class PigeonModel extends GeoModel<PigeonEntity> {
             Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/pigeon_adult_white.png")
     };
     private static final Identifier TEXTURE_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/pigeon_baby.png");
-    private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "pigeon");
 
     @Override
     public void addAdditionalStateData(PigeonEntity entity, Object extraData, GeoRenderState renderState) {
@@ -27,7 +27,7 @@ public class PigeonModel extends GeoModel<PigeonEntity> {
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
-        return MODEL;
+        return renderState instanceof LivingEntityRenderState les && les.isBaby ? BABY : ADULT;
     }
 
     @Override
@@ -42,6 +42,6 @@ public class PigeonModel extends GeoModel<PigeonEntity> {
 
     @Override
     public Identifier getAnimationResource(PigeonEntity entity) {
-        return ANIMATION;
+        return entity.isBaby() ? BABY : ADULT;
     }
 }
