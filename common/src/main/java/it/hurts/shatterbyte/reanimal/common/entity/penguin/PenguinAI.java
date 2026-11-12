@@ -17,6 +17,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.*;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
@@ -83,6 +84,12 @@ public class PenguinAI {
                 Activity.CORE,
                 0,
                 ImmutableList.of(
+                        new Swim<PenguinEntity>(0.8F) {
+                            @Override
+                            protected boolean checkExtraStartConditions(ServerLevel level, Mob mob) {
+                                return mob.isBaby() && super.checkExtraStartConditions(level, mob);
+                            }
+                        },
                         new LookAtTargetSink(45, 90),
                         new MoveToTargetSink(),
                         new CountDownCooldownTicks(MemoryModuleType.TEMPTATION_COOLDOWN_TICKS),
