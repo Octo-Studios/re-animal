@@ -24,16 +24,9 @@ public class KiwiRenderer extends GeoEntityRenderer<KiwiEntity, EntityRenderStat
 
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
 
-            this.shadowRadius = 0.35F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 0.35F;
-        }
+        this.shadowRadius = isBaby ? 0.175F : 0.35F;
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
     }

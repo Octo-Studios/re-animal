@@ -15,8 +15,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -42,6 +44,9 @@ public class KiwiEntity extends Animal implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.kiwi.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.kiwi.walk");
     private static final RawAnimation KICK = RawAnimation.begin().then("animation.kiwi.kick", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.kiwi_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.kiwi_baby.walk");
+    private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.28F, 0.4F);
     private static final int KICK_DURATION_TICKS = 16;
     private static final int KICK_JUMP_TICK = 2;
     private static final int KICK_HIT_TICK = 7;
@@ -60,6 +65,11 @@ public class KiwiEntity extends Animal implements GeoEntity {
         super(entityType, level);
 
         this.getNavigation().setCanFloat(true);
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
     }
 
     @Override
@@ -240,14 +250,15 @@ public class KiwiEntity extends Animal implements GeoEntity {
 
     private PlayState mainPredicate(AnimationTest<KiwiEntity> state) {
         var controller = state.controller();
+        var entity = state.animatable();
 
-        if (state.animatable().isKicking())
+        if (entity.isKicking())
             return PlayState.STOP;
 
         if (state.isMoving())
-            controller.setAnimation(WALK);
+            controller.setAnimation(entity.isBaby() ? BABY_WALK : WALK);
         else
-            controller.setAnimation(IDLE);
+            controller.setAnimation(entity.isBaby() ? BABY_IDLE : IDLE);
 
         return PlayState.CONTINUE;
     }
