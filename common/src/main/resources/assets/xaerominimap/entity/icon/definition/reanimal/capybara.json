@@ -1,5 +1,7 @@
 {
   "variants" : {
+    "reanimal:textures/entity/capybara_baby.png" : "outlined_sprite:reanimal/capybara_baby.png",
     "default" : "outlined_sprite:reanimal/capybara.png"
-  }
+  },
+  "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getAgeVariant"
 }

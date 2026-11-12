@@ -107,6 +107,9 @@ public class JellyfishEntity extends Animal implements GeoEntity, Bucketable {
                     super.tick();
             }
         };
+
+        if (!level.isClientSide())
+            this.setVariant(this.getRandom().nextInt(5));
     }
 
     private float getTentacleSpeed() {
@@ -149,12 +152,12 @@ public class JellyfishEntity extends Animal implements GeoEntity, Bucketable {
     }
 
     @Override
-    protected void defineSynchedData(SynchedEntityData.Builder buidler) {
-        super.defineSynchedData(buidler);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
 
-        buidler.define(VARIANT, this.getRandom().nextInt(5));
-        buidler.define(FROM_BUCKET, false);
-        buidler.define(BRIGHTENING, false);
+        builder.define(VARIANT, 0);
+        builder.define(FROM_BUCKET, false);
+        builder.define(BRIGHTENING, false);
     }
 
     @Override

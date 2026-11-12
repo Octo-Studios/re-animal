@@ -5,6 +5,11 @@
     "reanimal:textures/entity/jellyfish_2.png" : "outlined_sprite:reanimal/jellyfish_2.png",
     "reanimal:textures/entity/jellyfish_3.png" : "outlined_sprite:reanimal/jellyfish_3.png",
     "reanimal:textures/entity/jellyfish_4.png" : "outlined_sprite:reanimal/jellyfish_4.png",
+    "reanimal:textures/entity/jellyfish_baby_0.png" : "outlined_sprite:reanimal/jellyfish_baby_0.png",
+    "reanimal:textures/entity/jellyfish_baby_1.png" : "outlined_sprite:reanimal/jellyfish_baby_1.png",
+    "reanimal:textures/entity/jellyfish_baby_2.png" : "outlined_sprite:reanimal/jellyfish_baby_2.png",
+    "reanimal:textures/entity/jellyfish_baby_3.png" : "outlined_sprite:reanimal/jellyfish_baby_3.png",
+    "reanimal:textures/entity/jellyfish_baby_4.png" : "outlined_sprite:reanimal/jellyfish_baby_4.png",
     "default" : "outlined_sprite:reanimal/jellyfish_0.png"
   },
   "variantMethod" : "it.hurts.shatterbyte.reanimal.client.compat.XaeroMinimapCompat.getColorVariant"
