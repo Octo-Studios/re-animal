@@ -24,15 +24,7 @@ public class HedgehogRenderer extends GeoEntityRenderer<HedgehogEntity, EntityRe
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
         var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
-
-            this.shadowRadius = 0.35F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 0.35F;
-        }
+        this.shadowRadius = isBaby ? 0.175F : 0.35F;
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
     }
@@ -41,7 +33,7 @@ public class HedgehogRenderer extends GeoEntityRenderer<HedgehogEntity, EntityRe
     public void extractRenderState(HedgehogEntity entity, EntityRenderState renderState, float partialTick) {
         super.extractRenderState(entity, renderState, partialTick);
 
-        var transform = MobPerch.extract(entity, renderState, partialTick, 5.5F / 16F);
+        var transform = MobPerch.extract(entity, renderState, partialTick, (entity.isBaby() ? 3F : 5.5F) / 16F);
 
         ((GeoRenderState) renderState).addGeckolibData(MobPerch.TRANSFORM, transform);
         HeadTracking.setMode(renderState, entity.isOnHead() ? HeadTracking.RESET : entity.isDigging() ? HeadTracking.KEEP_ANIMATION : HeadTracking.FOLLOW);

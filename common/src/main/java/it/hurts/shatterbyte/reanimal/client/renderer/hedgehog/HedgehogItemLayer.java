@@ -9,6 +9,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.state.EntityRenderState;
+import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
 
@@ -40,8 +41,11 @@ public class HedgehogItemLayer<R extends EntityRenderState & GeoRenderState> ext
 
     @Override
     protected void submitItemStackRender(PoseStack poseStack, GeoBone bone, ItemStackRenderState itemState, ItemDisplayContext displayContext, R renderState, SubmitNodeCollector renderTasks, int packedLight) {
+        var scale = renderState instanceof LivingEntityRenderState living && living.isBaby ? 0.25F : 0.5F;
+
         poseStack.pushPose();
-        poseStack.scale(0.5F, 0.5F, 0.5F);
+
+        poseStack.scale(scale, scale, scale);
 
         super.submitItemStackRender(poseStack, bone, itemState, displayContext, renderState, renderTasks, packedLight);
 

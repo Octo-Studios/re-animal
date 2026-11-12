@@ -64,10 +64,18 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation ROLL = RawAnimation.begin().thenPlayAndHold("animation.hedgehog.roll");
     private static final RawAnimation UNROLL = RawAnimation.begin().thenPlayAndHold("animation.hedgehog.unroll");
     private static final RawAnimation SCARED = RawAnimation.begin().thenLoop("animation.hedgehog.scared");
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.hedgehog_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.hedgehog_baby.walk");
+    private static final RawAnimation BABY_DIG = RawAnimation.begin().thenPlayAndHold("animation.hedgehog_baby.dig");
+    private static final RawAnimation BABY_ROLL = RawAnimation.begin().thenPlayAndHold("animation.hedgehog_baby.roll");
+    private static final RawAnimation BABY_UNROLL = RawAnimation.begin().thenPlayAndHold("animation.hedgehog_baby.unroll");
+    private static final RawAnimation BABY_SCARED = RawAnimation.begin().thenLoop("animation.hedgehog_baby.scared");
 
     private static final EntityDataAccessor<HedgehogState> STATE = SynchedEntityData.defineId(HedgehogEntity.class, ReAnimalEntityDataSerializers.HEDGEHOG_STATE);
     private static final EntityDataAccessor<ItemStack> STACK = SynchedEntityData.defineId(HedgehogEntity.class, EntityDataSerializers.ITEM_STACK);
     private static final EntityDataAccessor<Boolean> DIGGING = SynchedEntityData.defineId(HedgehogEntity.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.35F, 0.33F);
+    private static final EntityDimensions BABY_CURLED_DIMENSIONS = EntityDimensions.scalable(0.25F, 0.26F);
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -109,6 +117,9 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
 
     @Override
     protected EntityDimensions getDefaultDimensions(Pose pose) {
+        if (this.isBaby())
+            return this.getState() == HedgehogState.SCARED ? BABY_CURLED_DIMENSIONS : BABY_DIMENSIONS;
+
         return super.getDefaultDimensions(pose).scale(this.getState() == HedgehogState.SCARED ? 0.8F : 1F, 1F);
     }
 
@@ -461,25 +472,25 @@ public class HedgehogEntity extends TamableAnimal implements GeoEntity {
 
     private PlayState mainPredicate(AnimationTest<HedgehogEntity> state) {
         var controller = state.controller();
-
+        var baby = this.isBaby();
         var hedgehogState = this.getState();
 
         if (hedgehogState != HedgehogState.IDLE) {
             switch (hedgehogState) {
-                case ROLLING -> controller.setAnimation(ROLL);
-                case SCARED -> controller.setAnimation(SCARED);
-                case UNROLLING -> controller.setAnimation(UNROLL);
+                case ROLLING -> controller.setAnimation(baby ? BABY_ROLL : ROLL);
+                case SCARED -> controller.setAnimation(baby ? BABY_SCARED : SCARED);
+                case UNROLLING -> controller.setAnimation(baby ? BABY_UNROLL : UNROLL);
             }
 
             return PlayState.CONTINUE;
         }
 
         if (this.isDigging())
-            controller.setAnimation(DIG);
+            controller.setAnimation(baby ? BABY_DIG : DIG);
         else if (state.isMoving() && !this.isOnHead())
-            controller.setAnimation(WALK);
+            controller.setAnimation(baby ? BABY_WALK : WALK);
         else
-            controller.setAnimation(IDLE);
+            controller.setAnimation(baby ? BABY_IDLE : IDLE);
 
         return PlayState.CONTINUE;
     }
