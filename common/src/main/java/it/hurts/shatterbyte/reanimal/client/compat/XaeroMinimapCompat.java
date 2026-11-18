@@ -31,6 +31,9 @@ public final class XaeroMinimapCompat {
     }
 
     public static Object getColorVariant(Identifier texture, EntityRenderer<?, ?> renderer, Entity entity) {
+        if (entity instanceof ButterflyEntity butterfly && butterfly.isBaby())
+            return getTexture(entity, "baby_" + butterfly.getVariant());
+
         if (entity instanceof JellyfishEntity jellyfish && jellyfish.isBaby())
             return getTexture(entity, "baby_" + jellyfish.getVariant());
 
