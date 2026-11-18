@@ -2,6 +2,7 @@ package it.hurts.shatterbyte.reanimal.common.entity.crocodile;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.block.CrocodileEggBlock;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
@@ -12,6 +13,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -24,7 +26,9 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.SmoothSwimmingLookControl;
@@ -65,8 +69,14 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private static final RawAnimation DASH_SWIM = RawAnimation.begin().thenLoop("animation.crocodile.dash_swim");
     private static final RawAnimation BITE = RawAnimation.begin().then("animation.crocodile.bite", LoopType.PLAY_ONCE);
     private static final RawAnimation SPIN = RawAnimation.begin().then("animation.crocodile.spinn", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.crocodile_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.crocodile_baby.walk");
+    private static final RawAnimation BABY_SWIM = RawAnimation.begin().thenLoop("animation.crocodile_baby.swim");
+    private static final RawAnimation BABY_SWIM_IDLE = RawAnimation.begin().thenLoop("animation.crocodile_baby.swim_idle");
+    private static final RawAnimation BABY_BITE = RawAnimation.begin().then("animation.crocodile_baby.bite", LoopType.PLAY_ONCE);
 
     private static final String BITE_TRIGGER = "bite";
+    private static final String BABY_BITE_TRIGGER = "baby_bite";
     private static final String SPIN_TRIGGER = "spin";
     private static final int TURN_SPEED = 10;
     private static final int DASH_DURATION = 10;
@@ -74,6 +84,12 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     private static final double BITE_RADIUS = 4D / 16D;
     private static final Vec3 BITE_START = new Vec3(0D, 4D / 16D, 10D / 16D);
     private static final Vec3 BITE_END = new Vec3(0D, 4D / 16D, BITE_REACH);
+    private static final EntityDimensions BABY_DIMENSIONS = EntityDimensions.scalable(0.5F, 0.34F);
+    private static final double BABY_BITE_RADIUS = 2D / 16D;
+    private static final Vec3 BABY_BITE_START = new Vec3(0D, 3D / 16D, 5D / 16D);
+    private static final Vec3 BABY_BITE_END = new Vec3(0D, 3D / 16D, 7D / 16D);
+    private static final AttributeModifier BABY_ATTACK_DAMAGE = new AttributeModifier(
+            Identifier.fromNamespaceAndPath(ReAnimal.MODID, "crocodile_baby_attack_damage"), -0.8D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
     private static final EntityDataAccessor<Boolean> ATTACKING = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> HAS_EGG = SynchedEntityData.defineId(CrocodileEntity.class, EntityDataSerializers.BOOLEAN);
@@ -124,6 +140,23 @@ public class CrocodileEntity extends Animal implements GeoEntity {
         this.navigation = new AmphibiousPathNavigation(this, level);
 
         this.setPathfindingMalus(PathType.WATER, 0F);
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(pose);
+    }
+
+    @Override
+    protected void ageBoundaryReached() {
+        super.ageBoundaryReached();
+
+        var damage = this.getAttribute(Attributes.ATTACK_DAMAGE);
+
+        if (this.isBaby())
+            damage.addTransientModifier(BABY_ATTACK_DAMAGE);
+        else
+            damage.removeModifier(BABY_ATTACK_DAMAGE.id());
     }
 
     @Override
@@ -185,12 +218,13 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     }
 
     private boolean canBite(LivingEntity target, float yaw) {
-        var scale = this.getScale() * this.getAgeScale();
+        var baby = this.isBaby();
+        var scale = this.getScale();
         var pitch = this.isInWater() ? this.swimPitch * Mth.DEG_TO_RAD : 0F;
         var rotation = -yaw * Mth.DEG_TO_RAD;
-        var start = this.position().add(BITE_START.scale(scale).xRot(pitch).yRot(rotation));
-        var end = this.position().add(BITE_END.scale(scale).xRot(pitch).yRot(rotation));
-        var bounds = target.getBoundingBox().inflate(BITE_RADIUS * scale);
+        var start = this.position().add((baby ? BABY_BITE_START : BITE_START).scale(scale).xRot(pitch).yRot(rotation));
+        var end = this.position().add((baby ? BABY_BITE_END : BITE_END).scale(scale).xRot(pitch).yRot(rotation));
+        var bounds = target.getBoundingBox().inflate((baby ? BABY_BITE_RADIUS : BITE_RADIUS) * scale);
 
         return (bounds.contains(start) || bounds.contains(end) || bounds.clip(start, end).isPresent()) && this.hasLineOfSight(target);
     }
@@ -234,7 +268,7 @@ public class CrocodileEntity extends Animal implements GeoEntity {
             this.triggerAnim("spin", SPIN_TRIGGER);
 
         if (this.getGrabbedPrey() == null)
-            this.triggerAnim("mouth", BITE_TRIGGER);
+            this.triggerAnim("mouth", this.isBaby() ? BABY_BITE_TRIGGER : BITE_TRIGGER);
     }
 
     public void tryDash(LivingEntity target) {
@@ -576,7 +610,7 @@ public class CrocodileEntity extends Animal implements GeoEntity {
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>("main", 5, this::mainPredicate));
         controllers.add(new AnimationController<>("pose", 5,
-                state -> state.setAndContinue(this.isInWater() ? SWIM_POSE : LAND_POSE)).additiveAnimations());
+                state -> this.isBaby() ? PlayState.STOP : state.setAndContinue(this.isInWater() ? SWIM_POSE : LAND_POSE)).additiveAnimations());
         controllers.add(new AnimationController<>("mouth", 0, state -> {
             var controller = state.controller();
 
@@ -588,21 +622,29 @@ public class CrocodileEntity extends Animal implements GeoEntity {
 
             controller.setTransitionTicks(0);
 
-            if (controller.getCurrentRawAnimation() == BITE)
+            if (controller.getCurrentRawAnimation() == (this.isBaby() ? BABY_BITE : BITE))
                 return PlayState.CONTINUE;
 
             controller.reset();
 
             return PlayState.STOP;
-        }).additiveAnimations().receiveTriggeredAnimations().triggerableAnim(BITE_TRIGGER, BITE));
+        }).additiveAnimations().receiveTriggeredAnimations()
+                .triggerableAnim(BITE_TRIGGER, BITE)
+                .triggerableAnim(BABY_BITE_TRIGGER, BABY_BITE));
         controllers.add(new AnimationController<>("spin", 0, state -> PlayState.STOP)
                 .additiveAnimations()
                 .triggerableAnim(SPIN_TRIGGER, SPIN));
     }
 
     private PlayState mainPredicate(AnimationTest<CrocodileEntity> state) {
-        var controller = state.controller();
         var moving = state.isMoving() && !this.isSpinning();
+
+        if (this.isBaby())
+            return this.isInWater()
+                    ? state.setAndContinue(moving ? BABY_SWIM : BABY_SWIM_IDLE)
+                    : state.setAndContinue(moving ? BABY_WALK : BABY_IDLE);
+
+        var controller = state.controller();
 
         if (this.isBasking())
             controller.setAnimation(BASK);

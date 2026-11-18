@@ -210,6 +210,9 @@ public class CrocodileAI {
     }
 
     private static boolean canHuntFromHere(ServerLevel level, CrocodileEntity crocodile, LivingEntity target) {
+        if (crocodile.isBaby())
+            return true;
+
         if (crocodile.isBasking())
             return crocodile.distanceToSqr(target) <= 9D;
 
@@ -464,7 +467,7 @@ public class CrocodileAI {
                 crocodile.getNavigation().stop();
                 crocodile.turnToward(target);
             } else {
-                brain.setMemory(MemoryModuleType.WALK_TARGET, crocodile.isInWater() && target.isInWater()
+                brain.setMemory(MemoryModuleType.WALK_TARGET, !crocodile.isBaby() && crocodile.isInWater() && target.isInWater()
                         ? new WalkTarget(target.position().add(0D, 0.5D, 0D), 1.2F, 0)
                         : new WalkTarget(target, 1.2F, 0));
                 if (!brain.hasMemoryValue(MemoryModuleType.ATTACK_COOLING_DOWN))

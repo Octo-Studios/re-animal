@@ -33,16 +33,8 @@ public class CrocodileRenderer extends GeoEntityRenderer<CrocodileEntity, Entity
 
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
-
-            this.shadowRadius = 0.6F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 0.6F;
-        }
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState living && living.isBaby;
+        this.shadowRadius = isBaby ? 0.25F : 0.6F;
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
     }
