@@ -21,10 +21,6 @@ public class ButterflyRenderer extends InsectRenderer<ButterflyEntity> {
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
         var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState state && state.isBaby;
-
-        if (isBaby)
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
-
         this.shadowRadius = isBaby ? 0.125F : 0.25F;
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);

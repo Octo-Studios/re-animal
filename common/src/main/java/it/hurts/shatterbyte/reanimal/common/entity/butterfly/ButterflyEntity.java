@@ -55,6 +55,9 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.butterfly.idle");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.butterfly.walk");
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.butterfly.fly");
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.butterfly_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.butterfly_baby.walk");
+    private static final RawAnimation BABY_FLY = RawAnimation.begin().thenLoop("animation.butterfly_baby.fly");
 
     private static final EntityDataAccessor<Integer> VARIANT = SynchedEntityData.defineId(ButterflyEntity.class, EntityDataSerializers.INT);
 
@@ -246,13 +249,15 @@ public class ButterflyEntity extends FlyingInsectEntity implements GeoEntity {
     private PlayState mainPredicate(AnimationTest<ButterflyEntity> state) {
         var controller = state.controller();
         var entity = state.animatable();
+        var baby = entity.isBaby();
+        var idle = baby ? BABY_IDLE : IDLE;
 
         if (entity.isResting() || entity.isExposedToPrecipitation())
-            controller.setAnimation((entity.isResting() || entity.onGround()) && state.isMoving() ? WALK : IDLE);
+            controller.setAnimation((entity.isResting() || entity.onGround()) && state.isMoving() ? (baby ? BABY_WALK : WALK) : idle);
         else if (!entity.isPerched() && (state.isMoving() || !entity.onGround()))
-            controller.setAnimation(FLY);
+            controller.setAnimation(baby ? BABY_FLY : FLY);
         else
-            controller.setAnimation(IDLE);
+            controller.setAnimation(idle);
 
         return PlayState.CONTINUE;
     }

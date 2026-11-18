@@ -97,9 +97,13 @@ public class ButterflyAI {
                         Pair.of(1, new AnimalMakeLove(ReAnimalEntities.BUTTERFLY, 1F, 1)),
                         Pair.of(
                                 2,
-                                new RunOne<>(
+                                new GateBehavior<>(
+                                        Map.of(),
+                                        Set.of(),
+                                        GateBehavior.OrderPolicy.ORDERED,
+                                        GateBehavior.RunningPolicy.RUN_ONE,
                                         ImmutableList.of(
-                                                Pair.of(new FollowTemptation(entity -> 1.25F, entity -> entity.isBaby() ? 1D : 2D), 1),
+                                                Pair.of(new FollowTemptation(entity -> 1.25F, entity -> 2D), 1),
                                                 Pair.of(BabyFollowAdult.create(UniformInt.of(2, 4), 1.25F), 1)
                                         )
                                 )
