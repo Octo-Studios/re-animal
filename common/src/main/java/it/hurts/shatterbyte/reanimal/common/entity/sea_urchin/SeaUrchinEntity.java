@@ -118,13 +118,11 @@ public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber
 
         this.entityData.set(ROLL_ROTATION, new Quaternionf(this.rotation));
 
-        if (!this.isBaby()) {
-            var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), (candidate) -> !(candidate instanceof SeaUrchinEntity));
+        var targets = level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox(), candidate -> !(candidate instanceof SeaUrchinEntity));
 
-            for (var target : targets)
-                if (target.hurtOrSimulate(ReAnimalDamageTypes.source(this, ReAnimalDamageTypes.SEA_URCHIN_SPIKES), 5F))
-                    target.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 200, 0));
-        }
+        for (var target : targets)
+            if (target.hurtOrSimulate(ReAnimalDamageTypes.source(this, ReAnimalDamageTypes.SEA_URCHIN_SPIKES), 5F))
+                target.addEffect(new MobEffectInstance(ReAnimalMobEffects.CRAMPS, 200, 0));
     }
 
     @Override

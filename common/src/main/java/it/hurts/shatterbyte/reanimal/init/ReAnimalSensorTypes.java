@@ -15,6 +15,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.pigeon.PigeonAI;
 import it.hurts.shatterbyte.reanimal.common.entity.penguin.PenguinAI;
 import it.hurts.shatterbyte.reanimal.common.entity.toucan.ToucanAI;
 import it.hurts.shatterbyte.reanimal.common.entity.red_panda.RedPandaAI;
+import it.hurts.shatterbyte.reanimal.common.entity.sea_urchin.SeaUrchinAI;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealAI;
 import it.hurts.shatterbyte.reanimal.common.entity.vulture.VultureAI;
 import net.minecraft.core.Registry;
@@ -42,6 +43,7 @@ public class ReAnimalSensorTypes {
     public static SensorType<TemptingSensor> GIRAFFE_TEMPTATIONS;
     public static SensorType<TemptingSensor> BUTTERFLY_TEMPTATIONS;
     public static SensorType<TemptingSensor> VULTURE_TEMPTATIONS;
+    public static SensorType<TemptingSensor> SEA_URCHIN_TEMPTATIONS;
 
     public static void init() {
         HEDGEHOG_TEMPTATIONS = register("hedgehog_temptations", new SensorType<>(() -> new TemptingSensor(HedgehogAI.getTemptations())));
@@ -60,6 +62,7 @@ public class ReAnimalSensorTypes {
         GIRAFFE_TEMPTATIONS = register("giraffe_temptations", new SensorType<>(() -> new TemptingSensor(GiraffeAI.getTemptations())));
         BUTTERFLY_TEMPTATIONS = register("butterfly_temptations", new SensorType<>(() -> new TemptingSensor(ButterflyAI.getTemptations())));
         VULTURE_TEMPTATIONS = register("vulture_temptations", new SensorType<>(() -> new TemptingSensor(VultureAI.getTemptations())));
+        SEA_URCHIN_TEMPTATIONS = register("sea_urchin_temptations", new SensorType<>(() -> new TemptingSensor(SeaUrchinAI.getTemptations())));
     }
 
     @SuppressWarnings("unchecked")

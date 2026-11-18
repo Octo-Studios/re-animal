@@ -42,7 +42,7 @@ public class SeaUrchinAI {
     private static final ImmutableList<SensorType<? extends Sensor<? super SeaUrchinEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
-            ReAnimalSensorTypes.KIWI_TEMPTATIONS,
+            ReAnimalSensorTypes.SEA_URCHIN_TEMPTATIONS,
             SensorType.NEAREST_ADULT
     );
 

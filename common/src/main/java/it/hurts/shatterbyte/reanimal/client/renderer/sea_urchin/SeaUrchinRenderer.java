@@ -28,25 +28,20 @@ public class SeaUrchinRenderer extends GeoEntityRenderer<SeaUrchinEntity, Entity
 
     @Override
     protected void applyRotations(RenderPassInfo renderPassInfo, PoseStack poseStack, float nativeScale) {
-        poseStack.translate(0D, 6D / 16D, 0D);
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState living && living.isBaby;
+        var centerHeight = (isBaby ? 2.5D : 6D) / 16D;
+
+        poseStack.translate(0D, centerHeight, 0D);
         poseStack.rotate((Quaternionf) renderPassInfo.renderState().getGeckolibData(ROLL_ROTATION));
-        poseStack.translate(0D, -6D / 16D, 0D);
+        poseStack.translate(0D, -centerHeight, 0D);
 
         super.applyRotations(renderPassInfo, poseStack, nativeScale);
     }
 
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
-
-            this.shadowRadius = 0.25F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 0.25F;
-        }
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState living && living.isBaby;
+        this.shadowRadius = isBaby ? 0.125F : 0.25F;
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
     }
