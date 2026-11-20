@@ -74,6 +74,10 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         return true;
     }
 
+    protected Vec3 adjustSurfaceMovement(Vec3 from, Vec3 movement, Direction side) {
+        return movement;
+    }
+
     @Override
     protected boolean canUpdatePath() {
         return this.climber.getClimbingSide() != Direction.DOWN || super.canUpdatePath();
@@ -272,10 +276,22 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             return;
         }
 
-        while (!this.path.isDone() && this.climber.position().distanceToSqr(((SurfaceNode) this.path.getNextNode()).point.position()) <= MoveControl.MIN_SPEED_SQR) {
-            var side = ((SurfaceNode) this.path.getNextNode()).point.side();
+        while (!this.path.isDone()) {
+            var next = (SurfaceNode) this.path.getNextNode();
+            var position = this.climber.position();
 
-            if (side != this.climber.getClimbingSide() && this.isClear(this.climber.position(), this.climber.position(), side))
+            if (position.distanceToSqr(next.point.position()) > MoveControl.MIN_SPEED_SQR)
+                break;
+
+            if (next.corner) {
+                var afterCorner = (SurfaceNode) this.path.getNode(this.path.getNextNodeIndex() + 1);
+                if (!this.isClear(position, position, afterCorner.point.side()))
+                    break;
+            }
+
+            var side = next.point.side();
+
+            if (side != this.climber.getClimbingSide() && this.isClear(position, position, side))
                 this.climber.setClimbingSide(side, Vec3.ZERO);
 
             this.path.advance();
@@ -319,8 +335,10 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             return;
         }
 
-        this.motion = movement;
-        this.climber.setClimbingSide(side, movement);
+        this.motion = !node.corner && side == point.side() && side != Direction.DOWN
+                ? this.adjustSurfaceMovement(from, movement, side)
+                : movement;
+        this.climber.setClimbingSide(side, this.motion);
         this.climber.setSpeed((float) speed);
 
         if (side == Direction.DOWN && movement.horizontalDistanceSqr() > 0D)
@@ -484,7 +502,27 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
             return corner;
 
         corner = first.add(second).subtract(corner);
-        return this.canTurnAt(from, corner, to, sharedSupport) ? corner : null;
+        if (this.canTurnAt(from, corner, to, sharedSupport))
+            return corner;
+
+        var fromBounds = this.getBoundingBox(Vec3.ZERO, from.side());
+        var toBounds = this.getBoundingBox(Vec3.ZERO, to.side());
+        if (fromBounds.equals(toBounds))
+            return null;
+
+        corner = first.with(from.side().getAxis(), getTurnCoordinate(from, fromBounds, toBounds))
+                .with(to.side().getAxis(), getTurnCoordinate(to, toBounds, fromBounds));
+
+        return this.isConnected(first, corner, from.side()) && this.isConnected(corner, second, to.side()) ? corner : null;
+    }
+
+    private static double getTurnCoordinate(Point surface, AABB bounds, AABB turnedBounds) {
+        var axis = surface.side().getAxis();
+        var coordinate = surface.position().get(axis);
+
+        return surface.side().getAxisDirection() == Direction.AxisDirection.POSITIVE
+                ? coordinate - Math.max(0D, turnedBounds.max(axis) - bounds.max(axis))
+                : coordinate + Math.max(0D, bounds.min(axis) - turnedBounds.min(axis));
     }
 
     private boolean canTurnAt(Point from, Vec3 corner, Point to, boolean sharedSupport) {

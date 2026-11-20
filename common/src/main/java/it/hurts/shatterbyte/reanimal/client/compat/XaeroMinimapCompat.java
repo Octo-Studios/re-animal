@@ -37,6 +37,9 @@ public final class XaeroMinimapCompat {
         if (entity instanceof JellyfishEntity jellyfish && jellyfish.isBaby())
             return getTexture(entity, "baby_" + jellyfish.getVariant());
 
+        if (entity instanceof StarfishEntity starfish && starfish.isBaby())
+            return getTexture(entity, "baby_" + starfish.getVariant());
+
         var variant = switch (entity) {
             case ButterflyEntity butterfly -> butterfly.getVariant();
             case DragonflyEntity dragonfly -> dragonfly.getVariant();

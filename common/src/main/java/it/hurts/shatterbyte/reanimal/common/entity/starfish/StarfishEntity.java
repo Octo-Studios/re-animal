@@ -202,13 +202,14 @@ public class StarfishEntity extends Animal implements GeoEntity, SurfaceClimber 
     @Override
     public void travel(Vec3 vec) {
         var navigation = (StarfishNavigation) this.getNavigation();
+        var side = this.getClimbingSide();
+        var followingPath = navigation.isOnSurfacePath();
 
         if (this.isEffectiveAi() && !this.isNoAi() && this.isAlive() && !this.isPassenger() && !this.isInLava()
-                && (navigation.isOnSurfacePath() || this.getClimbingSide() != Direction.DOWN
-                && navigation.hasSupport(this.position(), this.getClimbingSide()))) {
-            this.setDeltaMovement(navigation.getMotion());
+                && (followingPath || side != Direction.DOWN && navigation.hasSupport(this.position(), side))) {
+            this.setDeltaMovement(followingPath ? navigation.getMotion() : navigation.adjustSurfaceMovement(this.position(), Vec3.ZERO, side));
             this.move(MoverType.SELF, this.getDeltaMovement());
-            this.setOnGround(this.getClimbingSide() == Direction.DOWN);
+            this.setOnGround(side == Direction.DOWN);
             this.resetFallDistance();
         } else {
             if (!this.level().isClientSide())
