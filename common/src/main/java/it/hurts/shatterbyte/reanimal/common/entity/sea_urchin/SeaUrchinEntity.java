@@ -5,16 +5,22 @@ import net.minecraft.world.level.storage.ValueOutput;
 import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalDamageTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalMobEffects;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.*;
@@ -25,7 +31,9 @@ import net.minecraft.world.entity.ai.control.BodyRotationControl;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.animal.Animal;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -41,13 +49,14 @@ import com.geckolib.util.GeckoLibUtil;
 import org.joml.Quaternionf;
 import org.joml.Quaternionfc;
 
-public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber {
+public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber, Bucketable {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop("animation.sea_urchin.idle");
     private static final RawAnimation WOBBLE = RawAnimation.begin().thenLoop("animation.sea_urchin.wobbling");
     private static final EntityDataAccessor<Boolean> EATING = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> ROLLING = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Quaternionfc> ROLL_ROTATION = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.QUATERNION);
     private static final EntityDataAccessor<Direction> CLIMBING_SIDE = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.DIRECTION);
+    private static final EntityDataAccessor<Boolean> FROM_BUCKET = SynchedEntityData.defineId(SeaUrchinEntity.class, EntityDataSerializers.BOOLEAN);
     private static final int RIGHTING_DELAY = 40;
     private static final int RIGHTING_DURATION = 100;
 
@@ -132,6 +141,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber
         builder.define(EATING, false);
         builder.define(ROLLING, false);
         builder.define(CLIMBING_SIDE, Direction.DOWN);
+        builder.define(FROM_BUCKET, false);
         builder.define(ROLL_ROTATION, new Quaternionf());
     }
 
@@ -311,6 +321,7 @@ public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber
         super.addAdditionalSaveData(tag);
 
         tag.putInt("ClimbingSide", this.getClimbingSide().get3DDataValue());
+        tag.putBoolean("FromBucket", this.fromBucket());
     }
 
     @Override
@@ -318,6 +329,55 @@ public class SeaUrchinEntity extends Animal implements GeoEntity, SurfaceClimber
         super.readAdditionalSaveData(tag);
 
         this.setClimbingSide(Direction.from3DDataValue(tag.getIntOr("ClimbingSide", Direction.DOWN.get3DDataValue())), Vec3.ZERO);
+        this.setFromBucket(tag.getBooleanOr("FromBucket", false));
+    }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        return Bucketable.bucketMobPickup(player, hand, this).orElseGet(() -> super.mobInteract(player, hand));
+    }
+
+    @Override
+    public boolean fromBucket() {
+        return this.getEntityData().get(FROM_BUCKET);
+    }
+
+    @Override
+    public void setFromBucket(boolean fromBucket) {
+        this.getEntityData().set(FROM_BUCKET, fromBucket);
+    }
+
+    @Override
+    public void saveToBucketTag(ItemStack bucket) {
+        Bucketable.saveDefaultDataToBucketTag(this, bucket);
+
+        CustomData.update(DataComponents.BUCKET_ENTITY_DATA, bucket, tag -> {
+            tag.putInt("Age", this.getAge());
+            tag.putBoolean("AgeLocked", this.isAgeLocked());
+        });
+    }
+
+    @Override
+    public void loadFromBucketTag(CompoundTag tag) {
+        Bucketable.loadDefaultDataFromBucketTag(this, tag);
+
+        this.setAge(tag.getIntOr("Age", 0));
+        this.setAgeLocked(tag.getBooleanOr("AgeLocked", false));
+    }
+
+    @Override
+    public ItemStack getBucketItemStack() {
+        return new ItemStack(ReAnimalItems.SEA_URCHIN_BUCKET);
+    }
+
+    @Override
+    public SoundEvent getPickupSound() {
+        return SoundEvents.BUCKET_FILL_FISH;
+    }
+
+    @Override
+    public boolean requiresCustomPersistence() {
+        return super.requiresCustomPersistence() || this.fromBucket();
     }
 
     @Override

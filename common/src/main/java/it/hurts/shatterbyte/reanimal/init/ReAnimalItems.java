@@ -119,6 +119,8 @@ public class ReAnimalItems {
     public static Item RAW_STARFISH_CAVIAR;
     public static Item COOKED_STARFISH_CAVIAR;
     public static Item JELLYFISH_JELLY;
+    public static MobBucketItem SEA_URCHIN_BUCKET;
+    public static MobBucketItem STARFISH_BUCKET;
     public static MobBucketItem JELLYFISH_BUCKET;
 
     public static void init() {
@@ -212,6 +214,8 @@ public class ReAnimalItems {
         SEA_URCHIN_CAVIAR = register("sea_urchin_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false))));
         RAW_STARFISH_CAVIAR = register("raw_starfish_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false), Consumable.builder().onConsume(new ApplyStatusEffectsConsumeEffect(new MobEffectInstance(MobEffects.POISON, 200), 1F)).build())));
         COOKED_STARFISH_CAVIAR = register("cooked_starfish_caviar", props -> new Item(props.food(new FoodProperties(3, 5F, false))));
+        SEA_URCHIN_BUCKET = register("sea_urchin_bucket", props -> new MobBucketItem(ReAnimalEntities.SEA_URCHIN, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, props.stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY)));
+        STARFISH_BUCKET = register("starfish_bucket", props -> new MobBucketItem(ReAnimalEntities.STARFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, props.stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY)));
         JELLYFISH_BUCKET = register("jellyfish_bucket", props -> new MobBucketItem(ReAnimalEntities.JELLYFISH, Fluids.WATER, SoundEvents.BUCKET_EMPTY_FISH, props.stacksTo(1).component(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY)));
         JELLYFISH_JELLY = register("jellyfish_jelly", props -> new Item(props.food(new FoodProperties(2, 0.6F, false))));
     }
