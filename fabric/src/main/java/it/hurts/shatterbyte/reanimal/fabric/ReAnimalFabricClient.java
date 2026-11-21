@@ -2,7 +2,7 @@ package it.hurts.shatterbyte.reanimal.fabric;
 
 import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ball.BallRenderer;
-import it.hurts.shatterbyte.reanimal.client.particle.BallImpactParticle;
+import it.hurts.shatterbyte.reanimal.client.particle.ImpactParticle;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
 import it.hurts.shatterbyte.reanimal.client.renderer.capybara.CapybaraRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.crocodile.CrocodileRenderer;
@@ -75,7 +75,7 @@ public class ReAnimalFabricClient implements ClientModInitializer {
         EntityRendererRegistry.register(ReAnimalEntities.QUILL_ARROW, QuillArrowRenderer::new);
 
         ParticleProviderRegistry.getInstance().register(ReAnimalParticleTypes.PIGEON_SPLAT, PigeonSplatParticle.Provider::new);
-        ParticleProviderRegistry.getInstance().register(ReAnimalParticleTypes.BALL_IMPACT, BallImpactParticle.Provider::new);
+        ParticleProviderRegistry.getInstance().register(ReAnimalParticleTypes.IMPACT, ImpactParticle.Provider::new);
 
         EntityTrailRegistry.registerProvider(ReAnimalEntities.GLOW_STICK, GlowStickEntity.TrailProvider::new);
         EntityTrailRegistry.registerProvider(ReAnimalEntities.BALL, BallEntity.TrailProvider::new);

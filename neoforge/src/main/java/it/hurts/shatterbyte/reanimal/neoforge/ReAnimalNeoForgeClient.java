@@ -2,7 +2,7 @@ package it.hurts.shatterbyte.reanimal.neoforge;
 
 import it.hurts.shatterbyte.reanimal.client.renderer.butterfly.ButterflyRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.ball.BallRenderer;
-import it.hurts.shatterbyte.reanimal.client.particle.BallImpactParticle;
+import it.hurts.shatterbyte.reanimal.client.particle.ImpactParticle;
 import it.hurts.shatterbyte.reanimal.common.entity.ball.BallEntity;
 import it.hurts.shatterbyte.reanimal.client.renderer.capybara.CapybaraRenderer;
 import it.hurts.shatterbyte.reanimal.client.renderer.crocodile.CrocodileRenderer;
@@ -86,7 +86,7 @@ public class ReAnimalNeoForgeClient {
 
     private void registerParticleProviders(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ReAnimalParticleTypes.PIGEON_SPLAT, PigeonSplatParticle.Provider::new);
-        event.registerSpriteSet(ReAnimalParticleTypes.BALL_IMPACT, BallImpactParticle.Provider::new);
+        event.registerSpriteSet(ReAnimalParticleTypes.IMPACT, ImpactParticle.Provider::new);
     }
 
     private void onEntityJoin(EntityJoinLevelEvent event) {

@@ -63,6 +63,14 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
     private static final RawAnimation LAY = RawAnimation.begin().thenLoop("animation.seal.lay");
     private static final RawAnimation LAY_SLAP = RawAnimation.begin().thenLoop("animation.seal.lay_slap");
     private static final RawAnimation GETTING_UP = RawAnimation.begin().then("animation.seal.getting_up", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.seal_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.seal_baby.walk");
+    private static final RawAnimation BABY_SWIM = RawAnimation.begin().thenLoop("animation.seal_baby.swim");
+    private static final RawAnimation BABY_SWIM_IDLE = RawAnimation.begin().thenLoop("animation.seal_baby.swim_idle");
+    private static final RawAnimation BABY_LAYING = RawAnimation.begin().then("animation.seal_baby.laying", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_LAY = RawAnimation.begin().thenLoop("animation.seal_baby.lay");
+    private static final RawAnimation BABY_LAY_SLAP = RawAnimation.begin().thenLoop("animation.seal_baby.lay_slap");
+    private static final RawAnimation BABY_GETTING_UP = RawAnimation.begin().then("animation.seal_baby.getting_up", LoopType.PLAY_ONCE);
 
     private static final EntityDataAccessor<Integer> LAY_STATE = SynchedEntityData.defineId(SealEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Float> SWIM_ROLL = SynchedEntityData.defineId(SealEntity.class, EntityDataSerializers.FLOAT);
@@ -501,27 +509,29 @@ public class SealEntity extends TamableAnimal implements GeoEntity {
     private PlayState mainPredicate(AnimationTest<SealEntity> state) {
         var controller = state.controller();
         var entity = state.animatable();
+        var baby = entity.isBaby();
+        var idle = baby ? BABY_IDLE : IDLE;
 
         if (this.getVehicle() instanceof SealEntity) {
-            controller.setAnimation(IDLE);
+            controller.setAnimation(idle);
 
             return PlayState.CONTINUE;
         }
 
         switch (this.getLayState()) {
-            case LAYING_DOWN -> controller.setAnimation(LAYING);
+            case LAYING_DOWN -> controller.setAnimation(baby ? BABY_LAYING : LAYING);
             case LAYING -> {
                 if (entity.level().getNearestPlayer(this, 3) != null)
-                    controller.setAnimation(LAY_SLAP);
+                    controller.setAnimation(baby ? BABY_LAY_SLAP : LAY_SLAP);
                 else
-                    controller.setAnimation(LAY);
+                    controller.setAnimation(baby ? BABY_LAY : LAY);
             }
-            case GETTING_UP -> controller.setAnimation(GETTING_UP);
+            case GETTING_UP -> controller.setAnimation(baby ? BABY_GETTING_UP : GETTING_UP);
             case STANDING -> {
                 if (this.isInWater())
-                    controller.setAnimation(state.isMoving() ? SWIM : SWIM_IDLE);
+                    controller.setAnimation(state.isMoving() ? (baby ? BABY_SWIM : SWIM) : (baby ? BABY_SWIM_IDLE : SWIM_IDLE));
                 else
-                    controller.setAnimation(state.isMoving() ? WALK : IDLE);
+                    controller.setAnimation(state.isMoving() ? (baby ? BABY_WALK : WALK) : idle);
             }
         }
 

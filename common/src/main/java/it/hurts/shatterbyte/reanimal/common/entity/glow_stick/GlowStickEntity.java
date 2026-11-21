@@ -11,9 +11,9 @@ import com.geckolib.util.GeckoLibUtil;
 import it.hurts.shatterbyte.reanimal.common.block.GlowLightBlock;
 import it.hurts.shatterbyte.reanimal.common.blockentity.GlowLightBlockEntity;
 import it.hurts.shatterbyte.reanimal.common.item.GlowStickItem;
+import it.hurts.shatterbyte.reanimal.common.particle.ImpactParticleOptions;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalBlocks;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
 import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -172,7 +172,7 @@ public class GlowStickEntity extends ThrowableItemProjectile implements GeoEntit
             var impulse = normal.scale(Math.min(speed, 1.0D));
             var contact = position.add(normal.scale(0.01D));
 
-            level.sendParticles(ReAnimalParticleTypes.BALL_IMPACT, contact.x, contact.y, contact.z, 0, impulse.x, impulse.y, impulse.z, 1.0D);
+            level.sendParticles(new ImpactParticleOptions(1F), contact.x, contact.y, contact.z, 0, impulse.x, impulse.y, impulse.z, 1.0D);
         }
     }
 

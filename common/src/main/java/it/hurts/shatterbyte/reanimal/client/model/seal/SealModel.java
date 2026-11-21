@@ -9,13 +9,13 @@ import com.geckolib.model.GeoModel;
 
 public class SealModel extends GeoModel<SealEntity> {
     private static final Identifier MODEL = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "seal");
+    private static final Identifier MODEL_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "seal_baby");
     private static final Identifier TEXTURE_ADULT = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/seal_adult.png");
     private static final Identifier TEXTURE_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/seal_baby.png");
-    private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "seal");
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
-        return MODEL;
+        return renderState instanceof LivingEntityRenderState les && les.isBaby ? MODEL_BABY : MODEL;
     }
 
     @Override
@@ -25,6 +25,6 @@ public class SealModel extends GeoModel<SealEntity> {
 
     @Override
     public Identifier getAnimationResource(SealEntity entity) {
-        return ANIMATION;
+        return entity.isBaby() ? MODEL_BABY : MODEL;
     }
 }

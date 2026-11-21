@@ -5,7 +5,7 @@ import com.geckolib.renderer.base.GeoRenderState;
 import it.hurts.shatterbyte.reanimal.client.model.seal.SealModel;
 import it.hurts.shatterbyte.reanimal.client.renderer.MobPerch;
 import it.hurts.shatterbyte.reanimal.common.entity.seal.SealEntity;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
+import it.hurts.shatterbyte.reanimal.common.particle.ImpactParticleOptions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
@@ -31,15 +31,8 @@ public class SealRenderer extends GeoEntityRenderer<SealEntity, EntityRenderStat
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
         var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
 
-            this.shadowRadius = 0.5F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 0.5F;
-        }
+        this.shadowRadius = isBaby ? 0.25F : 0.5F;
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
     }
@@ -79,10 +72,13 @@ public class SealRenderer extends GeoEntityRenderer<SealEntity, EntityRenderStat
         if (renderPassInfo.renderState().getGeckolibData(MobPerch.TRANSFORM) != null)
             return;
 
-        if (renderPassInfo.renderState().getOrDefaultGeckolibData(SealEntity.SLAP_PARTICLE, false))
+        if (renderPassInfo.renderState().getOrDefaultGeckolibData(SealEntity.SLAP_PARTICLE, false)) {
+            var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState living && living.isBaby;
+            var options = new ImpactParticleOptions(isBaby ? 0.5F : 1F);
             renderPassInfo.addLocatorPositionListener("slap", (worldPos, modelPos, localPos) ->
-                    Minecraft.getInstance().level.addParticle(ReAnimalParticleTypes.BALL_IMPACT,
+                    Minecraft.getInstance().level.addParticle(options,
                             worldPos.x, worldPos.y, worldPos.z, 0D, 0.25D, 0D));
+        }
 
         var pitch = (float) renderPassInfo.renderState().getGeckolibData(SWIM_PITCH);
         var roll = (float) renderPassInfo.renderState().getGeckolibData(SWIM_ROLL) * Mth.DEG_TO_RAD;

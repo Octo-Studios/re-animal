@@ -1,7 +1,7 @@
 package it.hurts.shatterbyte.reanimal.common.entity.ball;
 
 import it.hurts.shatterbyte.reanimal.init.ReAnimalItems;
-import it.hurts.shatterbyte.reanimal.init.ReAnimalParticleTypes;
+import it.hurts.shatterbyte.reanimal.common.particle.ImpactParticleOptions;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.shatterlib.module.particle.trail.EntityTrailProvider;
 import com.geckolib.animatable.GeoEntity;
@@ -279,7 +279,7 @@ public class BallEntity extends Entity implements ItemSupplier, GeoEntity {
             var impulse = this.getImpact();
             var contact = this.position().add(0D, this.getBbHeight() * 0.5D, 0D).subtract(impulse.normalize().scale(this.getBbWidth() * 0.45D));
 
-            this.level().addParticle(ReAnimalParticleTypes.BALL_IMPACT, contact.x, contact.y, contact.z, impulse.x, impulse.y, impulse.z);
+            this.level().addParticle(new ImpactParticleOptions(1F), contact.x, contact.y, contact.z, impulse.x, impulse.y, impulse.z);
         }
     }
 
