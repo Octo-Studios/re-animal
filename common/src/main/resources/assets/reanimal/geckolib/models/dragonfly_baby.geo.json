@@ -1,0 +1,81 @@
+{
+	"format_version": "1.12.0",
+	"minecraft:geometry": [
+		{
+			"description": {
+				"identifier": "geometry.unknown",
+				"texture_width": 32,
+				"texture_height": 32,
+				"visible_bounds_width": 2,
+				"visible_bounds_height": 1.5,
+				"visible_bounds_offset": [0, 0.25, 0]
+			},
+			"bones": [
+				{
+					"name": "body",
+					"pivot": [-1, 1.24442, -0.18618],
+					"cubes": [
+						{"origin": [-1, 1.05, -2.25], "size": [2, 2, 6], "inflate": -0.2, "uv": [0, 0]},
+						{"origin": [-1.5, 1.05, -3.85], "size": [3, 2, 2], "inflate": -0.2, "uv": [16, 3]}
+					]
+				},
+				{
+					"name": "legs_1",
+					"parent": "body",
+					"pivot": [0, 1.34993, -2.20243],
+					"cubes": [
+						{"origin": [-1.5, -0.95, -2.5], "size": [3, 3, 1], "inflate": -0.5, "pivot": [0, 0.05, -0.5], "rotation": [7.5, 0, 0], "uv": [16, 7]}
+					]
+				},
+				{
+					"name": "legs_2",
+					"parent": "body",
+					"pivot": [0, 1.34993, -1.17743],
+					"cubes": [
+						{"origin": [-1.5, -0.95, -1.5], "size": [3, 3, 1], "inflate": -0.5, "pivot": [0, 0.05, 0.5], "rotation": [7.5, 0, 0], "uv": [16, 11]}
+					]
+				},
+				{
+					"name": "legs_3",
+					"parent": "body",
+					"pivot": [0, 1.34993, -0.17743],
+					"cubes": [
+						{"origin": [-1.5, -0.95, -0.5], "size": [3, 3, 1], "inflate": -0.5, "pivot": [0, 0.05, 1.5], "rotation": [7.5, 0, 0], "uv": [16, 15]}
+					]
+				},
+				{
+					"name": "left_wing_1",
+					"parent": "body",
+					"pivot": [0.25, 2.8, -1.6],
+					"cubes": [
+						{"origin": [0.25, 2.8, -2.25], "size": [5, 0, 3], "pivot": [1.25, 2.8, -1.25], "rotation": [0, 22.5, 0], "uv": [0, 8]}
+					]
+				},
+				{
+					"name": "right_wing_1",
+					"parent": "body",
+					"pivot": [-0.25, 2.8, -1.6],
+					"cubes": [
+						{"origin": [-5.03994, 2.8, -1.89396], "size": [5, 0, 3], "pivot": [-0.25, 2.8, -1.6], "rotation": [0, -22.5, 0], "uv": [0, 14]}
+					]
+				},
+				{
+					"name": "left_wing_2",
+					"parent": "body",
+					"pivot": [0.5, 2.7, -1.05],
+					"cubes": [
+						{"origin": [0.5, 2.7, -1.25], "size": [5, 0, 3], "pivot": [1.5, 2.7, -0.25], "rotation": [0, -17.5, 0], "uv": [0, 11]}
+					]
+				},
+				{
+					"name": "right_wing_2",
+					"parent": "body",
+					"pivot": [-0.5, 2.7, -1.05],
+					"cubes": [
+						{"origin": [-5.5, 2.7, -1.25], "size": [5, 0, 3], "pivot": [-1.5, 2.7, -0.25], "rotation": [0, 17.5, 0], "uv": [16, 0]}
+					]
+				}
+			]
+		}
+	]
+}

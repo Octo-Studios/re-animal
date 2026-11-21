@@ -4,6 +4,7 @@ import it.hurts.shatterbyte.reanimal.ReAnimal;
 import it.hurts.shatterbyte.reanimal.common.entity.butterfly.ButterflyAI;
 import it.hurts.shatterbyte.reanimal.common.entity.capybara.CapybaraAI;
 import it.hurts.shatterbyte.reanimal.common.entity.crocodile.CrocodileAI;
+import it.hurts.shatterbyte.reanimal.common.entity.dragonfly.DragonflyAI;
 import it.hurts.shatterbyte.reanimal.common.entity.giraffe.GiraffeAI;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogAI;
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
@@ -42,6 +43,7 @@ public class ReAnimalSensorTypes {
     public static SensorType<TemptingSensor> CROCODILE_TEMPTATIONS;
     public static SensorType<TemptingSensor> GIRAFFE_TEMPTATIONS;
     public static SensorType<TemptingSensor> BUTTERFLY_TEMPTATIONS;
+    public static SensorType<TemptingSensor> DRAGONFLY_TEMPTATIONS;
     public static SensorType<TemptingSensor> VULTURE_TEMPTATIONS;
     public static SensorType<TemptingSensor> SEA_URCHIN_TEMPTATIONS;
 
@@ -61,6 +63,7 @@ public class ReAnimalSensorTypes {
         CROCODILE_TEMPTATIONS = register("crocodile_temptations", new SensorType<>(() -> new TemptingSensor(CrocodileAI.getTemptations())));
         GIRAFFE_TEMPTATIONS = register("giraffe_temptations", new SensorType<>(() -> new TemptingSensor(GiraffeAI.getTemptations())));
         BUTTERFLY_TEMPTATIONS = register("butterfly_temptations", new SensorType<>(() -> new TemptingSensor(ButterflyAI.getTemptations())));
+        DRAGONFLY_TEMPTATIONS = register("dragonfly_temptations", new SensorType<>(() -> new TemptingSensor(DragonflyAI.getTemptations())));
         VULTURE_TEMPTATIONS = register("vulture_temptations", new SensorType<>(() -> new TemptingSensor(VultureAI.getTemptations())));
         SEA_URCHIN_TEMPTATIONS = register("sea_urchin_temptations", new SensorType<>(() -> new TemptingSensor(SeaUrchinAI.getTemptations())));
     }

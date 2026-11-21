@@ -6,7 +6,9 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import it.hurts.shatterbyte.reanimal.common.entity.hedgehog.HedgehogEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -15,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.Brain;
@@ -122,7 +125,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     public boolean isFood(ItemStack stack) {
-        return false;
+        return stack.is(ReAnimalTags.Items.DRAGONFLY_FOOD);
     }
 
     @Override
@@ -137,7 +140,7 @@ public class DragonflyEntity extends FlyingInsectEntity implements GeoEntity {
 
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob partner) {
-        return null;
+        return ReAnimalEntities.DRAGONFLY.create(level, EntitySpawnReason.BREEDING);
     }
 
     @Override

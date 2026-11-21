@@ -8,6 +8,7 @@ import it.hurts.shatterbyte.reanimal.common.entity.PerchOnMob;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.FlyingInsectEntity;
 import it.hurts.shatterbyte.reanimal.common.entity.insect.RestOnSurface;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
+import it.hurts.shatterbyte.reanimal.init.ReAnimalSensorTypes;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -22,10 +23,12 @@ import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 
 public class DragonflyAI {
     private static final int PREY_PATH_CHECK_INTERVAL = 20;
@@ -33,6 +36,7 @@ public class DragonflyAI {
     private static final ImmutableList<SensorType<? extends Sensor<? super DragonflyEntity>>> SENSOR_TYPES = ImmutableList.of(
             SensorType.NEAREST_LIVING_ENTITIES,
             SensorType.HURT_BY,
+            ReAnimalSensorTypes.DRAGONFLY_TEMPTATIONS,
             SensorType.NEAREST_ADULT
     );
 
@@ -178,8 +182,13 @@ public class DragonflyAI {
     }
 
     private static boolean canHunt(DragonflyEntity entity) {
-        return !entity.isExposedToPrecipitation() && !entity.isBaby() && !entity.isPassenger() && !entity.isInWater() && !entity.isScared()
-                && !entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING);
+        return !entity.isExposedToPrecipitation() && !entity.isPassenger() && !entity.isInWater() && !entity.isScared()
+                && !entity.isInLove() && !entity.getBrain().hasMemoryValue(MemoryModuleType.IS_PANICKING)
+                && !entity.getBrain().hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER);
+    }
+
+    public static Predicate<ItemStack> getTemptations() {
+        return stack -> stack.is(ReAnimalTags.Items.DRAGONFLY_FOOD);
     }
 
     private static Optional<LivingEntity> findNearestPrey(ServerLevel level, DragonflyEntity entity) {
