@@ -126,7 +126,7 @@ public class HippopotamusAI {
                                 new RunOne<>(
                                         ImmutableMap.of(MemoryModuleType.WALK_TARGET, MemoryStatus.VALUE_ABSENT),
                                         ImmutableList.of(
-                                                Pair.of(new SeekShallowWater<HippopotamusEntity>(entity -> !entity.isLaying()), 1),
+                                                Pair.of(new SeekShallowWater<HippopotamusEntity>(entity -> !entity.isLaying(), 1F), 1),
                                                 Pair.of(RandomStroll.stroll(1F), 1),
                                                 Pair.of(SetWalkTargetFromLookTarget.create(1F, 3), 1),
                                                 Pair.of(new DoNothing(30, 60), 1)
@@ -201,7 +201,7 @@ public class HippopotamusAI {
     private static Optional<? extends LivingEntity> findNearestAttackableEntity(net.minecraft.server.level.ServerLevel level, HippopotamusEntity entity) {
         var brain = entity.getBrain();
 
-        if (brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
+        if (entity.isBaby() || brain.hasMemoryValue(MemoryModuleType.TEMPTING_PLAYER)
                 || !brain.hasMemoryValue(MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES))
             return Optional.empty();
 
@@ -220,7 +220,7 @@ public class HippopotamusAI {
     }
 
     public static boolean isValidTarget(HippopotamusEntity self, LivingEntity target) {
-        return !needsAir(self) && target.getType() != ReAnimalEntities.HIPPOPOTAMUS && !(target instanceof Monster)
+        return !self.isBaby() && !needsAir(self) && target.getType() != ReAnimalEntities.HIPPOPOTAMUS && !(target instanceof Monster)
                 && self.level() instanceof net.minecraft.server.level.ServerLevel serverLevel && Sensor.isEntityAttackable(serverLevel, self, target) && !HippopotamusAI.isHoldingFavoriteFood(target);
     }
 

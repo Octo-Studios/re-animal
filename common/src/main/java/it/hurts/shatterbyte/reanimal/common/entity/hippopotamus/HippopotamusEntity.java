@@ -46,6 +46,11 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
     private static final RawAnimation LAYING = RawAnimation.begin().then("animation.hippopotamus.laying", LoopType.PLAY_ONCE);
     private static final RawAnimation IDLE_LAY = RawAnimation.begin().thenLoop("animation.hippopotamus.idle_lay");
     private static final RawAnimation GETTING_UP = RawAnimation.begin().then("animation.hippopotamus.getting_up", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.hippopotamus_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.hippopotamus_baby.walk");
+    private static final RawAnimation BABY_LAYING = RawAnimation.begin().then("animation.hippopotamus_baby.laying", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_IDLE_LAY = RawAnimation.begin().thenLoop("animation.hippopotamus_baby.idle_lay");
+    private static final RawAnimation BABY_GETTING_UP = RawAnimation.begin().then("animation.hippopotamus_baby.getting_up", LoopType.PLAY_ONCE);
     private static final RawAnimation ATTACK_1 = RawAnimation.begin().then("animation.hippopotamus.attack_1", LoopType.PLAY_ONCE);
     private static final RawAnimation ATTACK_2 = RawAnimation.begin().then("animation.hippopotamus.attack_2", LoopType.PLAY_ONCE);
 
@@ -79,7 +84,11 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     @Override
     protected EntityDimensions getDefaultDimensions(Pose pose) {
-        return super.getDefaultDimensions(pose).scale(1F, this.getLayState() == LayState.LAYING ? 0.72F : 1F);
+        var dimensions = this.isBaby()
+                ? EntityDimensions.scalable(0.45F, 0.6F).withEyeHeight(0.55F)
+                : super.getDefaultDimensions(pose);
+
+        return dimensions.scale(1F, this.getLayState() == LayState.LAYING ? 0.72F : 1F);
     }
 
     @Override
@@ -242,7 +251,7 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     @Override
     public boolean doHurtTarget(ServerLevel level, Entity target) {
-        return super.doHurtTarget(level, target);
+        return !this.isBaby() && super.doHurtTarget(level, target);
     }
 
     @Override
@@ -258,16 +267,17 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
 
     private PlayState mainPredicate(AnimationTest<HippopotamusEntity> state) {
         var controller = state.controller();
+        var baby = this.isBaby();
 
         switch (this.getLayState()) {
-            case LAYING_DOWN -> controller.setAnimation(LAYING);
-            case LAYING -> controller.setAnimation(IDLE_LAY);
-            case GETTING_UP -> controller.setAnimation(GETTING_UP);
+            case LAYING_DOWN -> controller.setAnimation(baby ? BABY_LAYING : LAYING);
+            case LAYING -> controller.setAnimation(baby ? BABY_IDLE_LAY : IDLE_LAY);
+            case GETTING_UP -> controller.setAnimation(baby ? BABY_GETTING_UP : GETTING_UP);
             case STANDING -> {
                 if (state.isMoving())
-                    controller.setAnimation(WALK);
+                    controller.setAnimation(baby ? BABY_WALK : WALK);
                 else
-                    controller.setAnimation(IDLE);
+                    controller.setAnimation(baby ? BABY_IDLE : IDLE);
             }
         }
 
@@ -275,8 +285,10 @@ public class HippopotamusEntity extends Animal implements GeoEntity {
     }
 
     private PlayState attackPredicate(AnimationTest<HippopotamusEntity> state) {
-        var controller = state.controller();
+        if (this.isBaby())
+            return PlayState.STOP;
 
+        var controller = state.controller();
         if (this.isAttacking()) {
             this.setAttacking(false);
 

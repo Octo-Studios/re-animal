@@ -17,16 +17,9 @@ public class HippopotamusRenderer extends GeoEntityRenderer<HippopotamusEntity, 
 
     @Override
     public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
+        var isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState living && living.isBaby;
 
-            this.shadowRadius = 1F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 1F;
-        }
+        this.shadowRadius = isBaby ? 0.35F : 1F;
 
         super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
     }
