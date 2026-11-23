@@ -29,7 +29,7 @@ public class RedPandaNavigation extends SurfaceNavigation<RedPandaEntity> {
 
     @Override
     protected boolean isPassable(BlockPos pos) {
-        return this.level.getBlockState(pos).is(BlockTags.LEAVES);
+        return this.climber.isInLeaves(pos);
     }
 
     @Override
@@ -47,8 +47,13 @@ public class RedPandaNavigation extends SurfaceNavigation<RedPandaEntity> {
         return !this.isTreeBlock(pos.below()) && super.isStableDestination(pos);
     }
 
-    private boolean isTreeBlock(BlockPos pos) {
-        var state = this.level.getBlockState(pos);
+    boolean isTreeBlock(BlockPos pos) {
+        var chunk = getLoadedChunk(this.level, pos);
+
+        if (chunk == null)
+            return false;
+
+        var state = chunk.getBlockState(pos);
 
         return state.is(BlockTags.LEAVES) || state.is(ReAnimalTags.Blocks.RED_PANDA_CLIMBABLE);
     }

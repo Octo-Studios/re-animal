@@ -3,15 +3,24 @@ package it.hurts.shatterbyte.reanimal.common.entity;
 import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.level.BlockCollisions;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
@@ -38,6 +47,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     protected final E climber;
     private final BiPredicate<BlockState, Direction> surfaces;
     private final double speedMultiplier;
+    private final CollisionGetter collisionView;
     @Getter
     private Vec3 motion = Vec3.ZERO;
 
@@ -47,7 +57,13 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
         this.climber = climber;
         this.surfaces = surfaces;
         this.speedMultiplier = speedMultiplier;
+        this.collisionView = new LoadedCollisionView(level);
+
         this.setCanPathToTargetsBelowSurface(true);
+    }
+
+    public static LevelChunk getLoadedChunk(Level level, BlockPos pos) {
+        return level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ()));
     }
 
     protected boolean canNavigate() {
@@ -199,9 +215,17 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
 
     @Override
     public boolean isStableDestination(BlockPos pos) {
+        if (getLoadedChunk(this.level, pos) == null)
+            return false;
+
         var position = Vec3.atBottomCenterOf(pos);
 
         return this.canRest(new Vec3(position.x, this.getGroundY(position), position.z));
+    }
+
+    @Override
+    protected double getGroundY(Vec3 position) {
+        return getLoadedChunk(this.level, BlockPos.containing(position)) == null ? position.y : super.getGroundY(position);
     }
 
     private Path buildPath(Entry end, BlockPos target) {
@@ -359,6 +383,9 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     }
 
     public List<Point> getPoints(BlockPos cell) {
+        if (getLoadedChunk(this.level, cell) == null)
+            return List.of();
+
         var points = new ArrayList<Point>();
         var passable = this.isPassable(cell);
 
@@ -389,12 +416,13 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
 
     private boolean canSupport(BlockPos pos, Direction side) {
         var level = this.climber.level();
+        var chunk = getLoadedChunk(level, pos);
 
-        if (!level.hasChunkAt(pos))
+        if (chunk == null)
             return false;
 
-        var state = level.getBlockState(pos);
-        var shape = state.getCollisionShape(level, pos);
+        var state = chunk.getBlockState(pos);
+        var shape = state.getCollisionShape(this.collisionView, pos);
 
         return this.surfaces.test(state, side)
                 && !this.climber.getType().isBlockDangerous(state)
@@ -439,7 +467,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     }
 
     private BlockCollisions<VoxelShape> getSupportCollisions(AABB bounds, Direction side, AABB probe) {
-        return new BlockCollisions<>(this.climber.level(), CollisionContext.empty(), probe, false,
+        return new BlockCollisions<>(this.collisionView, CollisionContext.empty(), probe, false,
                 (pos, shape) -> this.canSupport(pos, side) && (side != Direction.DOWN || shape.max(Direction.Axis.Y) <= bounds.minY + Shapes.EPSILON)
                         ? shape : Shapes.empty());
     }
@@ -536,7 +564,7 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     protected boolean isClear(Vec3 from, Vec3 to, Direction side) {
         var level = this.climber.level();
         var box = this.getBoundingBox(from, side).expandTowards(to.subtract(from)).deflate(Shapes.EPSILON);
-        var collisions = new BlockCollisions<>(level, this.climber, box, false, (pos, shape) -> !this.isPassable(pos));
+        var collisions = new BlockCollisions<>(this.collisionView, this.climber, box, false, (pos, shape) -> !this.isPassable(pos));
 
         while (collisions.hasNext()) {
             if (collisions.next())
@@ -557,7 +585,54 @@ public class SurfaceNavigation<E extends Mob & SurfaceClimber> extends GroundPat
     public record Point(BlockPos cell, Vec3 position, Direction side) {
     }
 
+    private record LoadedCollisionView(Level level) implements CollisionGetter {
+        @Override
+        public BlockGetter getChunkForCollisions(int x, int z) {
+            return this.level.getChunkSource().getChunkNow(x, z);
+        }
+
+        @Override
+        public BlockState getBlockState(BlockPos pos) {
+            var chunk = getLoadedChunk(this.level, pos);
+
+            return chunk == null ? Blocks.VOID_AIR.defaultBlockState() : chunk.getBlockState(pos);
+        }
+
+        @Override
+        public BlockEntity getBlockEntity(BlockPos pos) {
+            var chunk = getLoadedChunk(this.level, pos);
+
+            return chunk == null ? null : chunk.getBlockEntity(pos);
+        }
+
+        @Override
+        public FluidState getFluidState(BlockPos pos) {
+            return this.getBlockState(pos).getFluidState();
+        }
+
+        @Override
+        public WorldBorder getWorldBorder() {
+            return this.level.getWorldBorder();
+        }
+
+        @Override
+        public List<VoxelShape> getEntityCollisions(Entity entity, AABB box) {
+            return this.level.getEntityCollisions(entity, box);
+        }
+
+        @Override
+        public int getMinY() {
+            return this.level.getMinY();
+        }
+
+        @Override
+        public int getHeight() {
+            return this.level.getHeight();
+        }
+    }
+
     private record Entry(Point point, Entry previous, double cost, Vec3 corner) {
+
     }
 
     private static class SurfaceNode extends Node {

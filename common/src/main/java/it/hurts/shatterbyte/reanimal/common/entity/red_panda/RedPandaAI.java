@@ -11,7 +11,6 @@ import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.ai.Brain;
@@ -146,9 +145,7 @@ public class RedPandaAI {
 
         for (var support : BlockPos.betweenClosed(panda.blockPosition().offset(-TREE_SEARCH_RADIUS, 0, -TREE_SEARCH_RADIUS),
                 panda.blockPosition().offset(TREE_SEARCH_RADIUS, TREE_SEARCH_HEIGHT, TREE_SEARCH_RADIUS))) {
-            var state = panda.level().getBlockState(support);
-
-            if (!state.is(ReAnimalTags.Blocks.RED_PANDA_CLIMBABLE) && !state.is(BlockTags.LEAVES))
+            if (!navigation.isTreeBlock(support))
                 continue;
 
             for (var point : navigation.getPoints(support.above())) {

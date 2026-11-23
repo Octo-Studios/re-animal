@@ -4,6 +4,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import it.hurts.shatterbyte.reanimal.common.entity.BodyBounds;
 import it.hurts.shatterbyte.reanimal.common.entity.SurfaceClimber;
+import it.hurts.shatterbyte.reanimal.common.entity.SurfaceNavigation;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalEntities;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalSoundEvents;
 import it.hurts.shatterbyte.reanimal.init.ReAnimalTags;
@@ -132,11 +133,17 @@ public class RedPandaEntity extends Animal implements GeoEntity, SurfaceClimber 
         var box = bounds.deflate(Shapes.EPSILON);
 
         for (var pos : BlockPos.betweenClosed(BlockPos.containing(box.minX, box.minY, box.minZ), BlockPos.containing(box.maxX, box.maxY, box.maxZ))) {
-            if (this.level().getBlockState(pos).is(BlockTags.LEAVES))
+            if (this.isInLeaves(pos))
                 return true;
         }
 
         return false;
+    }
+
+    boolean isInLeaves(BlockPos pos) {
+        var chunk = SurfaceNavigation.getLoadedChunk(this.level(), pos);
+
+        return chunk != null && chunk.getBlockState(pos).is(BlockTags.LEAVES);
     }
 
     public void setClimbingSide(Direction side, Vec3 movement) {
