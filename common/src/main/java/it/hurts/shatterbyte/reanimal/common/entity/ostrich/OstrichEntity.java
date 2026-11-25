@@ -50,6 +50,14 @@ public class OstrichEntity extends TamableAnimal implements GeoEntity, PlayerRid
     private static final RawAnimation COURTSHIP = RawAnimation.begin().then("animation.ostrich.courtship", LoopType.PLAY_ONCE);
     private static final RawAnimation KICK_LEFT = RawAnimation.begin().then("animation.ostrich.kick_left", LoopType.PLAY_ONCE);
     private static final RawAnimation KICK_RIGHT = RawAnimation.begin().then("animation.ostrich.kick_right", LoopType.PLAY_ONCE);
+
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.ostrich_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.ostrich_baby.walk");
+    private static final RawAnimation BABY_RUN = RawAnimation.begin().thenLoop("animation.ostrich_baby.run");
+    private static final RawAnimation BABY_IDLE_SIT = RawAnimation.begin().thenLoop("animation.ostrich_baby.idle_sit");
+    private static final RawAnimation BABY_SIT_DOWN = RawAnimation.begin().then("animation.ostrich_baby.sitting", LoopType.PLAY_ONCE).thenLoop("animation.ostrich_baby.idle_sit");
+    private static final RawAnimation BABY_GETTING_UP = RawAnimation.begin().then("animation.ostrich_baby.getting_up", LoopType.PLAY_ONCE);
+
     private static final int KICK_DURATION_TICKS = 12;
     private static final int KICK_HIT_TICK = 4;
     private static final int KICK_COOLDOWN_TICKS = 40;
@@ -120,7 +128,12 @@ public class OstrichEntity extends TamableAnimal implements GeoEntity, PlayerRid
 
     @Override
     protected EntityDimensions getDefaultDimensions(Pose pose) {
-        return super.getDefaultDimensions(pose).scale(1F, this.getSitState() == SitState.SITTING ? 0.7F : 1F);
+        var sitting = this.getSitState() == SitState.SITTING;
+
+        if (this.isBaby())
+            return EntityDimensions.scalable(0.42F, sitting ? 0.74F : 0.95F).withEyeHeight(sitting ? 0.66F : 0.9F);
+
+        return super.getDefaultDimensions(pose).scale(1F, sitting ? 0.7F : 1F);
     }
 
     @Override
@@ -550,6 +563,8 @@ public class OstrichEntity extends TamableAnimal implements GeoEntity, PlayerRid
     private PlayState mainPredicate(AnimationTest<OstrichEntity> state) {
         var controller = state.controller();
         var entity = state.animatable();
+        var baby = entity.isBaby();
+        var sitDown = baby ? BABY_SIT_DOWN : SIT_DOWN;
 
         controller.setTransitionTicks(this.getSitState() == SitState.STANDING ? STAND_TRANSITION_TICKS : 0);
 
@@ -557,19 +572,19 @@ public class OstrichEntity extends TamableAnimal implements GeoEntity, PlayerRid
             return PlayState.STOP;
 
         switch (this.getSitState()) {
-            case SITTING_DOWN -> controller.setAnimation(SIT_DOWN);
-            case SITTING -> controller.setAnimation(controller.getCurrentRawAnimation() == SIT_DOWN ? SIT_DOWN : IDLE_SIT);
-            case GETTING_UP -> controller.setAnimation(GETTING_UP);
+            case SITTING_DOWN -> controller.setAnimation(sitDown);
+            case SITTING -> controller.setAnimation(controller.getCurrentRawAnimation() == sitDown ? sitDown : (baby ? BABY_IDLE_SIT : IDLE_SIT));
+            case GETTING_UP -> controller.setAnimation(baby ? BABY_GETTING_UP : GETTING_UP);
             case STANDING -> {
                 if (entity.isCourting())
                     controller.setAnimation(COURTSHIP);
                 else if (state.isMoving()) {
                     if (entity.isSprinting() || entity.isVehicle())
-                        controller.setAnimation(RUN);
+                        controller.setAnimation(baby ? BABY_RUN : RUN);
                     else
-                        controller.setAnimation(WALK);
+                        controller.setAnimation(baby ? BABY_WALK : WALK);
                 } else
-                    controller.setAnimation(IDLE);
+                    controller.setAnimation(baby ? BABY_IDLE : IDLE);
             }
         }
 

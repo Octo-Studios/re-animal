@@ -9,13 +9,15 @@ import com.geckolib.model.GeoModel;
 
 public class OstrichModel extends GeoModel<OstrichEntity> {
     private static final Identifier MODEL = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "ostrich");
+    private static final Identifier MODEL_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "ostrich_baby");
     private static final Identifier TEXTURE_ADULT = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/ostrich_adult.png");
     private static final Identifier TEXTURE_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/ostrich_baby.png");
     private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "ostrich");
+    private static final Identifier ANIMATION_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "ostrich_baby");
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
-        return MODEL;
+        return renderState instanceof LivingEntityRenderState les && les.isBaby ? MODEL_BABY : MODEL;
     }
 
     @Override
@@ -25,6 +27,6 @@ public class OstrichModel extends GeoModel<OstrichEntity> {
 
     @Override
     public Identifier getAnimationResource(OstrichEntity entity) {
-        return ANIMATION;
+        return entity.isBaby() ? ANIMATION_BABY : ANIMATION;
     }
 }
