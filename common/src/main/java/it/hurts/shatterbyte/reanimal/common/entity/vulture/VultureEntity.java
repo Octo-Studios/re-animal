@@ -23,9 +23,11 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -40,7 +42,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 public class VultureEntity extends Animal implements GeoEntity {
@@ -48,6 +49,10 @@ public class VultureEntity extends Animal implements GeoEntity {
     private static final RawAnimation FLY = RawAnimation.begin().thenLoop("animation.vulture.fly");
     private static final RawAnimation GLIDE = RawAnimation.begin().thenLoop("animation.vulture.gliding");
     private static final RawAnimation WALK = RawAnimation.begin().thenLoop("animation.vulture.walk");
+
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.vulture_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.vulture_baby.walk");
+    private static final RawAnimation BABY_FLUTTER = RawAnimation.begin().thenLoop("animation.vulture_baby.flutter");
 
     private static final EntityDataAccessor<Boolean> CIRCLING = SynchedEntityData.defineId(VultureEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> GLIDING = SynchedEntityData.defineId(VultureEntity.class, EntityDataSerializers.BOOLEAN);
@@ -63,6 +68,13 @@ public class VultureEntity extends Animal implements GeoEntity {
         super(entityType, level);
 
         this.updateMoveControl();
+    }
+
+    @Override
+    protected EntityDimensions getDefaultDimensions(Pose pose) {
+        return this.isBaby()
+                ? EntityDimensions.scalable(0.36F, 0.61F).withEyeHeight(0.56F)
+                : super.getDefaultDimensions(pose);
     }
 
     @Override
@@ -127,11 +139,6 @@ public class VultureEntity extends Animal implements GeoEntity {
         VultureAI.updateActivity(this);
 
         super.customServerAiStep(serverLevel);
-    }
-
-    @Override
-    public void addAdditionalSaveData(ValueOutput tag) {
-        super.addAdditionalSaveData(tag);
     }
 
     @Override
@@ -246,7 +253,12 @@ public class VultureEntity extends Animal implements GeoEntity {
         var controller = state.controller();
         var entity = state.animatable();
 
-        if (!entity.onGround())
+        if (entity.isBaby()) {
+            if (!entity.onGround())
+                controller.setAnimation(BABY_FLUTTER);
+            else
+                controller.setAnimation(state.isMoving() ? BABY_WALK : BABY_IDLE);
+        } else if (!entity.onGround())
             controller.setAnimation(entity.isGliding() ? GLIDE : FLY);
         else
             controller.setAnimation(state.isMoving() ? WALK : IDLE);
@@ -262,7 +274,7 @@ public class VultureEntity extends Animal implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 10D)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
+                .add(Attributes.MOVEMENT_SPEED, 0.17D)
                 .add(Attributes.FLYING_SPEED, 0.35D)
                 .add(Attributes.FOLLOW_RANGE, 16D)
                 .add(Attributes.ATTACK_DAMAGE, 3D);

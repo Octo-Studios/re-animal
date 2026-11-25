@@ -620,7 +620,7 @@ public class OstrichEntity extends TamableAnimal implements GeoEntity, PlayerRid
         return Animal.createLivingAttributes()
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 20D)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
+                .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.ATTACK_DAMAGE, 8D)
                 .add(Attributes.ATTACK_KNOCKBACK, 2.5D)
                 .add(Attributes.FOLLOW_RANGE, 16D)

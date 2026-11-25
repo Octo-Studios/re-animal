@@ -435,7 +435,7 @@ public class PigeonEntity extends PerchingAnimalEntity implements GeoEntity {
         return Animal.createLivingAttributes()
                 .add(Attributes.TEMPT_RANGE, 10D)
                 .add(Attributes.MAX_HEALTH, 4D)
-                .add(Attributes.MOVEMENT_SPEED, 0.25D)
+                .add(Attributes.MOVEMENT_SPEED, 0.2D)
                 .add(Attributes.FLYING_SPEED, 0.5D)
                 .add(Attributes.FOLLOW_RANGE, 16D)
                 .add(Attributes.STEP_HEIGHT, 1.1D);

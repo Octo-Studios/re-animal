@@ -21,19 +21,8 @@ public class VultureRenderer extends GeoEntityRenderer<VultureEntity, EntityRend
     }
 
     @Override
-    public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
-
-            this.shadowRadius = 0.5F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 0.5F;
-        }
-
-        super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
+    protected float getShadowRadius(EntityRenderState renderState) {
+        return renderState instanceof LivingEntityRenderState les && les.isBaby ? 0.2F : 0.5F;
     }
 
     @Override

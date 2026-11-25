@@ -9,13 +9,15 @@ import com.geckolib.model.GeoModel;
 
 public class VultureModel extends GeoModel<VultureEntity> {
     private static final Identifier MODEL = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "vulture");
+    private static final Identifier MODEL_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "vulture_baby");
     private static final Identifier TEXTURE_ADULT = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/vulture_adult.png");
     private static final Identifier TEXTURE_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "textures/entity/vulture_baby.png");
     private static final Identifier ANIMATION = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "vulture");
+    private static final Identifier ANIMATION_BABY = Identifier.fromNamespaceAndPath(ReAnimal.MODID, "vulture_baby");
 
     @Override
     public Identifier getModelResource(GeoRenderState renderState) {
-        return MODEL;
+        return renderState instanceof LivingEntityRenderState les && les.isBaby ? MODEL_BABY : MODEL;
     }
 
     @Override
@@ -25,6 +27,6 @@ public class VultureModel extends GeoModel<VultureEntity> {
 
     @Override
     public Identifier getAnimationResource(VultureEntity entity) {
-        return ANIMATION;
+        return entity.isBaby() ? ANIMATION_BABY : ANIMATION;
     }
 }
