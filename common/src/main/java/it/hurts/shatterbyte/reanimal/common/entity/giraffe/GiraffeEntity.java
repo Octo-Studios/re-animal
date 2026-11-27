@@ -48,6 +48,12 @@ public class GiraffeEntity extends Animal implements GeoEntity {
     private static final RawAnimation KICK_REAR_LEFT = RawAnimation.begin().then("animation.giraffe.kick_rear_left", LoopType.PLAY_ONCE);
     private static final RawAnimation KICK_REAR_RIGHT = RawAnimation.begin().then("animation.giraffe.kick_rear_right", LoopType.PLAY_ONCE);
 
+    private static final RawAnimation BABY_IDLE = RawAnimation.begin().thenLoop("animation.giraffe_baby.idle");
+    private static final RawAnimation BABY_WALK = RawAnimation.begin().thenLoop("animation.giraffe_baby.walk");
+    private static final RawAnimation BABY_GRAZING = RawAnimation.begin().then("animation.giraffe_baby.grazing", LoopType.PLAY_ONCE);
+    private static final RawAnimation BABY_IDLE_GRAZE = RawAnimation.begin().thenLoop("animation.giraffe_baby.idle_graze");
+    private static final RawAnimation BABY_GETTING_UP = RawAnimation.begin().then("animation.giraffe_baby.getting_up", LoopType.PLAY_ONCE);
+
     private static final EntityDataAccessor<Integer> GRAZE_STATE = SynchedEntityData.defineId(GiraffeEntity.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> KICKING = SynchedEntityData.defineId(GiraffeEntity.class, EntityDataSerializers.BOOLEAN);
 
@@ -102,7 +108,12 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     @Override
     protected EntityDimensions getDefaultDimensions(Pose pose) {
-        return super.getDefaultDimensions(pose).scale(1F, this.getGrazeState() == GrazeState.GRAZING ? 0.5F : 1F);
+        var grazing = this.getGrazeState() == GrazeState.GRAZING;
+
+        if (this.isBaby())
+            return EntityDimensions.scalable(0.7F, grazing ? 1.4F : 2.35F).withEyeHeight(grazing ? 0.36F : 2.12F);
+
+        return super.getDefaultDimensions(pose).scale(1F, grazing ? 0.5F : 1F);
     }
 
     @Override
@@ -305,19 +316,20 @@ public class GiraffeEntity extends Animal implements GeoEntity {
 
     private PlayState mainPredicate(AnimationTest<GiraffeEntity> state) {
         var controller = state.controller();
+        var baby = this.isBaby();
 
         if (this.isKicking())
             return state.setAndContinue(IDLE);
 
         switch (this.getGrazeState()) {
-            case GRAZING_DOWN -> controller.setAnimation(GRAZING);
-            case GRAZING -> controller.setAnimation(IDLE_GRAZE);
-            case GETTING_UP -> controller.setAnimation(GETTING_UP);
+            case GRAZING_DOWN -> controller.setAnimation(baby ? BABY_GRAZING : GRAZING);
+            case GRAZING -> controller.setAnimation(baby ? BABY_IDLE_GRAZE : IDLE_GRAZE);
+            case GETTING_UP -> controller.setAnimation(baby ? BABY_GETTING_UP : GETTING_UP);
             case STANDING -> {
                 if (state.isMoving())
-                    controller.setAnimation(WALK);
+                    controller.setAnimation(baby ? BABY_WALK : WALK);
                 else
-                    controller.setAnimation(IDLE);
+                    controller.setAnimation(baby ? BABY_IDLE : IDLE);
             }
         }
 

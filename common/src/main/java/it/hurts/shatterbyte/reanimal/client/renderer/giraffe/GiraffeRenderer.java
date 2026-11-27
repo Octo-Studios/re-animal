@@ -23,19 +23,8 @@ public class GiraffeRenderer extends GeoEntityRenderer<GiraffeEntity, EntityRend
     }
 
     @Override
-    public void scaleModelForRender(RenderPassInfo renderPassInfo, float widthScale, float heightScale) {
-        boolean isBaby = renderPassInfo.renderState() instanceof LivingEntityRenderState les && les.isBaby;
-        if (isBaby) {
-            renderPassInfo.poseStack().scale(0.5F, 0.5F, 0.5F);
-
-            this.shadowRadius = 1F * 0.5F;
-        } else {
-            renderPassInfo.poseStack().scale(1F, 1F, 1F);
-
-            this.shadowRadius = 1F;
-        }
-
-        super.scaleModelForRender(renderPassInfo, widthScale, heightScale);
+    protected float getShadowRadius(EntityRenderState renderState) {
+        return renderState instanceof LivingEntityRenderState living && living.isBaby ? 0.4F : 1F;
     }
 
     @Override
